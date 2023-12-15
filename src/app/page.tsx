@@ -3,7 +3,7 @@ import GameBoard from "../components/gameBoard";
 
 export default function Home() {
   return (
-    <div className="container bg-amber-900 flex justify-content-center align-items-center">
+    <div className="logo bordered container bg-amber-900 flex justify-content-center align-items-center">
       <div className="grid grid-rows-4 grid-cols-5 text-center">
         <div className="p-10">
           <Image
