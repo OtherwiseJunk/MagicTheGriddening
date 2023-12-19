@@ -1,10 +1,10 @@
 "use client";
 
-import { GameState } from "@/app/models/gameState";
+import { GameState } from "@/app/models/UI/gameState";
 import { useEffect, useState } from "react";
 import GameBoard from "./gameBoard";
 import HeaderSquare from "./headerSquare";
-import { GameConstraint } from "@/app/models/headerSquareInfo";
+import { GameConstraint } from "@/app/models/UI/gameConstraint";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { randomUUID } from "crypto";
 
