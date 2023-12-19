@@ -31,7 +31,7 @@ export default function Game() {
   const gameConstraints: GameConstraint[] = gameState.gameConstraints;
 
   return (
-    <div className="h-max w-max logo bordered container text-l bg-yellow-950 p-5">
+    <div className="h-max max-w-max logo bordered container text-[10px] md:text-l lg:text-2xl bg-yellow-950 p-3">
       <div className="grid grid-rows-4 grid-cols-5 text-center">
         <HeaderSquare
           text=""
