@@ -1,34 +1,39 @@
-import { GameState } from "@/app/models/UI/gameState";
-import { GameConstraint } from "@/app/models/UI/gameConstraint";
+import { GameState } from "@/models/UI/gameState";
+import { ConstraintType, GameConstraint } from "@/models/UI/gameConstraint";
 import { PrismaClient } from "@prisma/client";
-import { Game } from "@/app/models/Database/game";
-import { CorrectGuess } from "@/app/models/Database/correctGuess";
+import { Game } from "@/models/Database/game";
+import { CorrectGuess } from "@/models/Database/correctGuess";
 
 const prisma = new PrismaClient();
 const hardcodedConstraints: GameConstraint[] = [
-    new GameConstraint("Sorcery"),
+    new GameConstraint("Sorcery", ConstraintType.Type),
     new GameConstraint(
         "Black",
+        ConstraintType.Color,
         "swamp.png",
         "A black mana symbol; a poorly drawn skull sillouhete on a dark gray field."
     ),
     new GameConstraint(
         "Red",
+        ConstraintType.Color,
         "mountain.png",
         "A red mana symbol; a poorly drawn fireball sillouhete on a red field."
     ),
     new GameConstraint(
         "Green",
+        ConstraintType.Color,
         "forest.png",
         "A green mana symbol; a poorly drawn tree sillouhete on a green field."
     ),
     new GameConstraint(
         "Blue",
+        ConstraintType.Color,
         "island.png",
         "A blue mana symbol; a poorly drawn water droplet sillouhete on a blue field."
     ),
     new GameConstraint(
         "White",
+        ConstraintType.Color,
         "plains.png",
         "A white mana symbol; a poorly drawn sun sillouhete on a pale yellow field."
     ),
