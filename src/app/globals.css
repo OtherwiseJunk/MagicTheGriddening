@@ -35,7 +35,7 @@ body {
 
 .logo{
   border-color: #4f4288;
-  border-width: 10px;
+  border-width: 5px;
   border-style: ridge;
   border-radius: 25px;
 }
@@ -70,6 +70,7 @@ body {
   background-image: url("/color-dot-pentagon.png");
   background-repeat: no-repeat;
   background-position: center;
+  background-size: auto 70%;
 }
 
 .paperOverlay {
