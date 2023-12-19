@@ -10,6 +10,7 @@ export class GameConstraint{
 export enum ConstraintType {
     Rarity,
     Type,
+    ManaValue,
     Color,
     Set,
 }
