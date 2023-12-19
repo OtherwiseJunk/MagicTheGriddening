@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
+    "@uidotdev/usehooks": "^2.4.1",
     "next": "14.0.4",
     "react": "^18",
     "react-dom": "^18",
