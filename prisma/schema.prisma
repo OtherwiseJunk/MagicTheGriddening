@@ -15,11 +15,13 @@ model Game {
  day String
  constraintsJSON String
  playerRecords PlayerRecord[]
+ correctGuesses CorrectGuesses[]
 }
 
 model PlayerRecord{
  id Int @id @default(autoincrement())
  playerId String
+ lifePoints Int
  game Game @relation(fields: [gameId], references: [id])
  gameId Int
  correctGuesses CorrectGuesses[]
@@ -29,6 +31,8 @@ model CorrectGuesses{
   id Int @id @default(autoincrement())
   playerRecord PlayerRecord @relation(fields: [playerRecordId], references: [id])
   playerRecordId Int
+  game Game @relation(fields: [gameId], references: [id])
+  gameId Int
   correctGuess String
   squareIndex Int
   imageSource String
