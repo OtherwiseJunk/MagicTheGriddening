@@ -1,10 +1,10 @@
 import { CorrectGuess } from "./correctGuess";
-import { GameConstraint } from "./headerSquareInfo";
+import { GameConstraint } from "./gameConstraint";
 
-export class GameState{
+export class GameState {
     constructor(
-        public gameConstraints: GameConstraint[], 
+        public gameConstraints: GameConstraint[],
         public lifePoints: number,
         public correctGuesses: CorrectGuess[]
-    ){}
+    ) { }
 }
