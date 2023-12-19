@@ -84,3 +84,18 @@ body {
   mix-blend-mode: multiply;
   pointer-events: none;
 }
+
+.square {
+  max-width: 128px;
+  max-height: 128px;
+  line-break: auto;
+}
+
+@media screen and (max-width: 450px) {
+  .square {
+    max-width: 72px;
+    max-height: 72px;
+    line-break: loose;
+  }
+}
+
