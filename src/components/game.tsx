@@ -1,12 +1,11 @@
 "use client";
 
-import { GameState } from "@/app/models/UI/gameState";
+import { GameState } from "@/models/UI/gameState";
 import { useEffect, useState } from "react";
 import GameBoard from "./gameBoard";
 import HeaderSquare from "./headerSquare";
-import { GameConstraint } from "@/app/models/UI/gameConstraint";
+import { GameConstraint } from "@/models/UI/gameConstraint";
 import { useLocalStorage } from "@uidotdev/usehooks";
-import { randomUUID } from "crypto";
 
 export default function Game() {
   const [gameState, setGameState] = useState<GameState>(
