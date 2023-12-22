@@ -10,7 +10,7 @@ export default function HeaderSquare(props: {text: string, imageSource: string, 
         src={props.imageSource}
         width={64}
         height={64}
-        sizes="(mid-width: 66em) 64px,
+        sizes="(min-width: 66em) 64px,
         (min-width:44em) 32px
         (min-width:22em) 16px
         8px"
