@@ -1,6 +1,6 @@
 import * as Scry from "scryfall-sdk";
 import { colorToColorCode, rarityToRarityCode } from "@/constants/scryfallConstants";
-import { GameConstraint } from "@/models/UI/gameConstraint";
+import { ConstraintType, GameConstraint } from "@/models/UI/gameConstraint";
 
 export default class ScryfallService{
 
@@ -16,17 +16,39 @@ static async getFirstPageCardCount(query: string): Promise<number>{
 }
 
 static async getSetConstraints(): Promise<GameConstraint[]>{
-    const setConstraints: GameConstraint[] = [];
-  
-    (await Scry.Sets.all()).forEach((set) => {
-      if (["core", "expansion"].includes(set.set_type)) {
-        let santizedName = this.santizeSetName(set.name);
-        if(santizedName){
-          setConstraints.push(
-            new GameConstraint(`${santizedName} - ${set.code}`, 4)
-          );
-        }        
+    const sets = await Scry.Sets.all()
+
+    const sanitizedSets: Scry.Set[] = [];
+
+    sets.forEach((set) => {
+      if (!["core", "expansion"].includes(set.set_type)) return;
+        
+      let santizedName = this.santizeSetName(set.name);
+        
+      if(!santizedName) return;
+
+      sanitizedSets.push(set);
+    })
+
+
+    const pioneerSets: Scry.Set[] = sanitizedSets.filter((set) => {
+      const releaseDate = set.released_at;
+      const releaseYear = parseInt(releaseDate!.split('-')[0])
+      if(releaseYear > 2012){
+        return true
       }
+      else if (releaseDate === '2012-10-05'){
+        return true;
+      }
+
+      return false;
+
+    })
+
+    const setConstraints: GameConstraint[] = []
+    
+    pioneerSets.forEach((set: Scry.Set) => {
+      setConstraints.push(new GameConstraint(`${set.name} - ${set.code}`, ConstraintType.Set))
     });
 
     return setConstraints;
