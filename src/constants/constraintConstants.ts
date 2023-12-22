@@ -1,8 +1,7 @@
 import { GameConstraint, ConstraintType } from "@/models/UI/gameConstraint";
 
-export const typeConstraints: GameConstraint[] = [
+  export const typeConstraints: GameConstraint[] = [
     new GameConstraint("Sorcery", ConstraintType.Type),
-    new GameConstraint("Create", ConstraintType.Type),
     new GameConstraint("Instant", ConstraintType.Type),
     new GameConstraint("Enchantment", ConstraintType.Type),
     new GameConstraint("Artifact", ConstraintType.Type),
@@ -28,6 +27,11 @@ export const typeConstraints: GameConstraint[] = [
     new GameConstraint("Aura", ConstraintType.Type),
     new GameConstraint("Dragon", ConstraintType.Type),
     new GameConstraint("Rogue", ConstraintType.Type),
+    new GameConstraint("Angel", ConstraintType.Type),
+    new GameConstraint("Hydra", ConstraintType.Type),
+    new GameConstraint("Demon", ConstraintType.Type),
+    new GameConstraint("Sphinx", ConstraintType.Type),
+    new GameConstraint("Treefolk", ConstraintType.Type),
 ]
 
 export const rarityConstraints: GameConstraint[] = [
