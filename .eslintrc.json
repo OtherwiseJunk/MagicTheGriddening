@@ -16,5 +16,6 @@
         "react"
     ],
     "rules": {
+        "max-len": 140
     }
 }
