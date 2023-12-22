@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "Game" (
     "id" SERIAL NOT NULL,
-    "day" TEXT NOT NULL,
+    "dateString" TEXT NOT NULL,
     "constraintsJSON" TEXT NOT NULL,
 
     CONSTRAINT "Game_pkey" PRIMARY KEY ("id")

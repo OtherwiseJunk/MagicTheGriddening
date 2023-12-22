@@ -12,7 +12,7 @@ datasource db {
 
 model Game {
  id Int @id @default(autoincrement())
- day String
+ dateString String
  constraintsJSON String
  playerRecords PlayerRecord[]
  correctGuesses CorrectGuesses[]
