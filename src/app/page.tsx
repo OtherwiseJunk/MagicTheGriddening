@@ -1,6 +1,11 @@
 import Game from "@/components/game";
-import { GameConstraint } from "../models/UI/gameConstraint";
+import Header from "@/components/header";
 
 export default function Home() {
-  return <Game />;
+  return (
+    <div>
+      <Header />
+      <Game />
+    </div>
+  );
 }
