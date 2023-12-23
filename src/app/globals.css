@@ -4,26 +4,28 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
+  --background-start-rgb: 66, 144, 245;
   --background-end-rgb: 255, 255, 255;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
+    --background-start-rgb: 66, 144, 245;
     --background-end-rgb: 0, 0, 0;
   }
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: rgb(24,89,173);
+  background-image: url("/background-texture.png");  
+  background-blend-mode: multiply;
+}
+
+.paper-texture{
+  background-image: url("/paper-texture.png");
+  background-blend-mode:color-burn;
 }
 
 .game-input-board{
@@ -67,22 +69,11 @@ body {
 }
 
 .input-center{
-  background-image: url("/color-dot-pentagon.png");
-  background-repeat: no-repeat;
+  background-image: url("/color-dot-pentagon.png"), url("/paper-texture.png");
+  background-repeat: no-repeat, repeat;
   background-position: center;
-  background-size: auto 70%;
-}
-
-.paperOverlay {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-repeat: repeat;
-  background-image: url("/paper-texture.png");
-  mix-blend-mode: multiply;
-  pointer-events: none;
+  background-size: auto 70%, 100%;
+  background-blend-mode: hard-light, color-burn;
 }
 
 .square {

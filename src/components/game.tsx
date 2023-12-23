@@ -25,13 +25,13 @@ export default function Game() {
 
   useEffect(() => {
     getGameState();
-  }, []);
+  }, [gameState.lifePoints]);
 
   const lifePointsString = `Life Points: ${gameState.lifePoints}`;
   const gameConstraints: GameConstraint[] = gameState.gameConstraints;
 
   return (
-    <div className="m-auto max-h-max max-w-max logo bordered container text-[10px] md:text-l lg:text-xl bg-yellow-950 p-2 lg:p-5">
+    <div className="paper-texture m-auto max-h-max max-w-max logo bordered container text-[10px] md:text-l lg:text-2xl bg-yellow-950 p-2 lg:p-5">
       <div className="grid grid-rows-4 grid-cols-5 text-center">
         <HeaderSquare
           text=""
@@ -74,7 +74,6 @@ export default function Game() {
         />
         <HeaderSquare text="" imageSource="" imageAltText="" />
       </div>
-      <div className="paperOverlay"></div>
     </div>
   );
 }

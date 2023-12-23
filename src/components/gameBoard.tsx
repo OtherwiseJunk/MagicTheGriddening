@@ -1,17 +1,27 @@
 "use client";
 
+import InputSquare from "./inputSquare";
+
 export default function GameBoard() {
+  const inputSquares = Array.from({ length: 9 }, (value, index) => index).map((_, index)=>{
+    switch(index){
+      case 0:
+        return <InputSquare topLeftCorner={true} />
+      case 2:
+        return <InputSquare topRightCorner={true} />
+      case 4:
+        return <InputSquare center={true}/>
+      case 6:
+        return <InputSquare bottomLeftCorner={true} />
+      case 8:
+        return <InputSquare bottomRightCorner={true} />
+      default:
+        return <InputSquare/>
+    }
+  })
   return (
     <div className="grid col-span-3 row-span-3 grid-cols-3 grid-rows-3">
-      <div className="bg-amber-700 square game-border px-10 py-4 top-left"></div>
-      <div className="bg-amber-700 square game-border px-10 py-4"></div>
-      <div className="bg-amber-700 square game-border px-10 py-4 top-right"></div>
-      <div className="bg-amber-700 square game-border px-10 py-4"></div>
-      <div className="bg-amber-700 square game-border px-10 py-4 input-center bg-auto"></div>
-      <div className="bg-amber-700 square game-border px-10 py-4"></div>
-      <div className="bg-amber-700 square game-border px-10 py-4 bottom-left"></div>
-      <div className="bg-amber-700 square game-border px-10 py-4"></div>
-      <div className="bg-amber-700 square game-border px-10 py-4 bottom-right"></div>
+      {inputSquares}
     </div>
   );
 }
