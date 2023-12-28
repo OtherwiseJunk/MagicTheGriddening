@@ -48,7 +48,13 @@ body {
   border-style: ridge;
 }
 
-.game-border:hover:not(.game-submitted){
+.dialog-border{
+  border-color: #4f4288;
+  border-width: 5px;
+  border-style: ridge;
+}
+
+.game-border:hover:not(.correct-answer){
   filter: brightness(1.5)
 }
 
@@ -90,3 +96,8 @@ body {
   }
 }
 
+.blue-background{
+  background: rgb(24,89,173);
+  background-image: url("/background-texture.png");  
+  background-blend-mode: hard-light;
+}
