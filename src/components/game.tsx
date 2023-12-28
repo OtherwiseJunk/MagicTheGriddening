@@ -59,7 +59,7 @@ export default function Game() {
           imageSource={gameConstraints[3]?.imageSrc}
           imageAltText={gameConstraints[3]?.imageAltText}
         />
-        <GameBoard />
+        <GameBoard gameState ={gameState} setGameState={setGameState}/>
         <HeaderSquare text="" imageSource="" imageAltText="" />
         <HeaderSquare
           text={gameConstraints[4]?.displayName}
