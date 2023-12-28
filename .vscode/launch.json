@@ -9,9 +9,15 @@
         },
         {
             "name": "Next.js: debug client-side",
-            "type": "chrome",
+            "type": "firefox",
             "request": "launch",
-            "url": "http://localhost:3000"
+            "url": "http://localhost:3000",
+            "pathMappings": [
+                {
+                    "url": "webpack://_n_e",
+                    "path": "${workspaceFolder}"
+                }
+            ]
         },
         {
             "name": "Next.js: debug full stack",
