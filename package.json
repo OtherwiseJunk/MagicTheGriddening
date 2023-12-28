@@ -14,6 +14,7 @@
     "@mui/material": "^5.15.1",
     "@prisma/client": "^5.7.1",
     "@uidotdev/usehooks": "^2.4.1",
+    "axios": "^1.6.2",
     "next": "14.0.4",
     "react": "^18",
     "react-dom": "^18",
