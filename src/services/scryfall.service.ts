@@ -6,6 +6,10 @@ export default class ScryfallService{
 
 static queryCountMap = new Map();
 
+static async getCards(query: string): Promise<Scry.Card[]>{
+  return Scry.Cards.search(query,{ page: 1, unique: 'cards'}).cancelAfterPage().waitForAll();
+}
+
 static async getFirstPageCardCount(query: string): Promise<number>{
     if(this.queryCountMap.has(query)){
         return this.queryCountMap.get(query);
