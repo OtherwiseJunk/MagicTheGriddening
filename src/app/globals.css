@@ -54,7 +54,7 @@ body {
   border-style: ridge;
 }
 
-.game-border:hover:not(.correct-answer){
+.live-input:hover{
   filter: brightness(1.5)
 }
 
