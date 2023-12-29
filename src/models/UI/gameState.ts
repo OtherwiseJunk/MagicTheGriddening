@@ -1,10 +1,10 @@
-import { CorrectGuess } from "./correctGuess";
-import { GameConstraint } from "./gameConstraint";
+import { type CorrectGuess } from './correctGuess'
+import { type GameConstraint } from './gameConstraint'
 
 export class GameState {
-    constructor(
-        public gameConstraints: GameConstraint[],
-        public lifePoints: number,
-        public correctGuesses: CorrectGuess[]
-    ) { }
+  constructor (
+    public gameConstraints: GameConstraint[],
+    public lifePoints: number,
+    public correctGuesses: CorrectGuess[]
+  ) { }
 }

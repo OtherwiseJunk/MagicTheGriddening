@@ -1,14 +1,14 @@
-"use client";
+'use client'
 
-import { GameState } from "@/models/UI/gameState";
-import InputSquare from "./inputSquare";
-import { useState } from "react";
-import InputDialog from "./inputDialog";
+import { type GameState } from '@/models/UI/gameState'
+import InputSquare from './inputSquare'
+import { useState } from 'react'
+import InputDialog from './inputDialog'
 
-type GameBoardPrompts = {
-  gameState: GameState;
-  setGameState: Function;
-};
+interface GameBoardPrompts {
+  gameState: GameState
+  setGameState: Function
+}
 
 const inputSquares = (
   props: GameBoardPrompts,
@@ -18,7 +18,7 @@ const inputSquares = (
   return Array.from({ length: 9 }, (value, index) => index).map((_, index) => {
     const correctGuess = props.gameState.correctGuesses.find(
       (correctGuess) => correctGuess.squareIndex === index
-    );
+    )
     switch (index) {
       case 0:
         return (
@@ -31,7 +31,7 @@ const inputSquares = (
             setDialogIndex={setDialogIndex}
             remainingGuesses={props.gameState.lifePoints}
           />
-        );
+        )
       case 2:
         return (
           <InputSquare
@@ -43,7 +43,7 @@ const inputSquares = (
             setDialogIndex={setDialogIndex}
             remainingGuesses={props.gameState.lifePoints}
           />
-        );
+        )
       case 4:
         return (
           <InputSquare
@@ -55,7 +55,7 @@ const inputSquares = (
             setDialogIndex={setDialogIndex}
             remainingGuesses={props.gameState.lifePoints}
           />
-        );
+        )
       case 6:
         return (
           <InputSquare
@@ -67,7 +67,7 @@ const inputSquares = (
             setDialogIndex={setDialogIndex}
             remainingGuesses={props.gameState.lifePoints}
           />
-        );
+        )
       case 8:
         return (
           <InputSquare
@@ -79,7 +79,7 @@ const inputSquares = (
             setDialogIndex={setDialogIndex}
             remainingGuesses={props.gameState.lifePoints}
           />
-        );
+        )
       default:
         return (
           <InputSquare
@@ -90,27 +90,26 @@ const inputSquares = (
             setDialogIndex={setDialogIndex}
             remainingGuesses={props.gameState.lifePoints}
           />
-        );
+        )
     }
-  });
-};
+  })
+}
 
-export default function GameBoard(props: GameBoardPrompts) {
-  const [isOpen, setOpen] = useState(false);
-  const [dialogGridIndex, setDialogGridIndex] = useState(-1);
-  const handleOpen = () => setOpen(props.gameState.lifePoints > 0);
-  
+export default function GameBoard (props: GameBoardPrompts) {
+  const [isOpen, setOpen] = useState(false)
+  const [dialogGridIndex, setDialogGridIndex] = useState(-1)
+  const handleOpen = () => { setOpen(props.gameState.lifePoints > 0) }
 
   return (
     <div className="grid col-span-3 row-span-3 grid-cols-3 grid-rows-3">
       {inputSquares(props, handleOpen, setDialogGridIndex)}
       {InputDialog({
-        isOpen: isOpen,
+        isOpen,
         setIsOpen: setOpen,
-        dialogGridIndex: dialogGridIndex,
+        dialogGridIndex,
         gameState: props.gameState,
-        setGameState: props.setGameState,
+        setGameState: props.setGameState
       })}
     </div>
-  );
+  )
 }

@@ -1,5 +1,5 @@
 export class CorrectGuess {
-  constructor(
+  constructor (
     public id: number,
     public playerRecordId: number,
     public gameId: number,
@@ -8,11 +8,11 @@ export class CorrectGuess {
     public imageSource: string
   ) {}
 
-  toUIObject() {
+  toUIObject () {
     return {
       cardName: this.correctGuess,
       imageUrl: this.imageSource,
-      squareIndex: this.squareIndex,
-    };
+      squareIndex: this.squareIndex
+    }
   }
 }

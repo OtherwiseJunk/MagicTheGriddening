@@ -1,94 +1,94 @@
-import { GameConstraint, ConstraintType } from "@/models/UI/gameConstraint";
-import { GameState } from "@/models/UI/gameState";
-import ScryfallService from "@/services/scryfall.service";
-import GriddeningService from "@/services/griddening.service";
-import { ThemeProvider } from "@emotion/react";
+import { type GameConstraint, ConstraintType } from '@/models/UI/gameConstraint'
+import { type GameState } from '@/models/UI/gameState'
+import ScryfallService from '@/services/scryfall.service'
+import GriddeningService from '@/services/griddening.service'
+import { ThemeProvider } from '@emotion/react'
 import {
   Dialog,
   InputLabel,
   Autocomplete,
   TextField,
   Button,
-  createTheme,
-} from "@mui/material";
-import { useLocalStorage } from "@uidotdev/usehooks";
-import { Eczar } from "next/font/google";
-import { useState } from "react";
-import { Card } from "scryfall-sdk";
+  createTheme
+} from '@mui/material'
+import { useLocalStorage } from '@uidotdev/usehooks'
+import { Eczar } from 'next/font/google'
+import { useState } from 'react'
+import { type Card } from 'scryfall-sdk'
 
-const dialogFont = Eczar({ subsets: ["latin"] });
+const dialogFont = Eczar({ subsets: ['latin'] })
 
 const getColorPairText = (colorOne: string, colorTwo: string) => {
-  if (colorOne === "White") {
+  if (colorOne === 'White') {
     switch (colorTwo) {
-      case "Blue":
-        return "White Blue";
-      case "Black":
-        return "White Black";
-      case "Red":
-        return "Red White";
-      case "Green":
-        return "White Green";
+      case 'Blue':
+        return 'White Blue'
+      case 'Black':
+        return 'White Black'
+      case 'Red':
+        return 'Red White'
+      case 'Green':
+        return 'White Green'
     }
   }
-  if (colorOne === "Blue") {
+  if (colorOne === 'Blue') {
     switch (colorTwo) {
-      case "Black":
-        return "Blue Black";
-      case "Red":
-        return "Blue Red";
-      case "Green":
-        return "Blue Green";
-      case "White":
-        return "White Blue";
+      case 'Black':
+        return 'Blue Black'
+      case 'Red':
+        return 'Blue Red'
+      case 'Green':
+        return 'Blue Green'
+      case 'White':
+        return 'White Blue'
     }
   }
-  if (colorOne === "Black") {
+  if (colorOne === 'Black') {
     switch (colorTwo) {
-      case "Red":
-        return "Black Red";
-      case "Green":
-        return "Black Green";
-      case "White":
-        return "White Black";
-      case "Blue":
-        return "Blue Black";
+      case 'Red':
+        return 'Black Red'
+      case 'Green':
+        return 'Black Green'
+      case 'White':
+        return 'White Black'
+      case 'Blue':
+        return 'Blue Black'
     }
   }
-  if (colorOne === "Red") {
+  if (colorOne === 'Red') {
     switch (colorTwo) {
-      case "Green":
-        return "Red Green";
-      case "White":
-        return "Red White";
-      case "Blue":
-        return "Blue Red";
-      case "Black":
-        return "Black Red";
+      case 'Green':
+        return 'Red Green'
+      case 'White':
+        return 'Red White'
+      case 'Blue':
+        return 'Blue Red'
+      case 'Black':
+        return 'Black Red'
     }
   }
-  if (colorOne === "Green") {
+  if (colorOne === 'Green') {
     switch (colorTwo) {
-      case "White":
-        return "White Green";
-      case "Blue":
-        return "Blue Green";
-      case "Black":
-        return "Black Green";
-      case "Red":
-        return "Red Green";
+      case 'White':
+        return 'White Green'
+      case 'Blue':
+        return 'Blue Green'
+      case 'Black':
+        return 'Black Green'
+      case 'Red':
+        return 'Red Green'
     }
   }
-};
+}
 
 const getTextForConstraints = (
   constraintOne: GameConstraint,
   constraintTwo: GameConstraint
 ): string => {
-  const artcileOne = constraintOne.displayName.startsWith("U") ? "an" : "a";
-  const artcileTwo = constraintTwo.displayName.startsWith("U") ? "an" : "a";
-  const typeOne = constraintOne.constraintType;
-  const typeTwo = constraintTwo.constraintType;
+  const artcileOne = constraintOne.displayName.startsWith('U') ? 'an' : 'a'
+  const artcileTwo = constraintTwo.displayName.startsWith('U') ? 'an' : 'a'
+  const typeOne = constraintOne.constraintType
+  const typeTwo = constraintTwo.constraintType
   if (typeOne === ConstraintType.Set || typeTwo === ConstraintType.Set) {
     if (
       typeTwo === ConstraintType.ManaValue ||
@@ -96,11 +96,11 @@ const getTextForConstraints = (
     ) {
       return typeOne === ConstraintType.ManaValue
         ? `Name a card with ${constraintOne.displayName} from ${constraintTwo.displayName}.`
-        : `Name a card with ${constraintTwo.displayName} from ${constraintOne.displayName}.`;
+        : `Name a card with ${constraintTwo.displayName} from ${constraintOne.displayName}.`
     }
     return typeOne === ConstraintType.Set
       ? `Name ${artcileTwo} ${constraintTwo.displayName} card from ${constraintOne.displayName}.`
-      : `Name ${artcileOne} ${constraintOne.displayName} card from ${constraintTwo.displayName}.`;
+      : `Name ${artcileOne} ${constraintOne.displayName} card from ${constraintTwo.displayName}.`
   }
   if (
     typeOne === ConstraintType.ManaValue ||
@@ -108,79 +108,79 @@ const getTextForConstraints = (
   ) {
     return typeOne === ConstraintType.ManaValue
       ? `Name ${artcileTwo} ${constraintTwo.displayName} card with ${constraintOne.displayName}.`
-      : `Name ${artcileOne} ${constraintOne.displayName} card with ${constraintTwo.displayName}.`;
+      : `Name ${artcileOne} ${constraintOne.displayName} card with ${constraintTwo.displayName}.`
   }
   if (typeOne === ConstraintType.Rarity || typeTwo === ConstraintType.Rarity) {
     return typeOne === ConstraintType.Rarity
       ? `Name ${artcileOne} ${constraintOne.displayName} ${constraintTwo.displayName} card.`
-      : `Name ${artcileTwo} ${constraintTwo.displayName} ${constraintOne.displayName} card.`;
+      : `Name ${artcileTwo} ${constraintTwo.displayName} ${constraintOne.displayName} card.`
   }
   if (typeOne === ConstraintType.Color && typeTwo === ConstraintType.Color) {
     return `Name a ${getColorPairText(
       constraintOne.displayName,
       constraintTwo.displayName
-    )} card.`;
+    )} card.`
   }
   if (typeOne === ConstraintType.Color || typeTwo === ConstraintType.Color) {
     return typeOne === ConstraintType.Color
       ? `Name a ${constraintOne.displayName} ${constraintTwo.displayName} card.`
-      : `Name a ${constraintTwo.displayName} ${constraintOne.displayName} card.`;
+      : `Name a ${constraintTwo.displayName} ${constraintOne.displayName} card.`
   }
-  return `Name ${artcileOne} ${constraintOne.displayName} ${constraintTwo.displayName} card.`;
-};
+  return `Name ${artcileOne} ${constraintOne.displayName} ${constraintTwo.displayName} card.`
+}
 
 const getConstraintsText = (
   constraints: GameConstraint[],
   squareIndex: number
 ): string => {
   const [constraintOne, constraintTwo] =
-    GriddeningService.getGameConstraintsForIndex(constraints, squareIndex);
+    GriddeningService.getGameConstraintsForIndex(constraints, squareIndex)
   return constraintOne !== undefined
     ? getTextForConstraints(constraintOne, constraintTwo)
-    : "";
-};
+    : ''
+}
 
 const darkTheme = createTheme({
   palette: {
-    mode: "dark",
-  },
-});
+    mode: 'dark'
+  }
+})
 
 const submitAnswer = async (
   playerId: string,
   squareIndex: number,
   guess: string
 ) => {
-  const response = await fetch(`/api/submitAnswer`, {
-    method: "POST",
+  const response = await fetch('/api/submitAnswer', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       playerId,
       squareIndex,
-      guess,
-    }),
-  });
+      guess
+    })
+  })
 
-  return response.status === 200;
-};
+  return response.status === 200
+}
 
-type InputProps = {
-  gameState: GameState;
-  setGameState: Function;
-  dialogGridIndex: number;
-  isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
-};
+interface InputProps {
+  gameState: GameState
+  setGameState: Function
+  dialogGridIndex: number
+  isOpen: boolean
+  setIsOpen: (isOpen: boolean) => void
+}
 
-export default function InputDialog(props: InputProps) {
-  const [cardOptions, setCardOptions] = useState([] as string[]);
-  const [currentValue, setCurrentValue] = useState("");
-  const handleClose = () => props.setIsOpen(false);
+export default function InputDialog (props: InputProps) {
+  const [cardOptions, setCardOptions] = useState([] as string[])
+  const [currentValue, setCurrentValue] = useState('')
+  const handleClose = () => { props.setIsOpen(false) }
 
   const updateCardOptions = (newValue: string | null) => {
-    setCurrentValue(newValue ?? "");
+    setCurrentValue(newValue ?? '')
 
     if (newValue !== null && newValue.length >= 3) {
       ScryfallService.getCards(newValue).then((foundCards: Card[]) => {
@@ -188,11 +188,11 @@ export default function InputDialog(props: InputProps) {
           foundCards
             .map((card) => card.name)
             .filter((cardName) => cardName.includes(newValue))
-        );
-      });
+        )
+      })
     }
-  };
-  const [userId, _] = useLocalStorage("griddening.userId", crypto.randomUUID());
+  }
+  const [userId, _] = useLocalStorage('griddening.userId', crypto.randomUUID())
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -200,8 +200,8 @@ export default function InputDialog(props: InputProps) {
         className={dialogFont.className}
         open={props.isOpen}
         onClose={() => {
-          handleClose();
-          setCardOptions([]);
+          handleClose()
+          setCardOptions([])
         }}
       >
         <div className="paper-texture p-5 bg-amber-700 dialog-border">
@@ -213,7 +213,7 @@ export default function InputDialog(props: InputProps) {
           </InputLabel>
           <Autocomplete
             onInputChange={(_, newValue) => {
-              updateCardOptions(newValue);
+              updateCardOptions(newValue)
             }}
             id="card-search"
             options={cardOptions}
@@ -236,12 +236,12 @@ export default function InputDialog(props: InputProps) {
                   )
                 ) {
                 }
-                setCardOptions([]);
-                handleClose();
+                setCardOptions([])
+                handleClose()
                 props.setGameState({
                   ...props.gameState,
-                  lifePoints: props.gameState.lifePoints - 1,
-                });
+                  lifePoints: props.gameState.lifePoints - 1
+                })
               }
             }}
           >
@@ -250,5 +250,5 @@ export default function InputDialog(props: InputProps) {
         </div>
       </Dialog>
     </ThemeProvider>
-  );
+  )
 }

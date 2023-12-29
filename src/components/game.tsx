@@ -1,34 +1,34 @@
-"use client";
+'use client'
 
-import { GameState } from "@/models/UI/gameState";
-import { useEffect, useState } from "react";
-import GameBoard from "./gameBoard";
-import HeaderSquare from "./headerSquare";
-import { GameConstraint } from "@/models/UI/gameConstraint";
-import { useLocalStorage } from "@uidotdev/usehooks";
+import { GameState } from '@/models/UI/gameState'
+import { useEffect, useState } from 'react'
+import GameBoard from './gameBoard'
+import HeaderSquare from './headerSquare'
+import { type GameConstraint } from '@/models/UI/gameConstraint'
+import { useLocalStorage } from '@uidotdev/usehooks'
 
-export default function Game() {
+export default function Game () {
   const [gameState, setGameState] = useState<GameState>(
     new GameState([], -1, [])
-  );
+  )
   const [userId, setUserId] = useLocalStorage(
-    "griddening.userId",
+    'griddening.userId',
     crypto.randomUUID()
-  );
-  function getGameState() {
+  )
+  function getGameState () {
     fetch(`/api/gameState/${userId}`)
-      .then((res) => res.json())
+      .then(async (res) => await res.json())
       .then((data: GameState) => {
-        setGameState(data);
-      });
+        setGameState(data)
+      })
   }
 
   useEffect(() => {
-    getGameState();
-  }, [gameState.lifePoints]);
+    getGameState()
+  }, [gameState.lifePoints])
 
-  const lifePointsString = `Life Points: ${gameState.lifePoints}`;
-  const gameConstraints: GameConstraint[] = gameState.gameConstraints;
+  const lifePointsString = `Life Points: ${gameState.lifePoints}`
+  const gameConstraints: GameConstraint[] = gameState.gameConstraints
 
   return (
     <div className="paper-texture m-auto max-h-max max-w-max logo bordered container text-[10px] md:text-l lg:text-xl bg-yellow-950 p-2 lg:p-5">
@@ -75,5 +75,5 @@ export default function Game() {
         <HeaderSquare text="" imageSource="" imageAltText="" />
       </div>
     </div>
-  );
+  )
 }
