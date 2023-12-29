@@ -43,7 +43,7 @@ async function getUserDataForGame(
 ): Promise<
   [number, CorrectGuess[]]
 > {
-  const [lifePoints, correctGuesses] =  await DataService.getPlayerRecord(gameId, playerId);
+  const [lifePoints, correctGuesses] =  await DataService.getPlayerGameData(gameId, playerId);
 
   if (lifePoints !== -1) {
     return [lifePoints, correctGuesses];  
