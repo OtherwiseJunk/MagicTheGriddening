@@ -1,47 +1,40 @@
 import { GameConstraint, ConstraintType } from "@/models/UI/gameConstraint";
 
 const cardTypes = [
-    "Sorcery",
-    "Instant",
-    "Enchantment",
-    "Artifact",
-    "Planeswalker",
-    "Land",
-    "Equipment",
-    "Legendary",
-    "Goblin",
-    "Elf",
-    "Merfolk",
-    "Zombie",
-    "Human",
-    "Legendary",
-    "Cleric",
-    "Beast",
-    "Elemental",
-    "Spirit",
-    "Soldier",
-    "Warrior",
-    "Wizard",
-    "Aura",
-    "Dragon",
-    "Rogue",
-    "Angel",
-    "Hydra",
-    "Demon",
-    "Sphinx",
-    "Treefolk"
+  // Card Types
+  "Sorcery",
+  "Instant",
+  "Enchantment",
+  "Artifact",
+  "Planeswalker",
+  "Land",
+  "Equipment",
+  "Legendary",
+
+  // Creature Types
+  "Goblin",
+  "Elf",
+  "Merfolk",
+  "Zombie",
+  "Human",
+  "Cleric",
+  "Beast",
+  "Elemental",
+  "Spirit",
+  "Soldier",
+  "Warrior",
+  "Wizard",
+  "Aura",
+  "Dragon",
+  "Rogue",
+  "Angel",
+  "Hydra",
+  "Demon",
+  "Sphinx",
+  "Treefolk"
 ]
 
-const generateTypeConstraints = () =>{
-    let cardTypeConstraints: GameConstraint[] =[];
-    cardTypes.forEach((cardType) =>{
-        new GameConstraint(cardType, ConstraintType.Type, `t:${cardType}`);
-    });
-
-    return cardTypeConstraints;
-}
-
-export const typeConstraints: GameConstraint[] = generateTypeConstraints();
+export const typeConstraints: GameConstraint[] = cardTypes.map((cardType) => new GameConstraint(cardType, ConstraintType.Type, `t:${cardType}`))
 
 export const rarityConstraints: GameConstraint[] = [
   new GameConstraint("Mythic", ConstraintType.Rarity, "r:m"),
