@@ -1,7 +1,7 @@
 import { GameConstraint } from "@/models/UI/gameConstraint";
 
-import GriddeningService from '../../../../services/griddening.service';
-import DataService from "../../../../services/data.service";
+import GriddeningService from '@/services/griddening.service';
+import DataService from "@/services/data.service";
 
 export async function GET(request: Request, { params }: { params: { days: string } }) {
     await (async () =>{
