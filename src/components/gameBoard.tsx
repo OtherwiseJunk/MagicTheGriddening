@@ -29,6 +29,7 @@ const inputSquares = (
             handleOpen={handleOpen}
             gridIndex={index}
             setDialogIndex={setDialogIndex}
+            remainingGuesses={props.gameState.lifePoints}
           />
         );
       case 2:
@@ -40,6 +41,7 @@ const inputSquares = (
             handleOpen={handleOpen}
             gridIndex={index}
             setDialogIndex={setDialogIndex}
+            remainingGuesses={props.gameState.lifePoints}
           />
         );
       case 4:
@@ -51,6 +53,7 @@ const inputSquares = (
             handleOpen={handleOpen}
             gridIndex={index}
             setDialogIndex={setDialogIndex}
+            remainingGuesses={props.gameState.lifePoints}
           />
         );
       case 6:
@@ -62,6 +65,7 @@ const inputSquares = (
             handleOpen={handleOpen}
             gridIndex={index}
             setDialogIndex={setDialogIndex}
+            remainingGuesses={props.gameState.lifePoints}
           />
         );
       case 8:
@@ -73,6 +77,7 @@ const inputSquares = (
             handleOpen={handleOpen}
             gridIndex={index}
             setDialogIndex={setDialogIndex}
+            remainingGuesses={props.gameState.lifePoints}
           />
         );
       default:
@@ -83,6 +88,7 @@ const inputSquares = (
             handleOpen={handleOpen}
             gridIndex={index}
             setDialogIndex={setDialogIndex}
+            remainingGuesses={props.gameState.lifePoints}
           />
         );
     }
@@ -92,7 +98,7 @@ const inputSquares = (
 export default function GameBoard(props: GameBoardPrompts) {
   const [isOpen, setOpen] = useState(false);
   const [dialogGridIndex, setDialogGridIndex] = useState(-1);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = () => setOpen(props.gameState.lifePoints > 0);
   
 
   return (
