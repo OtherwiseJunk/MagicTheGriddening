@@ -16,6 +16,6 @@
         "react"
     ],
     "rules": {
-        "max-len": 140
+        "max-len": [2, {"code": 140}]
     }
 }
