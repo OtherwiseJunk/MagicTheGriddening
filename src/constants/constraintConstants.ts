@@ -35,10 +35,10 @@ import { GameConstraint, ConstraintType } from "@/models/UI/gameConstraint";
 ]
 
 export const rarityConstraints: GameConstraint[] = [
-    new GameConstraint("Mythic", ConstraintType.Rarity),
-    new GameConstraint("Rare", ConstraintType.Rarity),
-    new GameConstraint("Uncommon", ConstraintType.Rarity),
-    new GameConstraint("Common", ConstraintType.Rarity)
+    new GameConstraint("Mythic", ConstraintType.Rarity, "r:m"),
+    new GameConstraint("Rare", ConstraintType.Rarity, "r:r"),
+    new GameConstraint("Uncommon", ConstraintType.Rarity, "r:u"),
+    new GameConstraint("Common", ConstraintType.Rarity, "r:c")
 ]
 
 export const colorConstraints: GameConstraint[] = [
@@ -87,4 +87,4 @@ export const colorConstraints: GameConstraint[] = [
     )
 ]
 
-export const manaValueConstraints: GameConstraint[] = Array.from({ length: 9 }, (_, index) => new GameConstraint(`Mana Value ${index}`, ConstraintType.ManaValue));
+export const manaValueConstraints: GameConstraint[] = Array.from({ length: 9 }, (_, index) => new GameConstraint(`Mana Value ${index}`, ConstraintType.ManaValue, `cmc:${index}`));
