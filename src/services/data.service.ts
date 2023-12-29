@@ -1,5 +1,5 @@
 import { GameConstraint } from "@/models/UI/gameConstraint";
-import { PrismaClient } from "@prisma/client";
+import { PlayerRecord, PrismaClient } from "@prisma/client";
 import { Game } from "../models/database/game";
 import { CorrectGuess } from "@/models/UI/correctGuess";
 import GriddeningService from "./griddening.service";
@@ -43,7 +43,7 @@ export default class DataService{
     return undefined;
   }
 
-  static async getPlayerRecord(gameId: number, playerId: string): Promise<[number, CorrectGuess[]]> {
+  static async getPlayerGameData(gameId: number, playerId: string): Promise<[number, CorrectGuess[]]> {
     const playerRecord =  await this.prisma.playerRecord.findFirst({
       where: {
         playerId: playerId,
@@ -59,5 +59,52 @@ export default class DataService{
       return [playerRecord.lifePoints, correctGuessesForGame]
     }
     return [-1, []];
+  }
+
+  static async getPlayerRecord(playerId: string, gameId: number): Promise<PlayerRecord>{
+    let playerRecord = await this.prisma.playerRecord.findFirst({
+      where:{
+        playerId
+      }
+    }) as PlayerRecord;
+
+    if(playerRecord === null){
+      playerRecord = await this.createNewPlayerRecord(playerId, gameId)
+    }
+
+    return playerRecord;
+  }
+
+  static async createNewPlayerRecord(playerGuid: string, gameId: number): Promise<PlayerRecord>{
+    return await this.prisma.playerRecord.create({
+      data:{
+        playerId: playerGuid,
+        lifePoints: 9,
+        gameId: gameId
+      }
+    }) as PlayerRecord
+  }
+
+  static async updatePlayerLifeValue(playerId: number, newLifepoints: number){
+    await this.prisma.playerRecord.update({
+      where:{
+        id: playerId
+      },
+      data:{
+        lifePoints: newLifepoints
+      }
+    })
+  }
+
+  static async createCorrectGuess(playerId: number, gameId: number, squareIndex: number, cardName: string, cardImageUrl: string): Promise<void>{
+    await this.prisma.correctGuesses.create({
+      data: {
+        playerRecordId: playerId,
+        gameId,
+        squareIndex,
+        correctGuess: cardName,
+        imageSource: cardImageUrl
+      },
+    });
   }
 }
