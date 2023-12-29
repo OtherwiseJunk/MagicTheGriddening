@@ -45,6 +45,7 @@ export const colorConstraints: GameConstraint[] = [
     new GameConstraint(
         "Black",
         ConstraintType.Color,
+        "c:B",
         "swamp.png",
         "A black mana symbol; a poorly drawn skull sillouhete on a dark gray field."
     ),
@@ -59,24 +60,28 @@ export const colorConstraints: GameConstraint[] = [
     new GameConstraint(
         "Red",
         ConstraintType.Color,
+        "c:R",
         "mountain.png",
         "A red mana symbol; a poorly drawn fireball sillouhete on a red field."
     ),
     new GameConstraint(
         "Green",
         ConstraintType.Color,
+        "c:G",
         "forest.png",
         "A green mana symbol; a poorly drawn tree sillouhete on a green field."
     ),
     new GameConstraint(
         "Blue",
         ConstraintType.Color,
+        "c:U",
         "island.png",
         "A blue mana symbol; a poorly drawn water droplet sillouhete on a blue field."
     ),
     new GameConstraint(
         "White",
         ConstraintType.Color,
+        "c:W",
         "plains.png",
         "A white mana symbol; a poorly drawn sun sillouhete on a pale yellow field."
     )
