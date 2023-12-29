@@ -32,7 +32,7 @@ export default class GriddeningService {
         sideRowConstraints,
         constraintDeck
       )
-    ).map(this.removeSetCodeFromSetConstraint);
+    )
   }
 
   static async replaceInvalidConstraints(
@@ -100,7 +100,7 @@ export default class GriddeningService {
     return [...topRowConstraints, ...sideRowConstraints];
   }
 
-  static colorConstraintsMatch(topRowConstraints:GameConstraint[], sideRowConstraints: GameConstraint[]) {
+  static colorConstraintsMatch(topRowConstraints:GameConstraint[], sideRowConstraints: GameConstraint[]): boolean {
     let topRowColorContraint = topRowConstraints.filter(
       (constraint) => constraint.constraintType === ConstraintType.Color
     )[0];
@@ -147,33 +147,15 @@ export default class GriddeningService {
     return [topRowConstraints, sideRowConstraints];
   }
 
-  static removeSetCodeFromSetConstraint(constraint: GameConstraint) {
-    if (constraint.constraintType === ConstraintType.Set) {
-      constraint.displayName = constraint.displayName.split("-")[0].trim();
-    }
-
-    return constraint;
-  }
-
   static async intersectionHasMinimumNumberOfCards(
     gameConstraintOne: GameConstraint,
     gameConstraintTwo: GameConstraint,
     minimumCardCount: number
   ): Promise<boolean> {
-    let query = "";
-    if (
-      gameConstraintOne.constraintType == ConstraintType.Color &&
-      gameConstraintTwo.constraintType == ConstraintType.Color
-    ) {
-      query = ScryfallService.getScryfallQueryForColorPair(gameConstraintOne, gameConstraintTwo)
-    } else {
-      query = `${ScryfallService.getScryfallQueryForConstraint(
-        gameConstraintOne
-      )} ${ScryfallService.getScryfallQueryForConstraint(gameConstraintTwo)}`;
-    }
-
+    let query = `${gameConstraintOne.scryfallQuery} ${gameConstraintTwo.scryfallQuery}`;
+    const cardCount = await ScryfallService.getFirstPageCardCount(query)
     return (
-      (await ScryfallService.getFirstPageCardCount(query)) >= minimumCardCount
+      cardCount >= minimumCardCount
     );
   }
 
@@ -196,6 +178,44 @@ export default class GriddeningService {
     }
 
     return [topRowColorConstraint, bottomRowColorConstraint];
+  }
+
+  static getGameConstraintsForIndex(gameConstraints: GameConstraint[], squareIndex: number){
+    let intersectingConstraints: GameConstraint[] = [];
+    const topRow = gameConstraints.slice(0, 3);
+    const bottomRow = gameConstraints.slice(3);
+
+    switch (squareIndex) {
+      case 0:
+        intersectingConstraints = [topRow[0], bottomRow[0]];
+        break;
+      case 1:
+        intersectingConstraints = [topRow[1], bottomRow[0]];
+        break;
+      case 2:
+        intersectingConstraints = [topRow[2], bottomRow[0]];
+        break;
+      case 3:
+        intersectingConstraints = [topRow[0], bottomRow[1]];
+        break;
+      case 4:
+        intersectingConstraints = [topRow[1], bottomRow[1]];
+        break;
+      case 5:
+        intersectingConstraints = [topRow[2], bottomRow[1]];
+        break;
+      case 6:
+        intersectingConstraints = [topRow[0], bottomRow[2]];
+        break;
+      case 7:
+        intersectingConstraints = [topRow[1], bottomRow[2]];
+        break;
+      case 8:
+        intersectingConstraints = [topRow[2], bottomRow[2]];
+        break;
+    }
+
+    return intersectingConstraints;
   }
 
   static selectRandomConstraintOfType(
