@@ -10,6 +10,7 @@ class InputSquareProps {
   handleOpen: Function = () =>{};
   gridIndex: number = -1;
   setDialogIndex: Function = () =>{};
+  remainingGuesses: number = -1;
 }
 
 function getPositionalStyleClass(props: InputSquareProps) {
@@ -27,19 +28,18 @@ function getPositionalStyleClass(props: InputSquareProps) {
 
 export default function InputSquare(props: InputSquareProps) {
   const positionalStyle = getPositionalStyleClass(props);
-
+  const liveGameClass = props.remainingGuesses > 0 ? 'live-input' : '';
 
   if (props.correctGuess)
     return (
       <div className={positionalStyle}>
-        <img
-          className="correct-answer"
+        <img        
           alt={props.correctGuess.cardName}
           src={props.correctGuess.imageUrl}
         />
       </div>
     );
-  return <div className={positionalStyle} onClick={() => {
+  return <div className={`${positionalStyle} ${liveGameClass}`} onClick={() => {
     props.setDialogIndex(props.gridIndex);
     props.handleOpen()
   }}></div>;
