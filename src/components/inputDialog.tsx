@@ -1,6 +1,7 @@
 import { GameConstraint, ConstraintType } from "@/models/UI/gameConstraint";
 import { GameState } from "@/models/UI/gameState";
 import ScryfallService from "@/services/scryfall.service";
+import GriddeningService from "@/services/griddening.service";
 import { ThemeProvider } from "@emotion/react";
 import {
   Dialog,
@@ -10,6 +11,7 @@ import {
   Button,
   createTheme,
 } from "@mui/material";
+import { useLocalStorage } from "@uidotdev/usehooks";
 import { Eczar } from "next/font/google";
 import { useState } from "react";
 import { Card } from "scryfall-sdk";
@@ -131,41 +133,8 @@ const getConstraintsText = (
   constraints: GameConstraint[],
   squareIndex: number
 ): string => {
-  const topRow = constraints.slice(0, 3);
-  const bottomRow = constraints.slice(3);
-  let constraintsText = "";
-
-  switch (squareIndex) {
-    case 0:
-      constraintsText = getTextForConstraints(topRow[0], bottomRow[0]);
-      break;
-    case 1:
-      constraintsText = getTextForConstraints(topRow[1], bottomRow[0]);
-      break;
-    case 2:
-      constraintsText = getTextForConstraints(topRow[2], bottomRow[0]);
-      break;
-    case 3:
-      constraintsText = getTextForConstraints(topRow[0], bottomRow[1]);
-      break;
-    case 4:
-      constraintsText = getTextForConstraints(topRow[1], bottomRow[1]);
-      break;
-    case 5:
-      constraintsText = getTextForConstraints(topRow[2], bottomRow[1]);
-      break;
-    case 6:
-      constraintsText = getTextForConstraints(topRow[0], bottomRow[2]);
-      break;
-    case 7:
-      constraintsText = getTextForConstraints(topRow[1], bottomRow[2]);
-      break;
-    case 8:
-      constraintsText = getTextForConstraints(topRow[2], bottomRow[2]);
-      break;
-  }
-
-  return constraintsText;
+  const [constraintOne, constraintTwo] = GriddeningService.getGameConstraintsForIndex(constraints, squareIndex);
+  return constraintOne !== undefined ? getTextForConstraints(constraintOne, constraintTwo) : '';
 };
 
 const darkTheme = createTheme({
@@ -173,6 +142,23 @@ const darkTheme = createTheme({
     mode: "dark",
   },
 });
+
+const submitAnswer = async (playerId: string, squareIndex: number, guess: string) =>{ 
+  
+  const response = await fetch(`/api/submitAnswer`,{
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      playerId,
+      squareIndex,
+      guess
+    })
+  });
+
+  return response.status === 200;
+}
 
 type InputProps = {
   gameState: GameState;
@@ -200,6 +186,10 @@ export default function InputDialog(props: InputProps) {
       });
     }
   };
+  const [userId, _] = useLocalStorage(
+    "griddening.userId",
+    crypto.randomUUID()
+  );
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -236,7 +226,16 @@ export default function InputDialog(props: InputProps) {
             className="blue-background my-5 p-2 float-right"
             variant="outlined"
             onClick={async () => {
-              console.log(await ScryfallService.cardExists(currentValue));
+              if(currentValue){
+                if(await submitAnswer(userId, props.dialogGridIndex, currentValue)){                                  
+                }                
+                setCardOptions([]);
+                handleClose();
+                props.setGameState({
+                  ...props.gameState,
+                  lifePoints: props.gameState.lifePoints - 1
+                });
+              }
             }}
           >
             Submit
