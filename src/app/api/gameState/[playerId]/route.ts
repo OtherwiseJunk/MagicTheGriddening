@@ -6,7 +6,7 @@ import { type CorrectGuess } from '@/models/UI/correctGuess'
 export async function GET (
   request: Request,
   { params }: { params: { playerId: string } }
-) {
+): Promise<Response> {
   const gameState = await buildGameStateForUser(params.playerId)
   if (gameState.gameConstraints.length > 0) {
     return new Response(JSON.stringify(gameState))
@@ -30,7 +30,7 @@ async function buildGameStateForUser (playerId: string): Promise<GameState> {
 
 async function getGameData (): Promise<[GameConstraint[], number]> {
   const game = await DataService.getTodaysGame()
-  if (!game) {
+  if (game === undefined) {
     console.log("Ran into an issue getting today's game :(")
     return [[], 0]
   }

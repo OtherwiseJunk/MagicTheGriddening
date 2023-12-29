@@ -10,7 +10,7 @@ interface SubmitRequest {
   guess: string
 }
 
-export async function POST (request: Request) {
+export async function POST (request: Request):Promise<Response> {
   const args = await request.json() as SubmitRequest
   const game = await DataService.getTodaysGame()
   const constraints = JSON.parse(game!.constraintsJSON) as GameConstraint[]
@@ -20,7 +20,7 @@ export async function POST (request: Request) {
   const player: PlayerRecord = await DataService.getPlayerRecord(args.playerId, game!.id)
   const card = cards.find((card) => card.name === args.guess)
 
-  if (card) {
+  if (card !== undefined) {
     const imageUrl = card.image_uris ? card.image_uris.png : card.card_faces[0].image_uris!.png
     await DataService.createCorrectGuess(player.id, game!.id, args.squareIndex, card.name, imageUrl)
     await DataService.updatePlayerLifeValue(player.id, player.lifePoints - 1)

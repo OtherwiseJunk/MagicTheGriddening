@@ -3,11 +3,11 @@ import { type GameConstraint } from '@/models/UI/gameConstraint'
 import GriddeningService from '@/services/griddening.service'
 import DataService from '@/services/data.service'
 
-export async function GET (request: Request, { params }: { params: { days: string } }) {
+export async function GET (request: Request, { params }: { params: { days: string } }): Promise<Response> {
   await (async () => {
     const latestGame = await DataService.getNewestGame()
     let startingOffset = 0
-    if (latestGame) {
+    if (latestGame !== undefined) {
       const dateOne = latestGame.dateStringToDate()
       const dateTwo = new Date()
       dateTwo.setHours(0, 0, 0, 0)
@@ -18,7 +18,9 @@ export async function GET (request: Request, { params }: { params: { days: strin
       const constraintDeck = await GriddeningService.createConstraintDeck()
       console.log(`Creating day ${daysOffset + 1} puzzle`)
       const t0 = performance.now()
-      const validGameConstraints = await GriddeningService.selectValidConstraints(constraintDeck.map((constraint: GameConstraint) => constraint))
+      const validGameConstraints = await GriddeningService.selectValidConstraints(constraintDeck.map(
+        (constraint: GameConstraint) => constraint)
+      )
       const t1 = performance.now()
       console.log(`took ${(t1 - t0) / 1000} seconds.`)
 
