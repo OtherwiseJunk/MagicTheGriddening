@@ -123,7 +123,7 @@ const getTextForConstraints = (
   }
   if (typeOne === ConstraintType.Color || typeTwo === ConstraintType.Color) {
     return typeOne === ConstraintType.Color
-      ? `Name a  ${constraintOne.displayName} ${constraintTwo.displayName} card.`
+      ? `Name a ${constraintOne.displayName} ${constraintTwo.displayName} card.`
       : `Name a ${constraintTwo.displayName} ${constraintOne.displayName} card.`;
   }
   return `Name ${artcileOne} ${constraintOne.displayName} ${constraintTwo.displayName} card.`;
@@ -133,8 +133,11 @@ const getConstraintsText = (
   constraints: GameConstraint[],
   squareIndex: number
 ): string => {
-  const [constraintOne, constraintTwo] = GriddeningService.getGameConstraintsForIndex(constraints, squareIndex);
-  return constraintOne !== undefined ? getTextForConstraints(constraintOne, constraintTwo) : '';
+  const [constraintOne, constraintTwo] =
+    GriddeningService.getGameConstraintsForIndex(constraints, squareIndex);
+  return constraintOne !== undefined
+    ? getTextForConstraints(constraintOne, constraintTwo)
+    : "";
 };
 
 const darkTheme = createTheme({
@@ -143,22 +146,25 @@ const darkTheme = createTheme({
   },
 });
 
-const submitAnswer = async (playerId: string, squareIndex: number, guess: string) =>{ 
-  
-  const response = await fetch(`/api/submitAnswer`,{
-    method: 'POST',
+const submitAnswer = async (
+  playerId: string,
+  squareIndex: number,
+  guess: string
+) => {
+  const response = await fetch(`/api/submitAnswer`, {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       playerId,
       squareIndex,
-      guess
-    })
+      guess,
+    }),
   });
 
   return response.status === 200;
-}
+};
 
 type InputProps = {
   gameState: GameState;
@@ -170,13 +176,13 @@ type InputProps = {
 
 export default function InputDialog(props: InputProps) {
   const [cardOptions, setCardOptions] = useState([] as string[]);
-  const [currentValue, setCurrentValue] = useState('');
+  const [currentValue, setCurrentValue] = useState("");
   const handleClose = () => props.setIsOpen(false);
 
   const updateCardOptions = (newValue: string | null) => {
-    setCurrentValue(newValue ?? '');
+    setCurrentValue(newValue ?? "");
 
-    if (newValue !== null && newValue.length >= 4) {
+    if (newValue !== null && newValue.length >= 3) {
       ScryfallService.getCards(newValue).then((foundCards: Card[]) => {
         setCardOptions(
           foundCards
@@ -186,10 +192,7 @@ export default function InputDialog(props: InputProps) {
       });
     }
   };
-  const [userId, _] = useLocalStorage(
-    "griddening.userId",
-    crypto.randomUUID()
-  );
+  const [userId, _] = useLocalStorage("griddening.userId", crypto.randomUUID());
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -209,31 +212,35 @@ export default function InputDialog(props: InputProps) {
             )}
           </InputLabel>
           <Autocomplete
-            onInputChange={(_, newValue) =>{
-                updateCardOptions(newValue);
+            onInputChange={(_, newValue) => {
+              updateCardOptions(newValue);
             }}
             id="card-search"
             options={cardOptions}
             sx={{ width: 500, margin: 2 }}
-            filterOptions={(x) => x}            
+            filterOptions={(x) => x}
             renderInput={(params) => (
-              <TextField 
-              {...params} 
-              label="Card Search..." />
+              <TextField {...params} label="Card Search..." />
             )}
           />
           <Button
             className="blue-background my-5 p-2 float-right"
             variant="outlined"
             onClick={async () => {
-              if(currentValue){
-                if(await submitAnswer(userId, props.dialogGridIndex, currentValue)){                                  
-                }                
+              if (currentValue) {
+                if (
+                  await submitAnswer(
+                    userId,
+                    props.dialogGridIndex,
+                    currentValue
+                  )
+                ) {
+                }
                 setCardOptions([]);
                 handleClose();
                 props.setGameState({
                   ...props.gameState,
-                  lifePoints: props.gameState.lifePoints - 1
+                  lifePoints: props.gameState.lifePoints - 1,
                 });
               }
             }}
