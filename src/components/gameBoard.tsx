@@ -2,19 +2,19 @@
 
 import { type GameState } from '@/models/UI/gameState'
 import InputSquare from './inputSquare'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import InputDialog from './inputDialog'
 
 interface GameBoardPrompts {
   gameState: GameState
-  setGameState: Function
+  setGameState: (gameState: GameState) => void
 }
 
 const inputSquares = (
   props: GameBoardPrompts,
-  handleOpen: Function,
-  setDialogIndex: Function
-) => {
+  handleOpen: () => void,
+  setDialogIndex: (index: number) => void
+):React.JSX.Element[] => {
   return Array.from({ length: 9 }, (value, index) => index).map((_, index) => {
     const correctGuess = props.gameState.correctGuesses.find(
       (correctGuess) => correctGuess.squareIndex === index
@@ -95,10 +95,10 @@ const inputSquares = (
   })
 }
 
-export default function GameBoard (props: GameBoardPrompts) {
+export default function GameBoard (props: GameBoardPrompts): React.JSX.Element {
   const [isOpen, setOpen] = useState(false)
   const [dialogGridIndex, setDialogGridIndex] = useState(-1)
-  const handleOpen = () => { setOpen(props.gameState.lifePoints > 0) }
+  const handleOpen = (): void => { setOpen(props.gameState.lifePoints > 0) }
 
   return (
     <div className="grid col-span-3 row-span-3 grid-cols-3 grid-rows-3">

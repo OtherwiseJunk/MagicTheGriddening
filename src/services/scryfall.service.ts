@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-extraneous-class */
 import * as Scry from 'scryfall-sdk'
 import { ConstraintType, GameConstraint } from '@/models/UI/gameConstraint'
 
@@ -31,14 +32,14 @@ export default class ScryfallService {
 
       const santizedName = this.santizeSetName(set.name)
 
-      if (!santizedName) return
+      if (santizedName.length === 0) return
 
       sanitizedSets.push(set)
     })
 
     const pioneerSets: Scry.Set[] = sanitizedSets.filter((set) => {
-      const releaseDate = set.released_at
-      const releaseYear = parseInt(releaseDate!.split('-')[0])
+      const releaseDate = set.released_at ?? '1993-01-01'
+      const releaseYear = parseInt(releaseDate.split('-')[0])
       if (releaseYear > 2012) {
         return true
       } else if (releaseDate === '2012-10-05') {

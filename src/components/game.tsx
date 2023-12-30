@@ -1,37 +1,46 @@
-'use client'
+"use client";
 
-import { GameState } from '@/models/UI/gameState'
-import { useEffect, useState } from 'react'
-import GameBoard from './gameBoard'
-import HeaderSquare from './headerSquare'
-import { type GameConstraint } from '@/models/UI/gameConstraint'
-import { useLocalStorage } from '@uidotdev/usehooks'
+import { GameState } from "@/models/UI/gameState";
+import React, { useEffect, useState } from "react";
+import GameBoard from "./gameBoard";
+import HeaderSquare from "./headerSquare";
+import { type GameConstraint } from "@/models/UI/gameConstraint";
+import { useLocalStorage } from "@uidotdev/usehooks";
 
-export default function Game () {
+export default function Game(): React.JSX.Element {
   const [gameState, setGameState] = useState<GameState>(
     new GameState([], -1, [])
-  )
-  const [userId, setUserId] = useLocalStorage(
-    'griddening.userId',
-    crypto.randomUUID()
-  )
-  function getGameState () {
-    fetch(`/api/gameState/${userId}`)
+  );
+  const [userId] = useLocalStorage("griddening.userId", crypto.randomUUID());
+  async function getGameState(): Promise<void> {
+    await fetch(`/api/gameState/${userId}`)
       .then(async (res) => await res.json())
       .then((data: GameState) => {
-        setGameState(data)
-      })
+        setGameState(data);
+      });
   }
 
   useEffect(() => {
-    getGameState()
-  }, [gameState.lifePoints])
+    void getGameState();
+  }, [gameState.lifePoints]);
 
-  const lifePointsString = `Life Points: ${gameState.lifePoints}`
-  const gameConstraints: GameConstraint[] = gameState.gameConstraints
+  const lifePointsString = `Life Points: ${gameState.lifePoints}`;
+  const gameConstraints: GameConstraint[] = gameState.gameConstraints;
 
   return (
-    <div className="paper-texture m-auto max-h-max max-w-max logo bordered container text-[10px] md:text-l lg:text-xl bg-yellow-950 p-2 lg:p-5">
+    <div className="paper-texture
+    m-auto
+    max-h-max
+    max-w-max
+    logo bordered
+    container
+    text-[10px]
+    md:text-l
+    lg:text-xl
+  bg-yellow-950
+    p-2
+    lg:p-5"
+    >
       <div className="grid grid-rows-4 grid-cols-5 text-center">
         <HeaderSquare
           text=""
@@ -59,7 +68,7 @@ export default function Game () {
           imageSource={gameConstraints[3]?.imageSrc}
           imageAltText={gameConstraints[3]?.imageAltText}
         />
-        <GameBoard gameState ={gameState} setGameState={setGameState}/>
+        <GameBoard gameState={gameState} setGameState={setGameState} />
         <HeaderSquare text="" imageSource="" imageAltText="" />
         <HeaderSquare
           text={gameConstraints[4]?.displayName}
@@ -75,5 +84,5 @@ export default function Game () {
         <HeaderSquare text="" imageSource="" imageAltText="" />
       </div>
     </div>
-  )
+  );
 }

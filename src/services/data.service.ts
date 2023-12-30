@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-extraneous-class */
 import { type GameConstraint } from '@/models/UI/gameConstraint'
 import { type PlayerRecord, PrismaClient } from '@prisma/client'
 import { Game } from '../models/database/game'
@@ -14,10 +15,7 @@ export default class DataService {
       }
     })
 
-    if (game) {
-      return new Game(game.id, game.dateString, game.constraintsJSON)
-    }
-    return undefined
+    return new Game(game.id, game.dateString, game.constraintsJSON)
   }
 
   static async getNewestGame (): Promise<Game | undefined> {
@@ -37,7 +35,7 @@ export default class DataService {
       }
     }))
 
-    if (game) {
+    if (game !== null) {
       return new Game(game.id, game.dateString, game.constraintsJSON)
     }
     return undefined
@@ -54,19 +52,21 @@ export default class DataService {
       }
     })
 
-    if (playerRecord) {
-      const correctGuessesForGame = playerRecord.correctGuesses.filter((guess) => guess.gameId === gameId).map((guess) => new CorrectGuess(guess.correctGuess, guess.imageSource, guess.squareIndex))
+    if (playerRecord != null) {
+      const correctGuessesForGame = playerRecord.correctGuesses.filter(
+        (guess) => guess.gameId === gameId
+      ).map((guess) => new CorrectGuess(guess.correctGuess, guess.imageSource, guess.squareIndex))
       return [playerRecord.lifePoints, correctGuessesForGame]
     }
     return [-1, []]
   }
 
   static async getPlayerRecord (playerId: string, gameId: number): Promise<PlayerRecord> {
-    let playerRecord = (await this.prisma.playerRecord.findFirst({
+    let playerRecord = await this.prisma.playerRecord.findFirst({
       where: {
         playerId
       }
-    }))!
+    })
 
     if (playerRecord === null) {
       playerRecord = await this.createNewPlayerRecord(playerId, gameId)
@@ -85,7 +85,7 @@ export default class DataService {
     })
   }
 
-  static async updatePlayerLifeValue (playerId: number, newLifepoints: number) {
+  static async updatePlayerLifeValue (playerId: number, newLifepoints: number): Promise<void> {
     await this.prisma.playerRecord.update({
       where: {
         id: playerId
@@ -96,7 +96,13 @@ export default class DataService {
     })
   }
 
-  static async createCorrectGuess (playerId: number, gameId: number, squareIndex: number, cardName: string, cardImageUrl: string): Promise<void> {
+  static async createCorrectGuess (
+    playerId: number,
+    gameId: number,
+    squareIndex: number,
+    cardName: string,
+    cardImageUrl: string
+  ): Promise<void> {
     await this.prisma.correctGuesses.create({
       data: {
         playerRecordId: playerId,

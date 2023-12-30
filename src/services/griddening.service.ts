@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-extraneous-class */
 import { colorConstraints, manaValueConstraints, rarityConstraints, typeConstraints } from '@/constants/constraintConstants'
 import { ConstraintType, type GameConstraint } from '@/models/UI/gameConstraint'
 import ScryfallService from './scryfall.service'
 
 export default class GriddeningService {
-  static async selectValidConstraints (constraintDeck: GameConstraint[]) {
+  static async selectValidConstraints (constraintDeck: GameConstraint[]): Promise<GameConstraint[]> {
     const solitaryConstraintTypes = [ConstraintType.Rarity, ConstraintType.ManaValue, ConstraintType.Type, ConstraintType.Set]
     const [topRowColorConstraint, bottomRowColorConstraint] =
       this.getColorConstraints(constraintDeck)
@@ -38,7 +39,7 @@ export default class GriddeningService {
     topRowConstraints: GameConstraint[],
     sideRowConstraints: GameConstraint[],
     constraintDeck: GameConstraint[]
-  ) {
+  ): Promise<GameConstraint[]> {
     let allIntersectionsValidated = false
     while (!allIntersectionsValidated) {
       for (let i = 0; i < topRowConstraints.length; i++) {
@@ -91,7 +92,7 @@ export default class GriddeningService {
           break
         }
 
-        if (i == 2) {
+        if (i === 2) {
           allIntersectionsValidated = true
         }
       }
@@ -118,7 +119,7 @@ export default class GriddeningService {
     sideRowConstraints: GameConstraint[],
     sideIndex: number,
     constraintDeck: GameConstraint[]
-  ) {
+  ): GameConstraint[][] {
     sideRowConstraints[sideIndex] = this.selectRandomConstraintOfType(
       constraintDeck,
       sideRowConstraints[sideIndex].constraintType
@@ -158,7 +159,7 @@ export default class GriddeningService {
     )
   }
 
-  static getColorConstraints (constraintDeck: GameConstraint[]) {
+  static getColorConstraints (constraintDeck: GameConstraint[]): GameConstraint[] {
     const topRowColorConstraint = this.selectRandomConstraintOfType(
       constraintDeck,
       ConstraintType.Color
@@ -179,7 +180,7 @@ export default class GriddeningService {
     return [topRowColorConstraint, bottomRowColorConstraint]
   }
 
-  static getGameConstraintsForIndex (gameConstraints: GameConstraint[], squareIndex: number) {
+  static getGameConstraintsForIndex (gameConstraints: GameConstraint[], squareIndex: number): GameConstraint[] {
     let intersectingConstraints: GameConstraint[] = []
     const topRow = gameConstraints.slice(0, 3)
     const bottomRow = gameConstraints.slice(3)
@@ -220,7 +221,7 @@ export default class GriddeningService {
   static selectRandomConstraintOfType (
     constraintDeck: GameConstraint[],
     type: ConstraintType
-  ) {
+  ): GameConstraint {
     return this.shuffleArray(
       constraintDeck.filter((constraint) => constraint.constraintType === type)
     )[0]

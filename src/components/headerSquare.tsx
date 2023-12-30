@@ -1,10 +1,11 @@
-import { text } from 'stream/consumers'
+import React from 'react';
+import Image from 'next/image'
 
-export default function HeaderSquare (props: { text: string, imageSource: string, imageAltText: string }) {
+export default function HeaderSquare (props: { text: string, imageSource: string, imageAltText: string }): React.JSX.Element {
   let imageBlock
   let textBlock = <div>{props.text}</div>
-  if (props.imageSource) {
-    imageBlock = <img
+  if (props.imageSource.length !== 0) {
+    imageBlock = <Image
         className="logo bordered top-left top-right bottom-left bottom-right break-all"
         alt={props.imageAltText}
         src={props.imageSource}

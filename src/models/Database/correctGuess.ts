@@ -8,7 +8,7 @@ export class CorrectGuess {
     public imageSource: string
   ) {}
 
-  toUIObject () {
+  toUIObject (): object {
     return {
       cardName: this.correctGuess,
       imageUrl: this.imageSource,

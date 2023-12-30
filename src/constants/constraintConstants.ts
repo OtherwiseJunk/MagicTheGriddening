@@ -34,7 +34,9 @@ const cardTypes = [
   'Treefolk'
 ]
 
-export const typeConstraints: GameConstraint[] = cardTypes.map((cardType) => new GameConstraint(cardType, ConstraintType.Type, `t:${cardType}`))
+export const typeConstraints: GameConstraint[] = cardTypes.map(
+  (cardType) => new GameConstraint(cardType, ConstraintType.Type, `t:${cardType}`)
+)
 
 export const rarityConstraints: GameConstraint[] = [
   new GameConstraint('Mythic', ConstraintType.Rarity, 'r:m'),
