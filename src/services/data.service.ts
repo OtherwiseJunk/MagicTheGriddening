@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 import { type GameConstraint } from '@/models/UI/gameConstraint'
 import { type PlayerRecord, PrismaClient } from '@prisma/client'
-import { Game } from '../models/database/game'
+import { Game } from '@/models/database/game'
 import { CorrectGuess } from '@/models/UI/correctGuess'
 import GriddeningService from './griddening.service'
 
