@@ -18,9 +18,9 @@ export default function Game(): React.JSX.Element {
         setGameState(data);
       });
   }
+  const [userId] = useLocalStorage("griddening.userId", crypto.randomUUID());
 
-  useEffect(() => {
-    const [userId] = useLocalStorage("griddening.userId", crypto.randomUUID());
+  useEffect(() => {    
     void getGameState(userId);
   }, [gameState.lifePoints]);
 

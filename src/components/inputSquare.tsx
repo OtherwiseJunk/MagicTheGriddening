@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { type CorrectGuess } from '@/models/UI/correctGuess'
 import React from 'react';
 import Image from 'next/image';
@@ -35,7 +36,7 @@ export default function InputSquare (props: InputSquareProps): React.JSX.Element
   if (props.correctGuess !== undefined) {
     return (
       <div className={positionalStyle}>
-        <Image
+        <img
           alt={props.correctGuess.cardName}
           src={props.correctGuess.imageUrl}
         />
