@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { type CorrectGuess } from '@/models/UI/correctGuess'
 import React from 'react';
-import Image from 'next/image';
+// import Image from 'next/image';
 
 class InputSquareProps {
   topLeftCorner?: boolean = false

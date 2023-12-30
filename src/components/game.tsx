@@ -5,12 +5,12 @@ import React, { useEffect, useState } from "react";
 import GameBoard from "./gameBoard";
 import HeaderSquare from "./headerSquare";
 import { type GameConstraint } from "@/models/UI/gameConstraint";
-import { useLocalStorage } from "@uidotdev/usehooks";
 
 export default function Game(): React.JSX.Element {
   const [gameState, setGameState] = useState<GameState>(
     new GameState([], -1, [])
-  );  
+  );
+  const [userId, setUserId] = useState<string>('');
   async function getGameState(userId: string): Promise<void> {
     await fetch(`/api/gameState/${userId}`)
       .then(async (res) => await res.json())
@@ -18,11 +18,21 @@ export default function Game(): React.JSX.Element {
         setGameState(data);
       });
   }
-  const [userId] = useLocalStorage("griddening.userId", crypto.randomUUID());
 
-  useEffect(() => {    
+  useEffect(() =>{
+    let storedUserId: string | null = localStorage.getItem('griddening.userId');
+    if(storedUserId == null){
+      storedUserId = crypto.randomUUID()
+      localStorage.setItem('griddening.userId', storedUserId);
+    }
+
+    setUserId(storedUserId);
+  }, [])
+
+  useEffect(() => {
+    console.log(`Firing useEffect. User Id: ${userId}`)
     void getGameState(userId);
-  }, [gameState.lifePoints]);
+  }, [gameState.lifePoints, userId]);
 
   const lifePointsString = `Life Points: ${gameState.lifePoints}`;
   const gameConstraints: GameConstraint[] = gameState.gameConstraints;
