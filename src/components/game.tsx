@@ -10,9 +10,8 @@ import { useLocalStorage } from "@uidotdev/usehooks";
 export default function Game(): React.JSX.Element {
   const [gameState, setGameState] = useState<GameState>(
     new GameState([], -1, [])
-  );
-  const [userId] = useLocalStorage("griddening.userId", crypto.randomUUID());
-  async function getGameState(): Promise<void> {
+  );  
+  async function getGameState(userId: string): Promise<void> {
     await fetch(`/api/gameState/${userId}`)
       .then(async (res) => await res.json())
       .then((data: GameState) => {
@@ -21,7 +20,8 @@ export default function Game(): React.JSX.Element {
   }
 
   useEffect(() => {
-    void getGameState();
+    const [userId] = useLocalStorage("griddening.userId", crypto.randomUUID());
+    void getGameState(userId);
   }, [gameState.lifePoints]);
 
   const lifePointsString = `Life Points: ${gameState.lifePoints}`;

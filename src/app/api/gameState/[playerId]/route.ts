@@ -8,7 +8,7 @@ export async function GET (
   { params }: { params: { playerId: string } }
 ): Promise<Response> {
   const gameState = await buildGameStateForUser(params.playerId)
-  if (gameState.gameConstraints.length > 0) {
+  if (gameState.gameConstraints !== undefined && gameState.gameConstraints.length > 0) {
     return new Response(JSON.stringify(gameState))
   }
 

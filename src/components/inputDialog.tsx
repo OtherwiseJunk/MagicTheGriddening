@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { Eczar } from "next/font/google";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { type Card } from "scryfall-sdk";
 
 const dialogFont = Eczar({ subsets: ["latin"] });
@@ -199,7 +199,12 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
       });
     }
   };
-  const [userId] = useLocalStorage("griddening.userId", crypto.randomUUID());
+  const[userId, setUserId] = useState("");
+
+  useEffect(() =>{
+    const [storedUserId] = useLocalStorage("griddening.userId", crypto.randomUUID());
+    setUserId(storedUserId);
+  }, []);
 
   return (
     <ThemeProvider theme={darkTheme}>
