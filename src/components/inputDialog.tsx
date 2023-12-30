@@ -194,7 +194,9 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
         setCardOptions(
           foundCards
             .map((card) => card.name)
-            .filter((cardName) => cardName.includes(newValue))
+            .filter((cardName) =>
+              cardName.toLowerCase().includes(newValue.toLowerCase())
+            )
         );
       });
     }
