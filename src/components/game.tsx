@@ -4,6 +4,7 @@ import { GameState } from "@/models/UI/gameState";
 import React, { useEffect, useState } from "react";
 import GameBoard from "./gameBoard";
 import HeaderSquare from "./headerSquare";
+import SummarySquare from "./summarySquare";
 import { type GameConstraint } from "@/models/UI/gameConstraint";
 
 export default function Game(): React.JSX.Element {
@@ -30,8 +31,9 @@ export default function Game(): React.JSX.Element {
   }, [])
 
   useEffect(() => {
-    console.log(`Firing useEffect. User Id: ${userId}`)
-    void getGameState(userId);
+    if(userId !== ''){
+      void getGameState(userId);
+    }    
   }, [gameState.lifePoints, userId]);
 
   const lifePointsString = `Life Points: ${gameState.lifePoints}`;
@@ -72,7 +74,7 @@ export default function Game(): React.JSX.Element {
           imageSource={gameConstraints[2]?.imageSrc}
           imageAltText={gameConstraints[2]?.imageAltText}
         />
-        <HeaderSquare text="" imageSource="" imageAltText="" />
+        <SummarySquare hidden={gameState.lifePoints > 0} correctGuesses={gameState.correctGuesses}></SummarySquare>
         <HeaderSquare
           text={gameConstraints[3]?.displayName}
           imageSource={gameConstraints[3]?.imageSrc}

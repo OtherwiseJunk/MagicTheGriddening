@@ -7,20 +7,22 @@ services:
       context: .
       dockerfile: ./Dockerfile
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
     ports:
       - 3000:3000
+    command: ["npm", "run", "dev"]
 
   postgres:
     image: postgres:14-alpine
     ports:
       - 5432:5432
     volumes:
-      - postgres-volume:/var/lib/postgresql/data
+      - postgres-data-volume:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=griddening
+    command: ["node", "--inspect=0.0.0.0:9229", "index.js"]
 
 volumes:
-  postgres-volume:
+  postgres-data-volume:
