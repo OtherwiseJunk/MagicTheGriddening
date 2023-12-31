@@ -46,6 +46,7 @@ USER nextjs
 EXPOSE 3000
 
 ENV NEXT_SHARP_PATH /app/node_modules/sharp
+ENV DATABASE_URL "postgresql://postgres:postgres@postgres:5432/griddening?schema=public"
 ENV PORT 3000
 # set hostname to localhost
 ENV HOSTNAME "0.0.0.0"
