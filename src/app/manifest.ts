@@ -9,11 +9,11 @@ export default function manifest(): MetadataRoute.Manifest {
         display: 'standalone',
         background_color: '#3A1300',
         theme_color: '#3a3aec',
-        icons:[
+        icons: [
             {
-                src: '/favicon-app.ico',
+                src: '/magic-the-griddening-app-logo.png',
                 sizes: 'any',
-                type: 'image/x-icon'
+                type: 'image/png'
             }
         ]
     }
