@@ -14,36 +14,45 @@ const darkTheme = createTheme({
   },
 });
 
-const defaultSummaryGrid = ['🟥','🟥','🟥','🟥','🟥','🟥','🟥','🟥','🟥'];
+const defaultSummaryGrid = [
+  "🟥",
+  "🟥",
+  "🟥",
+  "🟥",
+  "🟥",
+  "🟥",
+  "🟥",
+  "🟥",
+  "🟥",
+];
 
-function generateSummaryText(correctGuesses: CorrectGuess[]): string{
-    const mappedSummaryGrid =  defaultSummaryGrid.map((x) => x);
-    correctGuesses.forEach((correctGuess) =>{
-        mappedSummaryGrid[correctGuess.squareIndex] = '✅';
-    })
-    const resultsGrid = formatGridSummaryToString(mappedSummaryGrid);
-    const summaryText =
-`🧙 Magic: The Griddening Summary 🧙
+function generateSummaryText(correctGuesses: CorrectGuess[]): string {
+  const mappedSummaryGrid = defaultSummaryGrid.map((x) => x);
+  correctGuesses.forEach((correctGuess) => {
+    mappedSummaryGrid[correctGuess.squareIndex] = "✅";
+  });
+  const resultsGrid = formatGridSummaryToString(mappedSummaryGrid);
+  const summaryText = `🧙 Magic: The Griddening Summary 🧙
 Score: ${correctGuesses.length}/9
 
 ${resultsGrid}
 
-Play at: https://mtg.cacheblasters.com`;
+Play at: https://magicthegridden.ing/`;
 
-    return summaryText;
+  return summaryText;
 }
 
-function formatGridSummaryToString(gridSummary: string[]): string{
-    let summaryGrid = ''
-    for(let i = 0; i < 9; i++){
-        summaryGrid += `${gridSummary[i]} `
-        if(((i+1) % 3) === 0){
-            summaryGrid += '\r\n'
-            console.log('added rn to summary grid.');
-        }
+function formatGridSummaryToString(gridSummary: string[]): string {
+  let summaryGrid = "";
+  for (let i = 0; i < 9; i++) {
+    summaryGrid += `${gridSummary[i]} `;
+    if ((i + 1) % 3 === 0) {
+      summaryGrid += "\r\n";
+      console.log("added rn to summary grid.");
     }
-    console.log(summaryGrid);
-    return summaryGrid;
+  }
+  console.log(summaryGrid);
+  return summaryGrid;
 }
 
 export default function SummarySquare(props: SummaryProps): React.JSX.Element {
@@ -52,10 +61,13 @@ export default function SummarySquare(props: SummaryProps): React.JSX.Element {
   return (
     <ThemeProvider theme={darkTheme}>
       <div className="flex">
-        <button className="m-auto p-2 game-border paper-texture blue-background" onClick={() =>{
+        <button
+          className="m-auto p-2 game-border paper-texture blue-background"
+          onClick={() => {
             const clipboardText = generateSummaryText(props.correctGuesses);
             void navigator.clipboard.writeText(clipboardText);
-            }}>
+          }}
+        >
           Copy Results
         </button>
       </div>
