@@ -94,6 +94,10 @@ body {
     max-height: 72px;
     line-break: loose;
   }
+  .paper-texture{
+    background-image: url("");
+    background-blend-mode:lighten;
+  }
 }
 
 .blue-background{
