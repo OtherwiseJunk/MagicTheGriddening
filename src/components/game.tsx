@@ -11,7 +11,7 @@ export default function Game(): React.JSX.Element {
   const [gameState, setGameState] = useState<GameState>(
     new GameState([], -1, [])
   );
-  const [userId, setUserId] = useState<string>('');
+  const [userId, setUserId] = useState<string>("");
   async function getGameState(userId: string): Promise<void> {
     await fetch(`/api/gameState/${userId}`)
       .then(async (res) => await res.json())
@@ -20,27 +20,28 @@ export default function Game(): React.JSX.Element {
       });
   }
 
-  useEffect(() =>{
-    let storedUserId: string | null = localStorage.getItem('griddening.userId');
-    if(storedUserId == null){
-      storedUserId = crypto.randomUUID()
-      localStorage.setItem('griddening.userId', storedUserId);
+  useEffect(() => {
+    let storedUserId: string | null = localStorage.getItem("griddening.userId");
+    if (storedUserId == null) {
+      storedUserId = crypto.randomUUID();
+      localStorage.setItem("griddening.userId", storedUserId);
     }
 
     setUserId(storedUserId);
-  }, [])
+  }, []);
 
   useEffect(() => {
-    if(userId !== ''){
+    if (userId !== "") {
       void getGameState(userId);
-    }    
+    }
   }, [gameState.lifePoints, userId]);
 
   const lifePointsString = `Life Points: ${gameState.lifePoints}`;
   const gameConstraints: GameConstraint[] = gameState.gameConstraints;
 
   return (
-    <div className="paper-texture
+    <div
+      className="paper-texture
     m-auto
     max-h-max
     max-w-max
@@ -49,7 +50,6 @@ export default function Game(): React.JSX.Element {
     text-[10px]
     md:text-l
     lg:text-xl
-  bg-yellow-950
     p-2
     lg:p-5"
     >
@@ -74,7 +74,10 @@ export default function Game(): React.JSX.Element {
           imageSource={gameConstraints[2]?.imageSrc}
           imageAltText={gameConstraints[2]?.imageAltText}
         />
-        <SummarySquare hidden={gameState.lifePoints > 0} correctGuesses={gameState.correctGuesses}></SummarySquare>
+        <SummarySquare
+          hidden={gameState.lifePoints > 0}
+          correctGuesses={gameState.correctGuesses}
+        ></SummarySquare>
         <HeaderSquare
           text={gameConstraints[3]?.displayName}
           imageSource={gameConstraints[3]?.imageSrc}

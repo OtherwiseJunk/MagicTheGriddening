@@ -19,7 +19,7 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(24,89,173);
-  background-image: url("/background-texture.png");  
+  background-image: url("/background-texture.png");
   background-blend-mode: multiply;
 }
 
@@ -98,6 +98,14 @@ body {
 
 .blue-background{
   background: rgb(24,89,173);
-  background-image: url("/background-texture.png");  
+  background-image: url("/background-texture.png");
   background-blend-mode: hard-light;
+}
+
+.container{
+  background-color: rgb(66 32 6);
+}
+
+.input-square{
+  background-color: rgb(180 83 9);
 }
