@@ -93,6 +93,7 @@ body {
     max-width: 72px;
     max-height: 72px;
     line-break: loose;
+    color: white
   }
   .paper-texture{
     background-image: url("");
