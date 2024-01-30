@@ -54,6 +54,10 @@ body {
   border-style: ridge;
 }
 
+.input-square{
+  height:132px;
+}
+
 .live-input:hover{
   filter: brightness(1.5)
 }
@@ -83,15 +87,15 @@ body {
 }
 
 .square {
-  max-width: 128px;
-  max-height: 128px;
+  max-width: 132px;
+  max-height: 132px;
   line-break: auto;
 }
 
 @media screen and (max-width: 450px) {
   .square {
-    max-width: 72px;
-    max-height: 72px;
+    max-width: 96px;
+    max-height: 96px;
     line-break: loose;
     color: white
   }

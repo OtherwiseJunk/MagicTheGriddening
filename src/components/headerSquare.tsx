@@ -9,10 +9,10 @@ export default function HeaderSquare (props: { text: string, imageSource: string
         className="logo bordered top-left top-right bottom-left bottom-right break-all"
         alt={props.imageAltText}
         src={props.imageSource}
-        width={64}
-        height={64}
-        sizes="(min-width: 66em) 64px,
-        (min-width:44em) 32px
+        width={72}
+        height={72}
+        sizes="(min-width: 66em) 72px,
+        (min-width:44em) 48px
         (min-width:22em) 16px
         8px"
       />

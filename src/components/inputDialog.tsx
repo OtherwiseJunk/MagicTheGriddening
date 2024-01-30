@@ -223,7 +223,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
           setCardOptions([]);
         }}
       >
-        <div className="paper-texture p-5 bg-amber-700 dialog-border">
+        <div className="paper-texture p-3 bg-amber-700 dialog-border">
           <InputLabel className="p-5">
             {getConstraintsText(
               props.gameState.gameConstraints,
