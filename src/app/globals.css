@@ -56,6 +56,7 @@ body {
 
 .input-square{
   height:132px;
+  width:132px;
 }
 
 .live-input:hover{
