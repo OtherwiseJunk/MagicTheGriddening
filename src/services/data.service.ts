@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
-import { type GameConstraint } from '@/models/UI/gameConstraint'
 import { type PlayerRecord, PrismaClient } from '@prisma/client'
 import { Game } from '@/models/database/game'
 import { CorrectGuess } from '@/models/UI/correctGuess'
@@ -7,16 +6,6 @@ import GriddeningService from './griddening.service'
 
 export default class DataService {
   private static readonly prisma = new PrismaClient()
-  static async createNewGame(dateString: string, validGameConstraints: GameConstraint[]): Promise<Game | undefined> {
-    const game = await this.prisma.game.create({
-      data: {
-        dateString,
-        constraintsJSON: JSON.stringify(validGameConstraints)
-      }
-    })
-
-    return new Game(game.id, game.dateString, game.constraintsJSON)
-  }
 
   static async getNewestGame(): Promise<Game | undefined> {
     const games = await this.prisma.game.findMany()

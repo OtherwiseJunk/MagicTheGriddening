@@ -17,7 +17,7 @@ class InputSquareProps {
 }
 
 function getPositionalStyleClass(props: InputSquareProps): string {
-  let styleClass = "paper-texture square game-border px-4 input-square";
+  let styleClass = "paper-texture square game-border px-2 lg:px-4 input-square";
   if (props.bottomLeftCorner ?? false) styleClass += " bottom-left";
   if (props.bottomRightCorner ?? false) styleClass += " bottom-right";
   if (props.topLeftCorner ?? false) styleClass += " top-left";
@@ -38,7 +38,7 @@ export default function InputSquare(
   if (props.correctGuess !== undefined) {
     return (
       <div className={positionalStyle}>
-        <img
+        <img className="h-full"
           alt={props.correctGuess.cardName}
           src={props.correctGuess.imageUrl}
         />

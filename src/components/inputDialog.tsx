@@ -201,17 +201,17 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
     }
   };
 
-  const [userId, setUserId] = useState<string>('');
+  const [userId, setUserId] = useState<string>("");
 
-  useEffect(() =>{
-    let storedUserId: string | null = localStorage.getItem('griddening.userId');
-    if(storedUserId == null){
-      storedUserId = crypto.randomUUID()
-      localStorage.setItem('griddening.userId', storedUserId);
+  useEffect(() => {
+    let storedUserId: string | null = localStorage.getItem("griddening.userId");
+    if (storedUserId == null) {
+      storedUserId = crypto.randomUUID();
+      localStorage.setItem("griddening.userId", storedUserId);
     }
 
     setUserId(storedUserId);
-  }, [])
+  }, []);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -236,14 +236,20 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
             }}
             id="card-search"
             options={cardOptions}
-            sx={{ width: 500, margin: 2 }}
+            sx={{
+              width: 200,
+              margin: 2,
+              "@media (min-width: 500px)": {
+                width: 500,
+              },
+            }}
             filterOptions={(x) => x}
             renderInput={(params) => (
               <TextField {...params} label="Card Search..." />
             )}
           />
           <Button
-            className="blue-background my-5 p-2 float-right"
+            className="blue-background my-3 p-2 float-right"
             variant="outlined"
             onClick={() => {
               if (currentValue.length > 0) {
@@ -269,4 +275,3 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
     </ThemeProvider>
   );
 }
-
