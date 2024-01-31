@@ -23,40 +23,43 @@ body {
   background-blend-mode: multiply;
 }
 
+.blue-background{
+  background: rgb(24,89,173);
+  background-image: url("/background-texture.png");
+  background-blend-mode: hard-light;
+}
+
+.container{
+  background-color: rgb(66 32 6);
+}
+
+.input-square{
+  background-color: rgb(180 83 9);
+  height:132px;
+  width:132px;
+}
+
 .paper-texture{
   background-image: url("/paper-texture.png");
   background-blend-mode:color-burn;
 }
 
-.game-input-board{
+.bordered{
   border-color: #4f4288;
-  border-width: 10px;
   border-style: ridge;
-  border-radius: 25px;
 }
 
 .logo{
-  border-color: #4f4288;
   border-width: 5px;
-  border-style: ridge;
   border-radius: 25px;
 }
 
 .game-border{
-  border-color: #4f4288;
   border-width: 5px;
-  border-style: ridge;
 }
 
 .dialog-border{
-  border-color: #4f4288;
   border-width: 5px;
-  border-style: ridge;
-}
-
-.input-square{
-  height:132px;
-  width:132px;
 }
 
 .live-input:hover{
@@ -95,8 +98,8 @@ body {
 
 @media screen and (max-width: 450px) {
   .square {
-    max-width: 96px;
-    max-height: 96px;
+    max-width: 90px;
+    max-height: 90px;
     line-break: loose;
     color: white
   }
@@ -104,18 +107,22 @@ body {
     background-image: url("");
     background-blend-mode:lighten;
   }
-}
+  .logo{
+    border-width: 2px;
+    border-radius: 25px;
+  }
+  
+  .game-border{
+    border-width: 2px;
+  }
+  
+  .dialog-border{
+    border-width: 2px;
+  }
 
-.blue-background{
-  background: rgb(24,89,173);
-  background-image: url("/background-texture.png");
-  background-blend-mode: hard-light;
-}
-
-.container{
-  background-color: rgb(66 32 6);
-}
-
-.input-square{
-  background-color: rgb(180 83 9);
+  .input-square{
+    background-color: rgb(180 83 9);
+    height:90px;
+    width:90px;
+  }
 }

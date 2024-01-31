@@ -17,7 +17,7 @@ class InputSquareProps {
 }
 
 function getPositionalStyleClass(props: InputSquareProps): string {
-  let styleClass = "paper-texture square game-border px-2 lg:px-4 input-square";
+  let styleClass = "paper-texture square game-border bordered px-2 lg:px-4 input-square";
   if (props.bottomLeftCorner ?? false) styleClass += " bottom-left";
   if (props.bottomRightCorner ?? false) styleClass += " bottom-right";
   if (props.topLeftCorner ?? false) styleClass += " top-left";

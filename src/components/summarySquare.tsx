@@ -62,7 +62,7 @@ export default function SummarySquare(props: SummaryProps): React.JSX.Element {
     <ThemeProvider theme={darkTheme}>
       <div className="flex">
         <button
-          className="m-auto p-2 game-border paper-texture blue-background text-[12px] md:text-md lg:text-lg square"
+          className="m-auto p-2 game-border bordered paper-texture blue-background text-[12px] md:text-md lg:text-lg square"
           onClick={() => {
             const clipboardText = generateSummaryText(props.correctGuesses);
             void navigator.clipboard.writeText(clipboardText);

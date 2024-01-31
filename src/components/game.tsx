@@ -40,12 +40,12 @@ export default function Game(): React.JSX.Element {
   const gameConstraints: GameConstraint[] = gameState.gameConstraints;
   const summaryHidden = gameState.lifePoints > 0;
   const infoBarClasses =
-    "paper-texture m-auto max-h-max max-w-max logo bordered container p-4 lg:p-5 w-screen grid grid-rows-1  grid-cols-2 lg:text-[20px]";
+    "paper-texture m-auto max-h-max max-w-max logo bordered container p-2 lg:p-5 w-screen grid grid-rows-1  grid-cols-2 lg:text-[20px]";
   let lifeAndSummary: React.JSX.Element;
   if (summaryHidden) {
     lifeAndSummary = (
       <div className={infoBarClasses}>
-        <div className="m-auto w-[18rem] lg:w-[28rem] col-span-2">
+        <div className="m-auto whitespace-nowrap w-[18rem] lg:w-[28rem] col-span-2">
           <HeaderSquare
             text={lifePointsString}
             imageSource=""
@@ -76,7 +76,7 @@ export default function Game(): React.JSX.Element {
 
   return (
     <div
-      className="text-[14px]
+      className="text-[16px]
     md:text-l
     lg:text-xl
     width: 40%"

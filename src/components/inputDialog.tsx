@@ -223,7 +223,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
           setCardOptions([]);
         }}
       >
-        <div className="paper-texture p-5 bg-amber-700 dialog-border">
+        <div className="paper-texture p-5 text-[12px] lg:text-xl bg-amber-700 dialog-border bordered">
           <InputLabel className="p-5">
             {getConstraintsText(
               props.gameState.gameConstraints,
@@ -240,7 +240,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
               width: 200,
               margin: 2,
               "@media (min-width: 500px)": {
-                width: 500,
+                width: 451,
               },
             }}
             filterOptions={(x) => x}
