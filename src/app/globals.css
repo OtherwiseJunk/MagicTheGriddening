@@ -104,18 +104,18 @@ body {
     color: white
   }
   .paper-texture{
-    background-image: url("");
+    background-image: unset;
     background-blend-mode:lighten;
   }
   .logo{
     border-width: 2px;
     border-radius: 25px;
   }
-  
+
   .game-border{
     border-width: 2px;
   }
-  
+
   .dialog-border{
     border-width: 2px;
   }
@@ -124,5 +124,9 @@ body {
     background-color: rgb(180 83 9);
     height:90px;
     width:90px;
+  }
+
+  .input-label{
+    white-space: normal;
   }
 }

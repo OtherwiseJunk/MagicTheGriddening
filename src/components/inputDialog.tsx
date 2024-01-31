@@ -223,8 +223,8 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
           setCardOptions([]);
         }}
       >
-        <div className="paper-texture p-5 text-[12px] lg:text-xl bg-amber-700 dialog-border bordered">
-          <InputLabel className="p-5">
+        <div className="paper-texture  p-5 text-[12px] lg:text-xl bg-amber-700 dialog-border bordered">
+          <InputLabel className="p-5 input-label">
             {getConstraintsText(
               props.gameState.gameConstraints,
               props.dialogGridIndex
@@ -239,8 +239,8 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
             sx={{
               width: 200,
               margin: 2,
-              "@media (min-width: 500px)": {
-                width: 451,
+              "@media (min-width: 451px)": {
+                width: 500,
               },
             }}
             filterOptions={(x) => x}
