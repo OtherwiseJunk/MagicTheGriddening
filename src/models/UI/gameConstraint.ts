@@ -14,4 +14,13 @@ export enum ConstraintType {
   ManaValue,
   Color,
   Set,
+  Power,
+  Toughness,
+  Artist,
+  CreatureRulesText,
+  CreatureRaceTypes,
+  CreatureJobTypes,
+  ArtifactSubtypes,
+  EnchantmentSubtypes,
+  __LENGTH
 }

@@ -19,6 +19,11 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=griddening
+  
+  puzzle-seeder:
+    image: ghcr.io/otherwisejunk/grid-the-seedening:main
+    environment: 
+      - TZ=America/New_York
 
 volumes:
   postgres-volume:

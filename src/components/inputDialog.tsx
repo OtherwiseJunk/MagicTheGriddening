@@ -1,6 +1,5 @@
 import {
   type GameConstraint,
-  ConstraintType,
 } from "@/models/UI/gameConstraint";
 import { type GameState } from "@/models/UI/gameState";
 import ScryfallService from "@/services/scryfall.service";
@@ -20,119 +19,6 @@ import { type Card } from "scryfall-sdk";
 
 const dialogFont = Eczar({ subsets: ["latin"] });
 
-const getColorPairText = (colorOne: string, colorTwo: string): string => {
-  if (colorOne === "White") {
-    switch (colorTwo) {
-      case "Blue":
-        return "White Blue";
-      case "Black":
-        return "White Black";
-      case "Red":
-        return "Red White";
-      case "Green":
-        return "White Green";
-    }
-  }
-  if (colorOne === "Blue") {
-    switch (colorTwo) {
-      case "Black":
-        return "Blue Black";
-      case "Red":
-        return "Blue Red";
-      case "Green":
-        return "Blue Green";
-      case "White":
-        return "White Blue";
-    }
-  }
-  if (colorOne === "Black") {
-    switch (colorTwo) {
-      case "Red":
-        return "Black Red";
-      case "Green":
-        return "Black Green";
-      case "White":
-        return "White Black";
-      case "Blue":
-        return "Blue Black";
-    }
-  }
-  if (colorOne === "Red") {
-    switch (colorTwo) {
-      case "Green":
-        return "Red Green";
-      case "White":
-        return "Red White";
-      case "Blue":
-        return "Blue Red";
-      case "Black":
-        return "Black Red";
-    }
-  }
-  if (colorOne === "Green") {
-    switch (colorTwo) {
-      case "White":
-        return "White Green";
-      case "Blue":
-        return "Blue Green";
-      case "Black":
-        return "Black Green";
-      case "Red":
-        return "Red Green";
-    }
-  }
-
-  return "";
-};
-
-const getTextForConstraints = (
-  constraintOne: GameConstraint,
-  constraintTwo: GameConstraint
-): string => {
-  const artcileOne = constraintOne.displayName.startsWith("U") ? "an" : "a";
-  const artcileTwo = constraintTwo.displayName.startsWith("U") ? "an" : "a";
-  const typeOne = constraintOne.constraintType;
-  const typeTwo = constraintTwo.constraintType;
-  if (typeOne === ConstraintType.Set || typeTwo === ConstraintType.Set) {
-    if (
-      typeTwo === ConstraintType.ManaValue ||
-      typeOne === ConstraintType.ManaValue
-    ) {
-      return typeOne === ConstraintType.ManaValue
-        ? `Name a card with ${constraintOne.displayName} from ${constraintTwo.displayName}.`
-        : `Name a card with ${constraintTwo.displayName} from ${constraintOne.displayName}.`;
-    }
-    return typeOne === ConstraintType.Set
-      ? `Name ${artcileTwo} ${constraintTwo.displayName} card from ${constraintOne.displayName}.`
-      : `Name ${artcileOne} ${constraintOne.displayName} card from ${constraintTwo.displayName}.`;
-  }
-  if (
-    typeOne === ConstraintType.ManaValue ||
-    typeTwo === ConstraintType.ManaValue
-  ) {
-    return typeOne === ConstraintType.ManaValue
-      ? `Name ${artcileTwo} ${constraintTwo.displayName} card with ${constraintOne.displayName}.`
-      : `Name ${artcileOne} ${constraintOne.displayName} card with ${constraintTwo.displayName}.`;
-  }
-  if (typeOne === ConstraintType.Rarity || typeTwo === ConstraintType.Rarity) {
-    return typeOne === ConstraintType.Rarity
-      ? `Name ${artcileOne} ${constraintOne.displayName} ${constraintTwo.displayName} card.`
-      : `Name ${artcileTwo} ${constraintTwo.displayName} ${constraintOne.displayName} card.`;
-  }
-  if (typeOne === ConstraintType.Color && typeTwo === ConstraintType.Color) {
-    return `Name a ${getColorPairText(
-      constraintOne.displayName,
-      constraintTwo.displayName
-    )} card.`;
-  }
-  if (typeOne === ConstraintType.Color || typeTwo === ConstraintType.Color) {
-    return typeOne === ConstraintType.Color
-      ? `Name a ${constraintOne.displayName} ${constraintTwo.displayName} card.`
-      : `Name a ${constraintTwo.displayName} ${constraintOne.displayName} card.`;
-  }
-  return `Name ${artcileOne} ${constraintOne.displayName} ${constraintTwo.displayName} card.`;
-};
-
 const getConstraintsText = (
   constraints: GameConstraint[],
   squareIndex: number
@@ -140,7 +26,7 @@ const getConstraintsText = (
   const [constraintOne, constraintTwo] =
     GriddeningService.getGameConstraintsForIndex(constraints, squareIndex);
   return constraintOne !== undefined
-    ? getTextForConstraints(constraintOne, constraintTwo)
+    ? GriddeningService.getTextForConstraints(constraintOne, constraintTwo)
     : "";
 };
 
