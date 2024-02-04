@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 
 services:
   magicthegriddening:
@@ -19,11 +19,12 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=griddening
-  
+
   puzzle-seeder:
     image: ghcr.io/otherwisejunk/grid-the-seedening:main
-    environment: 
+    environment:
       - TZ=America/New_York
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/griddening?schema=public
 
 volumes:
   postgres-volume:
