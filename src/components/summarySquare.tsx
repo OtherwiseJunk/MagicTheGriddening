@@ -26,13 +26,17 @@ const defaultSummaryGrid = [
   "🟥",
 ];
 
+const defaultTitle = '🧙 Magic: The Griddening Summary 🧙';
+const winnterTitle = '✨🧙 Magic: The Griddening Archmage 🧙✨'
+
 function generateSummaryText(correctGuesses: CorrectGuess[]): string {
+  const title = correctGuesses.length == 9 ? winnterTitle : defaultTitle;
   const mappedSummaryGrid = defaultSummaryGrid.map((x) => x);
   correctGuesses.forEach((correctGuess) => {
     mappedSummaryGrid[correctGuess.squareIndex] = "✅";
   });
   const resultsGrid = formatGridSummaryToString(mappedSummaryGrid);
-  const summaryText = `🧙 Magic: The Griddening Summary 🧙
+  const summaryText = `${title}
 Score: ${correctGuesses.length}/9
 
 ${resultsGrid}
