@@ -26,5 +26,19 @@ services:
       - TZ=America/New_York
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/griddening?schema=public
 
+  bsky-poster:
+    image: ghcr.io/otherwisejunk/griddening-bsky-bot
+    environment:
+      - TZ=America/New_York
+      - NODE_ENV=production
+      - BLUESKY_USERNAME=$BLUESKY_USERNAME
+      - BLUESKY_PASSWORD=$BLUESKY_PASSWORD
+
+  logging:
+    image: griddeninglogger
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/griddening?schema=public
+    restart: on-failure
+
 volumes:
   postgres-volume:
