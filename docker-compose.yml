@@ -27,7 +27,7 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/griddening?schema=public
 
   bsky-poster:
-    image: ghcr.io/otherwisejunk/griddening-bsky-bot
+    image: ghcr.io/otherwisejunk/griddening-bsky-bot:main
     environment:
       - TZ=$TZ
       - NODE_ENV=production
