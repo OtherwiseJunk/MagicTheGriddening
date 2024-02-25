@@ -23,13 +23,13 @@ services:
   puzzle-seeder:
     image: ghcr.io/otherwisejunk/grid-the-seedening:main
     environment:
-      - TZ=America/New_York
+      - TZ=$TZ
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/griddening?schema=public
 
   bsky-poster:
     image: ghcr.io/otherwisejunk/griddening-bsky-bot
     environment:
-      - TZ=America/New_York
+      - TZ=$TZ
       - NODE_ENV=production
       - BLUESKY_USERNAME=$BLUESKY_USERNAME
       - BLUESKY_PASSWORD=$BLUESKY_PASSWORD
