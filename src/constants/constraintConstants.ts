@@ -53,16 +53,6 @@ export const colorConstraints: GameConstraint[] = [
     '/swamp.png',
     'A black mana symbol; a poorly drawn skull sillouhete on a dark gray field.'
   ),
-  /* Colorless is kind of a paint right now because you can't have a Colorless-Green (etc) creature
-     Probably when I go to fix this when we "Draw" a colorless constraint we'll have the other constraint be Land or Artifact?
-     But that will take some finessing and I want to find a cleverer way of generating these.
-
-    new GameConstraint(
-        "Colorless",
-        ConstraintType.Color,
-        "colorless.png",
-        "A black mana symbol; a poorly drawn skull sillouhete on a dark gray field."
-    ), */
   new GameConstraint(
     'Red',
     ConstraintType.Color,
