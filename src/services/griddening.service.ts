@@ -3,8 +3,6 @@ import {
   ConstraintType,
   type GameConstraint,
 } from "@/models/UI/gameConstraint";
-import { Game } from "@prisma/client";
-import build from "next/dist/build";
 
 export default class GriddeningService {
   static getGameConstraintsForIndex(
