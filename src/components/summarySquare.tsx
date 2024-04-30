@@ -14,24 +14,14 @@ const darkTheme = createTheme({
   },
 });
 
-const defaultSummaryGrid = [
-  "🟥",
-  "🟥",
-  "🟥",
-  "🟥",
-  "🟥",
-  "🟥",
-  "🟥",
-  "🟥",
-  "🟥",
-];
+const defaultSummaryGrid = Array(9).fill("🟥");
 
 const defaultTitle = '🧙 Magic: The Griddening Summary 🧙';
-const winnterTitle = '✨🧙 Magic: The Griddening Archmage 🧙✨'
+const winnerTitle = '✨🧙 Magic: The Griddening Archmage 🧙✨'
 
 function generateSummaryText(correctGuesses: CorrectGuess[]): string {
-  const title = correctGuesses.length == 9 ? winnterTitle : defaultTitle;
-  const mappedSummaryGrid = defaultSummaryGrid.map((x) => x);
+  const title = correctGuesses.length === 9 ? winnerTitle : defaultTitle;
+  const mappedSummaryGrid: string[] = defaultSummaryGrid.map((x) => x);
   correctGuesses.forEach((correctGuess) => {
     mappedSummaryGrid[correctGuess.squareIndex] = "✅";
   });
