@@ -2,7 +2,7 @@ version: "3.4"
 
 services:
   magicthegriddening:
-    name: mtg-ui
+    container_name: mtg-ui
     image: magicthegriddening
     build:
       context: .
@@ -13,7 +13,7 @@ services:
       - 3001:3000
 
   postgres:
-    name: mtg-db
+    container_name: mtg-db
     image: postgres:14-alpine
     volumes:
       - postgres-volume:/var/lib/postgresql/data
@@ -23,14 +23,14 @@ services:
       - POSTGRES_DB=griddening
 
   puzzle-seeder:
-    name: mtg-seeder
+    container_name: mtg-seeder
     image: ghcr.io/otherwisejunk/grid-the-seedening:main
     environment:
       - TZ=$TZ
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/griddening?schema=public
 
   bsky-poster:
-    name: mtg-poster
+    container_name: mtg-poster
     image: ghcr.io/otherwisejunk/griddening-bsky-bot:main
     environment:
       - TZ=$TZ
@@ -39,7 +39,7 @@ services:
       - BLUESKY_PASSWORD=$BLUESKY_PASSWORD
 
   logging:
-    name: mtg-logger
+    container_name: mtg-logger
     image: griddeninglogger
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/griddening?schema=public
