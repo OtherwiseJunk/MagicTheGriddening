@@ -93,7 +93,7 @@ export const manaValueConstraints: GameConstraint[] = Array.from(
     )
 )
 
-type Color = 'White' | 'Blue' | 'Black' | 'Red' | 'Green';
+export type Color = 'White' | 'Blue' | 'Black' | 'Red' | 'Green';
 type ColorPairs = Record<Color, Record<Color, string>>;
 
 export const colorPairs: ColorPairs = {

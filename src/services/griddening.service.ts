@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
-import { colorPairs } from "@/constants/constraintConstants";
+import { Color, colorPairs } from "@/constants/constraintConstants";
 import {
   ConstraintType,
   type GameConstraint,
@@ -288,8 +288,8 @@ export default class GriddeningService {
 
     if (constraintOne.constraintType === ConstraintType.Color && constraintTwo.constraintType === ConstraintType.Color) {
       return `Name a ${this.getColorPairText(
-        constraintOne.displayName,
-        constraintTwo.displayName
+        constraintOne.displayName as Color,
+        constraintTwo.displayName as Color
       )} card.`;
     }
 
@@ -297,7 +297,7 @@ export default class GriddeningService {
       } ${constraintTwo.displayName} card.`;
   };
 
-  static getColorPairText = (colorOne: string, colorTwo: string): string => {
+  static getColorPairText = (colorOne: Color, colorTwo: Color): string => {
     return colorPairs[colorOne][colorTwo];
   };
 }
