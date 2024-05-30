@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
-import { Color, colorPairs } from "@/constants/constraintConstants";
+import { colorPairs } from "@/constants/constraintConstants";
+import type { Color } from "@/constants/constraintConstants";
 import {
   ConstraintType,
   type GameConstraint,
@@ -206,18 +207,6 @@ export default class GriddeningService {
     return `Name ${otherArticle} ${otherConstraint.displayName} card with art by ${artistConstraint.displayName}.`;
   };
 
-  private static readonly getRarityConstraintText2 = (
-    constraintOne: GameConstraint,
-    constraintTwo: GameConstraint
-  ): string => {
-    const articleOne = this.getArticle(constraintOne.displayName);
-    const articleTwo = this.getArticle(constraintTwo.displayName);
-
-    return constraintOne.constraintType === ConstraintType.Rarity
-      ? `Name ${articleOne} ${constraintOne.displayName} ${constraintTwo.displayName} card.`
-      : `Name ${articleTwo} ${constraintTwo.displayName} ${constraintOne.displayName} card.`;
-  };
-
   private static readonly getRarityConstraintText = (
     constraintOne: GameConstraint,
     constraintTwo: GameConstraint
@@ -229,19 +218,6 @@ export default class GriddeningService {
     const rarityArticle = this.getArticle(rarityConstraint.displayName);
 
     return `Name ${rarityArticle} ${rarityConstraint.displayName} ${otherConstraint.displayName} card.`;
-  };
-
-  private static readonly getColorConstraintText = (
-    constraintOne: GameConstraint,
-    constraintTwo: GameConstraint
-  ): string => {
-    const [colorConstraint, otherConstraint] = constraintOne.constraintType === ConstraintType.Color
-      ? [constraintOne, constraintTwo]
-      : [constraintTwo, constraintOne];
-
-    const otherArticle = this.getArticle(otherConstraint.displayName);
-
-    return `Name ${otherArticle} ${otherConstraint.displayName} ${colorConstraint.displayName} card.`;
   };
 
   private static readonly getRulesTextConstraintsText = (
