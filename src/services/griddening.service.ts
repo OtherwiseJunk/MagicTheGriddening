@@ -95,7 +95,7 @@ export default class GriddeningService {
       : `Name ${articleOne} ${constraintOne.displayName} card from ${constraintTwo.displayName}.`;
   };
 
-  private static buildConstraintText = (
+  private static readonly buildConstraintText = (
     constraintOne: GameConstraint,
     constraintTwo: GameConstraint,
     constraintType: ConstraintType,
@@ -107,8 +107,8 @@ export default class GriddeningService {
     return '';
   };
 
-  private static eitherConstraintIsOfType = (constraintOne: GameConstraint, constraintTwo: GameConstraint, constraintType: ConstraintType) => {
-    return constraintOne.constraintType === constraintType || constraintTwo.constraintType === constraintType;
+  private static readonly eitherConstraintIsOfType = (one: GameConstraint, two: GameConstraint, type: ConstraintType): boolean => {
+    return one.constraintType === type || two.constraintType === type;
   }
 
   private static readonly buildManaValueConstraintText = (
@@ -281,7 +281,7 @@ export default class GriddeningService {
 
     for (const { type, builder } of constraintTextBuilders) {
       const text = this.buildConstraintText(constraintOne, constraintTwo, type, builder);
-      if (text) {
+      if (text !== '') {
         return text;
       }
     }
