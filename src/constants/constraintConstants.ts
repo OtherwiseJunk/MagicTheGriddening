@@ -92,3 +92,44 @@ export const manaValueConstraints: GameConstraint[] = Array.from(
       `cmc:${index}`
     )
 )
+
+export type Color = 'White' | 'Blue' | 'Black' | 'Red' | 'Green';
+type ColorPairs = Record<Color, Record<Color, string>>;
+
+export const colorPairs: ColorPairs = {
+  "White": {
+    "White": "",
+    "Blue": "White Blue",
+    "Black": "White Black",
+    "Red": "Red White",
+    "Green": "White Green"
+  },
+  "Blue": {
+    "Blue": "",
+    "Black": "Blue Black",
+    "Red": "Blue Red",
+    "Green": "Blue Green",
+    "White": "White Blue"
+  },
+  "Black": {
+    "Black": "",
+    "Red": "Black Red",
+    "Green": "Black Green",
+    "White": "White Black",
+    "Blue": "Blue Black"
+  },
+  "Red": {
+    "Red": "",
+    "Green": "Red Green",
+    "White": "Red White",
+    "Blue": "Blue Red",
+    "Black": "Black Red"
+  },
+  "Green": {
+    "White": "White Green",
+    "Blue": "Blue Green",
+    "Black": "Black Green",
+    "Red": "Red Green",
+    "Green": ""
+  }
+};
