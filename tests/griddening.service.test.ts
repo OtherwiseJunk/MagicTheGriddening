@@ -5,8 +5,7 @@ import {
   ConstraintType,
 } from "../src/models/UI/gameConstraint";
 import GriddeningService from "../src/services/griddening.service";
-import { g } from "vitest/dist/suite-IbNSsUWN.js";
-import { Color } from "@/constants/constraintConstants";
+import { type Color } from "@/constants/constraintConstants";
 
 describe("getTextForConstraints", () => {
   [
@@ -557,7 +556,7 @@ describe("getGameConstraintsForIndex", () => {
     ];
 
     for (let i = 0; i < 9; i++) {
-      let result = GriddeningService.getGameConstraintsForIndex(gameConstraints, i);
+      const result = GriddeningService.getGameConstraintsForIndex(gameConstraints, i);
       expect(result).toEqual(expectedResults[i]);
     }
   });
