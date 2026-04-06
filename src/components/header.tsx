@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { PiButterfly } from "react-icons/pi";
 import { IconContext } from "react-icons";
+import RulesDialog from "./rulesDialog";
 
 function Header(): React.JSX.Element {
   return (
@@ -16,6 +17,7 @@ function Header(): React.JSX.Element {
         >
           Magic: The Griddening
         </h1>
+        <RulesDialog />
         <div
           className="flex flex-col items-center text-text-parchment/80 hover:text-gold-leaf transition-colors"
           title="Follow us on Bluesky!"
