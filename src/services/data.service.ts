@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-extraneous-class */
 import { type PlayerRecord } from "@prisma/client";
 import { Game } from "@/models/database/game";
 import { CorrectGuess } from "@/models/UI/correctGuess";
@@ -93,7 +92,7 @@ export default class DataService {
   static async getCorrectGuessesForPlayer(
     playerRecordId: number,
     gameId: number,
-  ): Promise<{ correctGuess: string }[]> {
+  ): Promise<Array<{ correctGuess: string }>> {
     return await this.prisma.correctGuesses.findMany({
       where: { playerRecordId, gameId },
       select: { correctGuess: true },

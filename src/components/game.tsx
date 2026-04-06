@@ -99,7 +99,9 @@ export default function Game(): React.JSX.Element {
           <GameBoard
             gameState={gameState}
             setGameState={setGameState}
-            onGuessSubmitted={() => setRefetchTrigger((n) => n + 1)}
+            onGuessSubmitted={() => {
+              setRefetchTrigger((n) => n + 1);
+            }}
           />
           <HeaderSquare
             text={gameConstraints[4]?.displayName}

@@ -64,7 +64,12 @@ export default function RulesDialog(): React.JSX.Element {
           <div className="flex justify-end mt-4">
             <button
               onClick={() => dialogRef.current?.close()}
-              className="px-5 py-2 bg-mana-blue border-2 border-gold-leaf/60 rounded-lg text-text-parchment font-[family-name:var(--font-body)] font-semibold hover:border-gold-leaf hover:shadow-[0_0_16px_rgba(201,168,76,0.3)] active:scale-95 transition-all duration-200"
+              className={[
+                "px-5 py-2 bg-mana-blue border-2 border-gold-leaf/60 rounded-lg",
+                "text-text-parchment font-[family-name:var(--font-body)] font-semibold",
+                "hover:border-gold-leaf hover:shadow-[0_0_16px_rgba(201,168,76,0.3)]",
+                "active:scale-95 transition-all duration-200",
+              ].join(" ")}
             >
               Got it
             </button>

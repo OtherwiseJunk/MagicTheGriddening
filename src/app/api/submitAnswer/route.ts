@@ -45,7 +45,7 @@ export async function POST(request: Request): Promise<Response> {
       game.id,
       args.squareIndex,
       card.name,
-      imageUrl ?? "./card-not-found.png",
+      imageUrl ?? "/card-not-found.png",
     );
     await DataService.updatePlayerLifeValue(player.id, player.lifePoints - 1);
     return new Response("Ok");

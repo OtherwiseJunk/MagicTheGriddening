@@ -1,5 +1,5 @@
-/* eslint-disable @next/next/no-img-element */
 import { type CorrectGuess } from "@/models/UI/correctGuess";
+import Image from "next/image";
 import React from "react";
 
 class InputSquareProps {
@@ -35,10 +35,12 @@ export default function InputSquare(props: InputSquareProps): React.JSX.Element 
   if (props.correctGuess !== undefined) {
     return (
       <div className={`${positionalStyle} overflow-hidden`}>
-        <img
+        <Image
           className="h-full card-revealed"
           alt={props.correctGuess.cardName}
           src={props.correctGuess.imageUrl}
+          width={488}
+          height={680}
         />
       </div>
     );

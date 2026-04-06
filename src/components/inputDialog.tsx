@@ -197,7 +197,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
         </div>
 
         {/* Error Message */}
-        {errorMessage && (
+        {errorMessage !== "" && (
           <p className="text-red-400 text-sm font-[family-name:var(--font-body)] mb-3">
             {errorMessage}
           </p>

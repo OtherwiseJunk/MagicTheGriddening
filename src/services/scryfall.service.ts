@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-extraneous-class */
 import * as Scry from "scryfall-sdk";
 
 export default class ScryfallService {
@@ -12,8 +11,9 @@ export default class ScryfallService {
   }
 
   static async getFirstPageCardCount(query: string): Promise<number> {
-    if (this.queryCountMap.has(query)) {
-      return this.queryCountMap.get(query)!;
+    const cached = this.queryCountMap.get(query);
+    if (cached !== undefined) {
+      return cached;
     }
     if (this.queryCountMap.size >= this.MAX_CACHE_SIZE) {
       this.queryCountMap.clear();
