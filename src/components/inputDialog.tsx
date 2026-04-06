@@ -1,18 +1,15 @@
-import {
-  type GameConstraint,
-} from "@/models/UI/gameConstraint";
+import { type GameConstraint } from "@/models/UI/gameConstraint";
 import { type GameState } from "@/models/UI/gameState";
 import ScryfallService from "@/services/scryfall.service";
 import GriddeningService from "@/services/griddening.service";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { type Card } from "scryfall-sdk";
 
-const getConstraintsText = (
-  constraints: GameConstraint[],
-  squareIndex: number
-): string => {
-  const [constraintOne, constraintTwo] =
-    GriddeningService.getGameConstraintsForIndex(constraints, squareIndex);
+const getConstraintsText = (constraints: GameConstraint[], squareIndex: number): string => {
+  const [constraintOne, constraintTwo] = GriddeningService.getGameConstraintsForIndex(
+    constraints,
+    squareIndex,
+  );
   return constraintOne !== undefined
     ? GriddeningService.getTextForConstraints(constraintOne, constraintTwo)
     : "";
@@ -21,7 +18,7 @@ const getConstraintsText = (
 const submitAnswer = async (
   playerId: string,
   squareIndex: number,
-  guess: string
+  guess: string,
 ): Promise<boolean> => {
   const response = await fetch("/api/submitAnswer", {
     method: "POST",
@@ -80,9 +77,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
       await ScryfallService.getCards(newValue).then((foundCards: Card[]) => {
         const options = foundCards
           .map((card) => card.name)
-          .filter((cardName) =>
-            cardName.toLowerCase().includes(newValue.toLowerCase())
-          );
+          .filter((cardName) => cardName.toLowerCase().includes(newValue.toLowerCase()));
         setCardOptions(options);
         setShowDropdown(options.length > 0);
       });
@@ -103,14 +98,10 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev < cardOptions.length - 1 ? prev + 1 : 0
-      );
+      setHighlightedIndex((prev) => (prev < cardOptions.length - 1 ? prev + 1 : 0));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev > 0 ? prev - 1 : cardOptions.length - 1
-      );
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : cardOptions.length - 1));
     } else if (e.key === "Enter" && highlightedIndex >= 0) {
       e.preventDefault();
       selectOption(cardOptions[highlightedIndex]);
@@ -139,10 +130,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
       <div className="paper-texture bg-dark-vellum p-5 md:p-8 bordered border-gold-leaf rounded-xl">
         {/* Constraint Label */}
         <label className="block text-text-gold text-sm md:text-lg font-[family-name:var(--font-body)] font-semibold mb-4 input-label">
-          {getConstraintsText(
-            props.gameState.gameConstraints,
-            props.dialogGridIndex
-          )}
+          {getConstraintsText(props.gameState.gameConstraints, props.dialogGridIndex)}
         </label>
 
         {/* Search Input + Dropdown */}
@@ -169,12 +157,14 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
 
           {/* Dropdown */}
           {showDropdown && (
-            <ul className={[
-              "absolute z-50 w-full mt-1 max-h-48",
-              "overflow-y-auto bg-dark-vellum",
-              "border-2 border-gold-leaf/30 rounded-lg",
-              "shadow-[0_8px_24px_rgba(0,0,0,0.6)]",
-            ].join(" ")}>
+            <ul
+              className={[
+                "absolute z-50 w-full mt-1 max-h-48",
+                "overflow-y-auto bg-dark-vellum",
+                "border-2 border-gold-leaf/30 rounded-lg",
+                "shadow-[0_8px_24px_rgba(0,0,0,0.6)]",
+              ].join(" ")}
+            >
               {cardOptions.map((option, index) => (
                 <li
                   key={option}
@@ -203,11 +193,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
           <button
             onClick={() => {
               if (currentValue.length > 0) {
-                void submitAnswer(
-                  userId,
-                  props.dialogGridIndex,
-                  currentValue
-                ).then(() => {
+                void submitAnswer(userId, props.dialogGridIndex, currentValue).then(() => {
                   handleClose();
                   props.setGameState({
                     ...props.gameState,

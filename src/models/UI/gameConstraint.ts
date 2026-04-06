@@ -1,10 +1,10 @@
 export class GameConstraint {
-  constructor (
+  constructor(
     public displayName: string,
     public constraintType: ConstraintType,
     public scryfallQuery: string,
-    public imageSrc: string = '',
-    public imageAltText: string = ''
+    public imageSrc: string = "",
+    public imageAltText: string = "",
   ) {}
 }
 
@@ -22,5 +22,5 @@ export enum ConstraintType {
   CreatureJobTypes,
   ArtifactSubtypes,
   EnchantmentSubtypes,
-  __LENGTH
+  __LENGTH,
 }

@@ -9,8 +9,8 @@ interface SummaryProps {
 
 const defaultSummaryGrid = Array(9).fill("🟥");
 
-const defaultTitle = '🧙 Magic: The Griddening Summary 🧙';
-const winnerTitle = '✨🧙 Magic: The Griddening Archmage 🧙✨'
+const defaultTitle = "🧙 Magic: The Griddening Summary 🧙";
+const winnerTitle = "✨🧙 Magic: The Griddening Archmage 🧙✨";
 
 function generateSummaryText(correctGuesses: CorrectGuess[]): string {
   const title = correctGuesses.length === 9 ? winnerTitle : defaultTitle;
@@ -41,8 +41,7 @@ function formatGridSummaryToString(gridSummary: string[]): string {
 }
 
 export default function SummarySquare(props: SummaryProps): React.JSX.Element {
-  if (props.hidden)
-    return <HeaderSquare text="" imageSource="" imageAltText="" />;
+  if (props.hidden) return <HeaderSquare text="" imageSource="" imageAltText="" />;
   return (
     <div className="flex">
       <button

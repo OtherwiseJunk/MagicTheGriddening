@@ -8,9 +8,7 @@ import SummarySquare from "./summarySquare";
 import { type GameConstraint } from "@/models/UI/gameConstraint";
 
 export default function Game(): React.JSX.Element {
-  const [gameState, setGameState] = useState<GameState>(
-    new GameState([], -1, [])
-  );
+  const [gameState, setGameState] = useState<GameState>(new GameState([], -1, []));
   const [userId, setUserId] = useState<string>("");
   async function getGameState(userId: string): Promise<void> {
     await fetch(`/api/gameState/${userId}`)
@@ -46,11 +44,7 @@ export default function Game(): React.JSX.Element {
     lifeAndSummary = (
       <div className={infoBarClasses}>
         <div className="m-auto whitespace-nowrap w-[18rem] lg:w-[28rem] col-span-2">
-          <HeaderSquare
-            text={lifePointsString}
-            imageSource=""
-            imageAltText=""
-          />
+          <HeaderSquare text={lifePointsString} imageSource="" imageAltText="" />
         </div>
       </div>
     );
@@ -58,11 +52,7 @@ export default function Game(): React.JSX.Element {
     lifeAndSummary = (
       <div className={infoBarClasses}>
         <div className="m-auto w-56">
-          <HeaderSquare
-            text={lifePointsString}
-            imageSource=""
-            imageAltText=""
-          />
+          <HeaderSquare text={lifePointsString} imageSource="" imageAltText="" />
         </div>
         <div className="w-56">
           <SummarySquare
@@ -78,9 +68,7 @@ export default function Game(): React.JSX.Element {
     <div className="text-base md:text-lg lg:text-xl max-w-2xl mx-auto">
       {lifeAndSummary}
       <br />
-      <div
-        className="paper-texture m-auto max-h-max max-w-max logo bordered container p-2 lg:p-5 lg:pr-16 lg:pb-10"
-      >
+      <div className="paper-texture m-auto max-h-max max-w-max logo bordered container p-2 lg:p-5 lg:pr-16 lg:pb-10">
         <div className="grid grid-rows-4 grid-cols-4 text-center">
           <HeaderSquare
             text=""

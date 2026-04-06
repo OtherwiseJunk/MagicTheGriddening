@@ -27,11 +27,7 @@ function Header(): React.JSX.Element {
           title="Follow us on Bluesky!"
         >
           <IconContext.Provider value={{ size: "2em" }}>
-            <a
-              href="https://bsky.app/profile/magicthegridden.ing"
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a href="https://bsky.app/profile/magicthegridden.ing" target="_blank" rel="noreferrer">
               <PiButterfly />
               <p className="text-xs font-[family-name:var(--font-body)]">Bsky</p>
             </a>

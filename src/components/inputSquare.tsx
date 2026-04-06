@@ -28,9 +28,7 @@ function getPositionalStyleClass(props: InputSquareProps): string {
   return styleClass;
 }
 
-export default function InputSquare(
-  props: InputSquareProps
-): React.JSX.Element {
+export default function InputSquare(props: InputSquareProps): React.JSX.Element {
   const positionalStyle = getPositionalStyleClass(props);
   const liveGameClass = props.remainingGuesses > 0 ? "live-input" : "";
 

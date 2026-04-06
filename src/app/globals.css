@@ -119,7 +119,9 @@ body {
   background-image: url("/color-dot-pentagon.png"), url("/paper-texture.png");
   background-repeat: no-repeat, repeat;
   background-position: center;
-  background-size: auto 70%, 100%;
+  background-size:
+    auto 70%,
+    100%;
   background-blend-mode: hard-light, color-burn;
 }
 

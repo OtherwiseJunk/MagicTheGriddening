@@ -1,11 +1,16 @@
-import React from 'react';
-import Image from 'next/image'
+import React from "react";
+import Image from "next/image";
 
-export default function HeaderSquare (props: { text: string, imageSource: string, imageAltText: string }): React.JSX.Element {
-  let imageBlock
-  let textBlock = <div className="text-text-parchment">{props.text}</div>
+export default function HeaderSquare(props: {
+  text: string;
+  imageSource: string;
+  imageAltText: string;
+}): React.JSX.Element {
+  let imageBlock;
+  let textBlock = <div className="text-text-parchment">{props.text}</div>;
   if (props.imageSource !== undefined && props.imageSource.length !== 0) {
-    imageBlock = <Image
+    imageBlock = (
+      <Image
         className="logo bordered top-left top-right bottom-left bottom-right break-all border-gold-leaf/40"
         alt={props.imageAltText}
         src={props.imageSource}
@@ -16,7 +21,12 @@ export default function HeaderSquare (props: { text: string, imageSource: string
         (min-width:22em) 16px
         8px"
       />
-    textBlock = <div className="hidden md:block text-text-parchment text-sm font-[family-name:var(--font-body)]">{props.text}</div>
+    );
+    textBlock = (
+      <div className="hidden md:block text-text-parchment text-sm font-[family-name:var(--font-body)]">
+        {props.text}
+      </div>
+    );
   }
 
   return (
@@ -24,5 +34,5 @@ export default function HeaderSquare (props: { text: string, imageSource: string
       {imageBlock}
       {textBlock}
     </div>
-  )
+  );
 }

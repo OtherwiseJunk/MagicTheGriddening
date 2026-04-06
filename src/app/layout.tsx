@@ -12,15 +12,10 @@ const bodyFont = Crimson_Text({
 
 export const metadata: Metadata = {
   title: "Magic: The Griddening",
-  description:
-    "Game in the style of the Immaculate Grid for Magic: The Gathering cards",
+  description: "Game in the style of the Immaculate Grid for Magic: The Gathering cards",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.JSX.Element {
+export default function RootLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
     <html lang="en">
       <link rel="icon" href="/favicon.ico" type="image/x-icon" />
