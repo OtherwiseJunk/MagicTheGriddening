@@ -39,7 +39,7 @@ export async function POST(request: Request): Promise<Response> {
     const imageUrl =
       card.image_uris !== undefined && card.image_uris != null
         ? card.image_uris.png
-        : card.card_faces[0].image_uris?.png;
+        : card.card_faces?.[0]?.image_uris?.png;
     await DataService.createCorrectGuess(
       player.id,
       game.id,
