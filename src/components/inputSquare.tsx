@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { type CorrectGuess } from "@/models/UI/correctGuess";
 import React from "react";
-// import Image from 'next/image';
 
 class InputSquareProps {
   topLeftCorner?: boolean = false;
@@ -24,7 +23,7 @@ function getPositionalStyleClass(props: InputSquareProps): string {
   if (props.topRightCorner ?? false) styleClass += " top-right";
   if (props.center ?? false) {
     styleClass = styleClass.replace("paper-texture", "").trim();
-    styleClass += " input-center bg-auto";
+    styleClass += " input-center bg-auto animate-subtle-glow";
   }
   return styleClass;
 }
@@ -37,8 +36,9 @@ export default function InputSquare(
 
   if (props.correctGuess !== undefined) {
     return (
-      <div className={positionalStyle}>
-        <img className="h-full"
+      <div className={`${positionalStyle} overflow-hidden`}>
+        <img
+          className="h-full card-revealed"
           alt={props.correctGuess.cardName}
           src={props.correctGuess.imageUrl}
         />

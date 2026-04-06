@@ -2,87 +2,120 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design Tokens ── */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 66, 144, 245;
-  --background-end-rgb: 255, 255, 255;
+  --color-mana-blue: rgb(24, 89, 173);
+  --color-parchment-brown: rgb(66, 32, 6);
+  --color-amber-glow: rgb(180, 83, 9);
+  --color-border-purple: #4f4288;
+  --color-gold-leaf: #c9a84c;
+  --color-gold-bright: #e2c044;
+  --color-dark-vellum: #2a1a0a;
+  --color-text-parchment: #f0e6d2;
+  --color-text-gold: #d4a843;
+
+  --border-width: 4px;
+  --border-radius: 12px;
+  --square-size: 132px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 66, 144, 245;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
+/* ── Base ── */
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(24,89,173);
+  color: var(--color-text-parchment);
+  background: var(--color-mana-blue);
   background-image: url("/background-texture.png");
   background-blend-mode: multiply;
 }
 
-.blue-background{
-  background: rgb(24,89,173);
+/* ── Surfaces ── */
+.blue-background {
+  background: var(--color-mana-blue);
   background-image: url("/background-texture.png");
   background-blend-mode: hard-light;
 }
 
-.container{
-  background-color: rgb(66 32 6);
+.container {
+  background-color: var(--color-parchment-brown);
 }
 
-.input-square{
-  background-color: rgb(180 83 9);
-  height:132px;
-  width:132px;
-}
-
-.paper-texture{
+.paper-texture {
   background-image: url("/paper-texture.png");
-  background-blend-mode:color-burn;
+  background-blend-mode: color-burn;
 }
 
-.bordered{
-  border-color: #4f4288;
-  border-style: ridge;
+/* ── Game Squares ── */
+.input-square {
+  background-color: var(--color-amber-glow);
+  height: var(--square-size);
+  width: var(--square-size);
+  transition: all 0.2s ease;
 }
 
-.logo{
-  border-width: 5px;
-  border-radius: 25px;
+.square {
+  max-width: var(--square-size);
+  max-height: var(--square-size);
+  line-break: auto;
 }
 
-.game-border{
-  border-width: 5px;
+/* ── Borders — Card Frame Style ── */
+.bordered {
+  border: var(--border-width) solid var(--color-border-purple);
+  box-shadow:
+    inset 0 1px 0 rgba(201, 168, 76, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
-.dialog-border{
-  border-width: 5px;
+.gold-trim {
+  border-color: var(--color-gold-leaf);
 }
 
-.live-input:hover{
-  filter: brightness(1.5)
+.logo {
+  border-width: var(--border-width);
+  border-radius: var(--border-radius);
 }
 
-.top-left{
-  border-top-left-radius: 25px;
+.game-border {
+  border-width: var(--border-width);
 }
 
-.top-right{
-  border-top-right-radius: 25px;
+.dialog-border {
+  border-width: var(--border-width);
 }
 
-.bottom-left{
-  border-bottom-left-radius: 25px;
+/* ── Corners ── */
+.top-left {
+  border-top-left-radius: var(--border-radius);
 }
 
-.bottom-right{
-  border-bottom-right-radius: 25px;
+.top-right {
+  border-top-right-radius: var(--border-radius);
 }
 
-.input-center{
+.bottom-left {
+  border-bottom-left-radius: var(--border-radius);
+}
+
+.bottom-right {
+  border-bottom-right-radius: var(--border-radius);
+}
+
+/* ── Interactive States ── */
+.live-input {
+  cursor: pointer;
+}
+
+.live-input:hover {
+  filter: brightness(1.2);
+  box-shadow:
+    inset 0 1px 0 rgba(201, 168, 76, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 4px 16px rgba(201, 168, 76, 0.3);
+  transform: scale(1.02);
+}
+
+/* ── Center Square ── */
+.input-center {
   background-image: url("/color-dot-pentagon.png"), url("/paper-texture.png");
   background-repeat: no-repeat, repeat;
   background-position: center;
@@ -90,43 +123,60 @@ body {
   background-blend-mode: hard-light, color-burn;
 }
 
-.square {
-  max-width: 132px;
-  max-height: 132px;
-  line-break: auto;
+/* ── Card Reveal Animation ── */
+.card-revealed {
+  animation: card-reveal 0.4s ease-out forwards;
 }
 
+@keyframes card-reveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) rotateY(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotateY(0deg);
+  }
+}
+
+/* ── Dialog Backdrop ── */
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+dialog[open] {
+  animation: dialog-enter 0.25s ease-out forwards;
+}
+
+@keyframes dialog-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── Mobile ── */
 @media screen and (max-width: 450px) {
+  :root {
+    --border-width: 2px;
+    --square-size: 90px;
+  }
+
   .square {
-    max-width: 90px;
-    max-height: 90px;
     line-break: loose;
-    color: white
   }
-  .paper-texture{
+
+  .paper-texture {
     background-image: unset;
-    background-blend-mode:lighten;
-  }
-  .logo{
-    border-width: 2px;
-    border-radius: 25px;
+    background-blend-mode: lighten;
   }
 
-  .game-border{
-    border-width: 2px;
-  }
-
-  .dialog-border{
-    border-width: 2px;
-  }
-
-  .input-square{
-    background-color: rgb(180 83 9);
-    height:90px;
-    width:90px;
-  }
-
-  .input-label{
+  .input-label {
     white-space: normal;
   }
 }
