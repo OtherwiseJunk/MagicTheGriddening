@@ -91,7 +91,7 @@ describe("DataService", () => {
           { id: 1, playerRecordId: 1, gameId: 1, squareIndex: 0, correctGuess: "Lightning Bolt", imageSource: "bolt.png" },
           { id: 2, playerRecordId: 1, gameId: 1, squareIndex: 4, correctGuess: "Giant Growth", imageSource: "growth.png" },
         ],
-      });
+      } as any);
 
       const [lifePoints, guesses] = await DataService.getPlayerGameData(1, "test-uuid");
 
@@ -112,7 +112,7 @@ describe("DataService", () => {
           { id: 1, playerRecordId: 1, gameId: 1, squareIndex: 0, correctGuess: "Bolt", imageSource: "bolt.png" },
           { id: 2, playerRecordId: 1, gameId: 2, squareIndex: 1, correctGuess: "Growth", imageSource: "growth.png" },
         ],
-      });
+      } as any);
 
       const [, guesses] = await DataService.getPlayerGameData(1, "test-uuid");
 
@@ -173,7 +173,7 @@ describe("DataService", () => {
       mockPrisma.correctGuesses.findMany.mockResolvedValue([
         { correctGuess: "Lightning Bolt" },
         { correctGuess: "Giant Growth" },
-      ]);
+      ] as any);
 
       const result = await DataService.getCorrectGuessesForPlayer(1, 1);
 

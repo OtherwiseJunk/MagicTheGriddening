@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-extraneous-class */
 import { colorPairs } from "@/constants/constraintConstants";
 import type { Color } from "@/constants/constraintConstants";
 import { ConstraintType, type GameConstraint } from "@/models/UI/gameConstraint";
@@ -37,6 +36,8 @@ export default class GriddeningService {
   }
 
   static getTodaysDateString(dayOffset: number = 0): string {
+    if (process.env.OVERRIDE_DATE != null && process.env.OVERRIDE_DATE !== "")
+      return process.env.OVERRIDE_DATE;
     const now = this.addDays(new Date(), dayOffset);
     const year = now.getFullYear();
     const month = now.getMonth().toString().padStart(2, "0");
