@@ -10,7 +10,7 @@ function Header(): React.JSX.Element {
     <nav className="paper-texture bg-parchment-brown border-b-2 border-gold-leaf shadow-header-bar mb-10 px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center">
         <Image
-          className="mr-4 rounded-lg border-2 border-gold-leaf/50"
+          className="mr-4"
           src="/magic-the-griddening.png"
           alt="logo"
           height={36}
