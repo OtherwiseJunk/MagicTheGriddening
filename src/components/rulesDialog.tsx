@@ -14,7 +14,7 @@ export default function RulesDialog(): React.JSX.Element {
         title="How to Play"
       >
         <IoDocumentTextOutline size="2em" />
-        <p className="text-xs font-[family-name:var(--font-body)]">Rules</p>
+        <p className="text-sm font-[family-name:var(--font-body)]">Rules</p>
       </button>
 
       <dialog

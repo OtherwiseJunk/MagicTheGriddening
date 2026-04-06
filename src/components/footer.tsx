@@ -7,7 +7,7 @@ export default function Footer(): React.JSX.Element {
   return (
     <div className="mt-8 mb-4 mx-auto max-w-2xl px-4">
       <div className="border-t border-gold-leaf/20 pt-4">
-        <p className="text-text-parchment/50 text-xs md:text-sm font-[family-name:var(--font-body)] text-center leading-relaxed">
+        <p className="text-text-parchment/50 text-sm md:text-base font-[family-name:var(--font-body)] text-center leading-relaxed">
           {wotcDisclaimer}
         </p>
       </div>

@@ -30,7 +30,7 @@ function Header(): React.JSX.Element {
               className="flex flex-col items-center"
             >
               <PiButterfly />
-              <p className="text-xs font-[family-name:var(--font-body)]">Bsky</p>
+              <p className="text-sm font-[family-name:var(--font-body)]">Bsky</p>
             </a>
           </IconContext.Provider>
         </div>
