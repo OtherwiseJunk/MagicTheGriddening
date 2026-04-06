@@ -43,6 +43,7 @@ const submitAnswer = async (
 interface InputProps {
   gameState: GameState;
   setGameState: (gameState: GameState) => void;
+  onGuessSubmitted: () => void;
   dialogGridIndex: number;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
@@ -214,10 +215,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
                     return;
                   }
                   handleClose();
-                  props.setGameState({
-                    ...props.gameState,
-                    lifePoints: props.gameState.lifePoints - 1,
-                  });
+                  props.onGuessSubmitted();
                 });
               }
             }}

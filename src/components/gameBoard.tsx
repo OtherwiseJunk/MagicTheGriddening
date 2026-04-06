@@ -8,6 +8,7 @@ import InputDialog from "./inputDialog";
 interface GameBoardPrompts {
   gameState: GameState;
   setGameState: (gameState: GameState) => void;
+  onGuessSubmitted: () => void;
 }
 
 const inputSquares = (
@@ -111,6 +112,7 @@ export default function GameBoard(props: GameBoardPrompts): React.JSX.Element {
         dialogGridIndex,
         gameState: props.gameState,
         setGameState: props.setGameState,
+        onGuessSubmitted: props.onGuessSubmitted,
       })}
     </div>
   );

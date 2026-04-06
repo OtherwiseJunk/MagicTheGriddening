@@ -10,6 +10,7 @@ import { type GameConstraint } from "@/models/UI/gameConstraint";
 export default function Game(): React.JSX.Element {
   const [gameState, setGameState] = useState<GameState>(new GameState([], -1, []));
   const [userId, setUserId] = useState<string>("");
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
   async function getGameState(userId: string): Promise<void> {
     await fetch(`/api/gameState/${userId}`)
       .then(async (res) => await res.json())
@@ -32,7 +33,7 @@ export default function Game(): React.JSX.Element {
     if (userId !== "") {
       void getGameState(userId);
     }
-  }, [gameState.lifePoints, userId]);
+  }, [refetchTrigger, userId]);
 
   const lifePointsString = `Life Points: ${gameState.lifePoints}`;
   const gameConstraints: GameConstraint[] = gameState.gameConstraints;
@@ -95,7 +96,11 @@ export default function Game(): React.JSX.Element {
             imageSource={gameConstraints[3]?.imageSrc}
             imageAltText={gameConstraints[3]?.imageAltText}
           />
-          <GameBoard gameState={gameState} setGameState={setGameState} />
+          <GameBoard
+            gameState={gameState}
+            setGameState={setGameState}
+            onGuessSubmitted={() => setRefetchTrigger((n) => n + 1)}
+          />
           <HeaderSquare
             text={gameConstraints[4]?.displayName}
             imageSource={gameConstraints[4]?.imageSrc}
