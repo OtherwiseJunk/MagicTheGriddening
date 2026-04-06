@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
-import { type PlayerRecord, PrismaClient } from "@prisma/client";
+import { type PlayerRecord } from "@prisma/client";
 import { Game } from "@/models/database/game";
 import { CorrectGuess } from "@/models/UI/correctGuess";
 import GriddeningService from "./griddening.service";
+import { prisma } from "@/lib/prisma";
 
 export default class DataService {
-  private static readonly prisma = new PrismaClient();
+  private static readonly prisma = prisma;
 
   static async getNewestGame(): Promise<Game | undefined> {
     const game = await this.prisma.game.findFirst({
