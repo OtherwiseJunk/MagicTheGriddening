@@ -45,17 +45,26 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/griddening
+
     steps:
     - uses: actions/checkout@v4
+
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
 
     - name: Build production Docker image
       run: docker build -t magicthegriddening -f dockerfile .
 
     - name: Run Prisma migrations
-      run: |
-        docker run --rm --network host \
-          -e DATABASE_URL=postgresql://postgres:postgres@localhost:5432/griddening \
-          magicthegriddening npx prisma migrate deploy
+      run: npx prisma migrate deploy
 
     - name: Seed test data
       run: PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d griddening < e2e/seed.sql
