@@ -12,11 +12,10 @@ export default function Game(): React.JSX.Element {
   const [userId, setUserId] = useState<string>("");
   const [refetchTrigger, setRefetchTrigger] = useState(0);
   async function getGameState(userId: string): Promise<void> {
-    await fetch(`/api/gameState/${userId}`)
-      .then(async (res) => await res.json())
-      .then((data: GameState) => {
-        setGameState(data);
-      });
+    const res = await fetch(`/api/gameState/${userId}`);
+    if (!res.ok) return;
+    const data: GameState = await res.json();
+    setGameState(data);
   }
 
   useEffect(() => {
