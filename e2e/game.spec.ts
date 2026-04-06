@@ -85,11 +85,8 @@ test.describe("Game board", () => {
     await page.locator(".input-square.live-input").first().click();
     const input = inputDialog(page).locator("input[type='text']");
 
-    // Type a card name that won't match the constraints, then click the label to dismiss autocomplete
-    await input.fill("Island");
-    await page.waitForTimeout(500);
-    await inputDialog(page).locator("label").click();
-
+    // Type a short wrong card name (< 3 chars avoids autocomplete)
+    await input.fill("zz");
     await inputDialog(page).locator("button", { hasText: "Submit" }).click();
 
     await expect(input).not.toBeVisible({ timeout: 15000 });
@@ -140,11 +137,8 @@ test.describe("Game over state", () => {
       const input = inputDialog(page).locator("input[type='text']");
       await expect(input).toBeVisible({ timeout: 10000 });
 
-      // Type a wrong card and click label to dismiss autocomplete before clicking Submit
-      await input.fill("Island");
-      await page.waitForTimeout(500);
-      await inputDialog(page).locator("label").click();
-
+      // Type a short wrong card name (< 3 chars avoids autocomplete)
+      await input.fill("zz");
       await inputDialog(page).locator("button", { hasText: "Submit" }).click();
 
       await expect(input).not.toBeVisible({ timeout: 15000 });
