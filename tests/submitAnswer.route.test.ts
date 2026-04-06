@@ -134,7 +134,7 @@ describe("POST /api/submitAnswer", () => {
 
     expect(response.status).toBe(200);
     expect(DataService.createCorrectGuess).toHaveBeenCalledWith(
-      1, 1, 0, "Weird Card", "./card-not-found.png",
+      1, 1, 0, "Weird Card", "/card-not-found.png",
     );
   });
 
