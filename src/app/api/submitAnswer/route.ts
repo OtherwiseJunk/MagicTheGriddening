@@ -11,24 +11,29 @@ interface SubmitRequest {
 }
 
 export async function POST (request: Request):Promise<Response> {
-  const args = await request.json() as SubmitRequest
-  const game = await DataService.getTodaysGame()
-  if(game === undefined) return new Response('Game Not Found', { status: 500 });
+  try {
+    const args = await request.json() as SubmitRequest
+    const game = await DataService.getTodaysGame()
+    if(game === undefined) return new Response('Game Not Found', { status: 404 });
 
-  const constraints = JSON.parse(game.constraintsJSON) as GameConstraint[]
-  const [constraintOne, constraintTwo] = GriddeningService.getGameConstraintsForIndex(constraints, args.squareIndex)
-  const query = `${args.guess} ${constraintOne.scryfallQuery} ${constraintTwo.scryfallQuery}`
-  const cards = await ScryfallService.getCards(query)
-  const player: PlayerRecord = await DataService.getPlayerRecord(args.playerId, game.id)
-  const card = cards.find((card) => card.name === args.guess)
+    const constraints = JSON.parse(game.constraintsJSON) as GameConstraint[]
+    const [constraintOne, constraintTwo] = GriddeningService.getGameConstraintsForIndex(constraints, args.squareIndex)
+    const query = `${args.guess} ${constraintOne.scryfallQuery} ${constraintTwo.scryfallQuery}`
+    const cards = await ScryfallService.getCards(query)
+    const player: PlayerRecord = await DataService.getPlayerRecord(args.playerId, game.id)
+    const card = cards.find((card) => card.name === args.guess)
 
-  if (card === undefined) {
-    await DataService.updatePlayerLifeValue(player.id, player.lifePoints - 1)
-    return new Response('Not Implemented', { status: 504 })
-  }
+    if (card === undefined) {
+      await DataService.updatePlayerLifeValue(player.id, player.lifePoints - 1)
+      return new Response('Incorrect guess', { status: 422 })
+    }
 
     const imageUrl = (card.image_uris !== undefined && card.image_uris != null) ? card.image_uris.png : card.card_faces[0].image_uris?.png
     await DataService.createCorrectGuess(player.id, game.id, args.squareIndex, card.name, imageUrl ?? './card-not-found.png')
     await DataService.updatePlayerLifeValue(player.id, player.lifePoints - 1)
     return new Response('Ok')
+  } catch (error) {
+    console.error('Error processing guess submission:', error)
+    return new Response('Internal Server Error', { status: 500 })
+  }
 }

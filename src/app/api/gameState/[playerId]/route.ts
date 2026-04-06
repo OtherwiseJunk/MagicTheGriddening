@@ -7,15 +7,23 @@ export async function GET (
   request: Request,
   { params }: { params: { playerId: string } }
 ): Promise<Response> {
-  const gameState = await buildGameStateForUser(params.playerId)
-  if (gameState.gameConstraints !== undefined && gameState.gameConstraints.length > 0) {
-    return new Response(JSON.stringify(gameState))
-  }
+  try {
+    const gameState = await buildGameStateForUser(params.playerId)
+    if (gameState.gameConstraints !== undefined && gameState.gameConstraints.length > 0) {
+      return new Response(JSON.stringify(gameState))
+    }
 
-  return new Response(null, {
-    status: 500,
-    statusText: "Failed to retrieve today's game :-("
-  })
+    return new Response(JSON.stringify({ error: "Failed to retrieve today's game" }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  } catch (error) {
+    console.error('Error retrieving game state:', error)
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
 }
 
 async function buildGameStateForUser (playerId: string): Promise<GameState> {
