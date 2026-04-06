@@ -8,10 +8,9 @@ import SummarySquare from "./summarySquare";
 import { type GameConstraint } from "@/models/UI/gameConstraint";
 
 export default function Game(): React.JSX.Element {
-  const [gameState, setGameState] = useState<GameState>(
-    new GameState([], -1, [])
-  );
+  const [gameState, setGameState] = useState<GameState>(new GameState([], -1, []));
   const [userId, setUserId] = useState<string>("");
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
   async function getGameState(userId: string): Promise<void> {
     await fetch(`/api/gameState/${userId}`)
       .then(async (res) => await res.json())
@@ -34,23 +33,19 @@ export default function Game(): React.JSX.Element {
     if (userId !== "") {
       void getGameState(userId);
     }
-  }, [gameState.lifePoints, userId]);
+  }, [refetchTrigger, userId]);
 
   const lifePointsString = `Life Points: ${gameState.lifePoints}`;
   const gameConstraints: GameConstraint[] = gameState.gameConstraints;
   const summaryHidden = gameState.lifePoints > 0;
   const infoBarClasses =
-    "paper-texture m-auto max-h-max max-w-max logo bordered container p-2 lg:p-5 w-screen grid grid-rows-1  grid-cols-2 lg:text-[20px]";
+    "paper-texture m-auto max-h-max max-w-max logo bordered container p-2 lg:p-5 w-screen grid grid-rows-1 grid-cols-2 lg:text-[20px]";
   let lifeAndSummary: React.JSX.Element;
   if (summaryHidden) {
     lifeAndSummary = (
       <div className={infoBarClasses}>
         <div className="m-auto whitespace-nowrap w-[18rem] lg:w-[28rem] col-span-2">
-          <HeaderSquare
-            text={lifePointsString}
-            imageSource=""
-            imageAltText=""
-          />
+          <HeaderSquare text={lifePointsString} imageSource="" imageAltText="" />
         </div>
       </div>
     );
@@ -58,11 +53,7 @@ export default function Game(): React.JSX.Element {
     lifeAndSummary = (
       <div className={infoBarClasses}>
         <div className="m-auto w-56">
-          <HeaderSquare
-            text={lifePointsString}
-            imageSource=""
-            imageAltText=""
-          />
+          <HeaderSquare text={lifePointsString} imageSource="" imageAltText="" />
         </div>
         <div className="w-56">
           <SummarySquare
@@ -75,26 +66,10 @@ export default function Game(): React.JSX.Element {
   }
 
   return (
-    <div
-      className="text-[16px]
-    md:text-l
-    lg:text-xl
-    width: 40%"
-    >
+    <div className="text-base md:text-lg lg:text-xl max-w-2xl mx-auto">
       {lifeAndSummary}
-      <br></br>
-      <div
-        className="paper-texture
-    m-auto
-    max-h-max
-    max-w-max
-    logo bordered
-    container
-    p-2
-    lg:p-5
-    lg:pr-16
-    lg:pb-10"
-      >
+      <br />
+      <div className="paper-texture m-auto max-h-max max-w-max logo bordered container p-2 lg:p-5 lg:pr-16 lg:pb-10">
         <div className="grid grid-rows-4 grid-cols-4 text-center">
           <HeaderSquare
             text=""
@@ -121,7 +96,13 @@ export default function Game(): React.JSX.Element {
             imageSource={gameConstraints[3]?.imageSrc}
             imageAltText={gameConstraints[3]?.imageAltText}
           />
-          <GameBoard gameState={gameState} setGameState={setGameState} />
+          <GameBoard
+            gameState={gameState}
+            setGameState={setGameState}
+            onGuessSubmitted={() => {
+              setRefetchTrigger((n) => n + 1);
+            }}
+          />
           <HeaderSquare
             text={gameConstraints[4]?.displayName}
             imageSource={gameConstraints[4]?.imageSrc}

@@ -1,68 +1,71 @@
-/* eslint-disable @typescript-eslint/no-extraneous-class */
-import { type PlayerRecord, PrismaClient } from '@prisma/client'
-import { Game } from '@/models/database/game'
-import { CorrectGuess } from '@/models/UI/correctGuess'
-import GriddeningService from './griddening.service'
+import { type PlayerRecord } from "@prisma/client";
+import { Game } from "@/models/database/game";
+import { CorrectGuess } from "@/models/UI/correctGuess";
+import GriddeningService from "./griddening.service";
+import { prisma } from "@/lib/prisma";
 
 export default class DataService {
-  private static readonly prisma = new PrismaClient()
+  private static readonly prisma = prisma;
 
   static async getNewestGame(): Promise<Game | undefined> {
-    const games = await this.prisma.game.findMany()
+    const game = await this.prisma.game.findFirst({
+      orderBy: { dateString: "desc" },
+    });
 
-    if (games.length === 0) return undefined
+    if (game === null) return undefined;
 
-    const game = games.sort((gameA, gameB) => parseInt(gameB.dateString) - parseInt(gameA.dateString))[0] as Game
-
-    return new Game(game.id, game.dateString, game.constraintsJSON)
+    return new Game(game.id, game.dateString, game.constraintsJSON);
   }
 
   static async getTodaysGame(): Promise<Game | undefined> {
-    const game = (await this.prisma.game.findFirst({
+    const game = await this.prisma.game.findFirst({
       where: {
-        dateString: GriddeningService.getTodaysDateString()
-      }
-    }))
+        dateString: GriddeningService.getTodaysDateString(),
+      },
+    });
 
     if (game !== null) {
-      return new Game(game.id, game.dateString, game.constraintsJSON)
+      return new Game(game.id, game.dateString, game.constraintsJSON);
     }
-    return undefined
+    return undefined;
   }
 
-  static async getPlayerGameData(gameId: number, playerId: string): Promise<[number, CorrectGuess[]]> {
+  static async getPlayerGameData(
+    gameId: number,
+    playerId: string,
+  ): Promise<[number, CorrectGuess[]]> {
     const playerRecord = await this.prisma.playerRecord.findFirst({
       where: {
         playerId,
-        gameId
+        gameId,
       },
       include: {
-        correctGuesses: true
-      }
-    })
+        correctGuesses: true,
+      },
+    });
 
     if (playerRecord != null) {
-      const correctGuessesForGame = playerRecord.correctGuesses.filter(
-        (guess) => guess.gameId === gameId
-      ).map((guess) => new CorrectGuess(guess.correctGuess, guess.imageSource, guess.squareIndex))
-      return [playerRecord.lifePoints, correctGuessesForGame]
+      const correctGuessesForGame = playerRecord.correctGuesses
+        .filter((guess) => guess.gameId === gameId)
+        .map((guess) => new CorrectGuess(guess.correctGuess, guess.imageSource, guess.squareIndex));
+      return [playerRecord.lifePoints, correctGuessesForGame];
     }
-    return [-1, []]
+    return [-1, []];
   }
 
   static async getPlayerRecord(playerId: string, gameId: number): Promise<PlayerRecord> {
     let playerRecord = await this.prisma.playerRecord.findFirst({
       where: {
         playerId,
-        gameId
-      }
-    })
+        gameId,
+      },
+    });
 
     if (playerRecord === null) {
-      playerRecord = await this.createNewPlayerRecord(playerId, gameId)
+      playerRecord = await this.createNewPlayerRecord(playerId, gameId);
     }
 
-    return playerRecord
+    return playerRecord;
   }
 
   static async createNewPlayerRecord(playerGuid: string, gameId: number): Promise<PlayerRecord> {
@@ -70,37 +73,47 @@ export default class DataService {
       data: {
         playerId: playerGuid,
         lifePoints: 9,
-        gameId
-      }
-    })
+        gameId,
+      },
+    });
   }
 
-  static async updatePlayerLifeValue(playerId: number, newLifepoints: number): Promise<void> {
+  static async updatePlayerLifeValue(playerRecordId: number, newLifepoints: number): Promise<void> {
     await this.prisma.playerRecord.update({
       where: {
-        id: playerId
+        id: playerRecordId,
       },
       data: {
-        lifePoints: newLifepoints
-      }
-    })
+        lifePoints: newLifepoints,
+      },
+    });
+  }
+
+  static async getCorrectGuessesForPlayer(
+    playerRecordId: number,
+    gameId: number,
+  ): Promise<Array<{ correctGuess: string }>> {
+    return await this.prisma.correctGuesses.findMany({
+      where: { playerRecordId, gameId },
+      select: { correctGuess: true },
+    });
   }
 
   static async createCorrectGuess(
-    playerId: number,
+    playerRecordId: number,
     gameId: number,
     squareIndex: number,
     cardName: string,
-    cardImageUrl: string
+    cardImageUrl: string,
   ): Promise<void> {
     await this.prisma.correctGuesses.create({
       data: {
-        playerRecordId: playerId,
+        playerRecordId,
         gameId,
         squareIndex,
         correctGuess: cardName,
-        imageSource: cardImageUrl
-      }
-    })
+        imageSource: cardImageUrl,
+      },
+    });
   }
 }

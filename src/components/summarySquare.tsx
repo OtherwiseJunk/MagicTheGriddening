@@ -1,23 +1,16 @@
 import { type CorrectGuess } from "@/models/UI/correctGuess";
 import React from "react";
 import HeaderSquare from "./headerSquare";
-import { ThemeProvider, createTheme } from "@mui/material";
 
 interface SummaryProps {
   hidden: boolean;
   correctGuesses: CorrectGuess[];
 }
 
-const darkTheme = createTheme({
-  palette: {
-    mode: "dark",
-  },
-});
-
 const defaultSummaryGrid = Array(9).fill("🟥");
 
-const defaultTitle = '🧙 Magic: The Griddening Summary 🧙';
-const winnerTitle = '✨🧙 Magic: The Griddening Archmage 🧙✨'
+const defaultTitle = "🧙 Magic: The Griddening Summary 🧙";
+const winnerTitle = "✨🧙 Magic: The Griddening Archmage 🧙✨";
 
 function generateSummaryText(correctGuesses: CorrectGuess[]): string {
   const title = correctGuesses.length === 9 ? winnerTitle : defaultTitle;
@@ -42,29 +35,31 @@ function formatGridSummaryToString(gridSummary: string[]): string {
     summaryGrid += `${gridSummary[i]} `;
     if ((i + 1) % 3 === 0) {
       summaryGrid += "\r\n";
-      console.log("added rn to summary grid.");
     }
   }
-  console.log(summaryGrid);
   return summaryGrid;
 }
 
 export default function SummarySquare(props: SummaryProps): React.JSX.Element {
-  if (props.hidden)
-    return <HeaderSquare text="" imageSource="" imageAltText="" />;
+  if (props.hidden) return <HeaderSquare text="" imageSource="" imageAltText="" />;
   return (
-    <ThemeProvider theme={darkTheme}>
-      <div className="flex">
-        <button
-          className="m-auto p-2 game-border bordered paper-texture blue-background text-[12px] md:text-md lg:text-lg square"
-          onClick={() => {
-            const clipboardText = generateSummaryText(props.correctGuesses);
-            void navigator.clipboard.writeText(clipboardText);
-          }}
-        >
-          Copy Results
-        </button>
-      </div>
-    </ThemeProvider>
+    <div className="flex">
+      <button
+        className={[
+          "m-auto p-2 game-border bordered",
+          "paper-texture blue-background",
+          "text-[12px] md:text-md lg:text-lg square",
+          "border-gold-leaf hover:shadow-card-hover",
+          "transition-all duration-200",
+          "font-[family-name:var(--font-body)]",
+        ].join(" ")}
+        onClick={() => {
+          const clipboardText = generateSummaryText(props.correctGuesses);
+          void navigator.clipboard.writeText(clipboardText);
+        }}
+      >
+        Copy Results
+      </button>
+    </div>
   );
 }

@@ -1,22 +1,18 @@
-/* eslint-disable @typescript-eslint/no-extraneous-class */
 import { colorPairs } from "@/constants/constraintConstants";
 import type { Color } from "@/constants/constraintConstants";
-import {
-  ConstraintType,
-  type GameConstraint,
-} from "@/models/UI/gameConstraint";
+import { ConstraintType, type GameConstraint } from "@/models/UI/gameConstraint";
 
 export default class GriddeningService {
   static getGameConstraintsForIndex(
     gameConstraints: GameConstraint[],
-    squareIndex: number
+    squareIndex: number,
   ): GameConstraint[] {
     const topRow = gameConstraints.slice(0, 3);
     const bottomRow = gameConstraints.slice(3);
 
     const intersectingConstraints = [
       topRow[squareIndex % 3],
-      bottomRow[Math.floor(squareIndex / 3)]
+      bottomRow[Math.floor(squareIndex / 3)],
     ];
 
     return intersectingConstraints;
@@ -40,17 +36,17 @@ export default class GriddeningService {
   }
 
   static getTodaysDateString(dayOffset: number = 0): string {
+    if (process.env.OVERRIDE_DATE != null && process.env.OVERRIDE_DATE !== "")
+      return process.env.OVERRIDE_DATE;
     const now = this.addDays(new Date(), dayOffset);
     const year = now.getFullYear();
-    const month = (now.getMonth()).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
+    const month = now.getMonth().toString().padStart(2, "0");
+    const day = now.getDate().toString().padStart(2, "0");
     return `${year}${month}${day}`;
   }
 
   static getArticle = (word: string): string => {
-    return ["a", "e", "i", "o", "u"].includes(word.charAt(0).toLowerCase())
-      ? "an"
-      : "a";
+    return ["a", "e", "i", "o", "u"].includes(word.charAt(0).toLowerCase()) ? "an" : "a";
   };
 
   static doesConstraintRequireWithInText(constraint: GameConstraint): boolean {
@@ -63,7 +59,7 @@ export default class GriddeningService {
 
   static buildSetConstraintText = (
     constraintOne: GameConstraint,
-    constraintTwo: GameConstraint
+    constraintTwo: GameConstraint,
   ): string => {
     const articleOne = this.getArticle(constraintOne.displayName);
     const articleTwo = this.getArticle(constraintTwo.displayName);
@@ -100,27 +96,33 @@ export default class GriddeningService {
     constraintOne: GameConstraint,
     constraintTwo: GameConstraint,
     constraintType: ConstraintType,
-    format: (constraintOne: GameConstraint, constraintTwo: GameConstraint) => string
+    format: (constraintOne: GameConstraint, constraintTwo: GameConstraint) => string,
   ): string => {
     if (this.eitherConstraintIsOfType(constraintOne, constraintTwo, constraintType)) {
       return format(constraintOne, constraintTwo);
     }
-    return '';
+    return "";
   };
 
-  private static readonly eitherConstraintIsOfType = (one: GameConstraint, two: GameConstraint, type: ConstraintType): boolean => {
+  private static readonly eitherConstraintIsOfType = (
+    one: GameConstraint,
+    two: GameConstraint,
+    type: ConstraintType,
+  ): boolean => {
     return one.constraintType === type || two.constraintType === type;
-  }
+  };
 
   private static readonly buildManaValueConstraintText = (
     constraintOne: GameConstraint,
-    constraintTwo: GameConstraint
+    constraintTwo: GameConstraint,
   ): string => {
     const articleOne = this.getArticle(constraintOne.displayName);
     const articleTwo = this.getArticle(constraintTwo.displayName);
 
-    if (this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.Power) ||
-      this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.Toughness)) {
+    if (
+      this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.Power) ||
+      this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.Toughness)
+    ) {
       return constraintOne.constraintType === ConstraintType.Power ||
         constraintOne.constraintType === ConstraintType.Toughness
         ? `Name a card with ${constraintOne.displayName} with ${constraintTwo.displayName}.`
@@ -131,7 +133,9 @@ export default class GriddeningService {
         ? `Name a card with art by ${constraintOne.displayName} with ${constraintTwo.displayName}.`
         : `Name a card with art by ${constraintTwo.displayName} with ${constraintOne.displayName}.`;
     }
-    if (this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.CreatureRulesText)) {
+    if (
+      this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.CreatureRulesText)
+    ) {
       return constraintOne.constraintType === ConstraintType.CreatureRulesText
         ? `Name a card with rules text '${constraintOne.displayName}' with ${constraintTwo.displayName}.`
         : `Name a card with rules text '${constraintTwo.displayName}' with ${constraintOne.displayName}.`;
@@ -143,7 +147,7 @@ export default class GriddeningService {
 
   private static readonly buildPowerConstraintText = (
     constraintOne: GameConstraint,
-    constraintTwo: GameConstraint
+    constraintTwo: GameConstraint,
   ): string => {
     const articleOne = this.getArticle(constraintOne.displayName);
     const articleTwo = this.getArticle(constraintTwo.displayName);
@@ -151,18 +155,20 @@ export default class GriddeningService {
     if (this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.Toughness)) {
       return constraintOne.constraintType === ConstraintType.Power
         ? `Name a ${constraintOne.displayName.slice(
-          -1
-        )}/${constraintTwo.displayName.slice(-1)} card.`
+            -1,
+          )}/${constraintTwo.displayName.slice(-1)} card.`
         : `Name a ${constraintTwo.displayName.slice(
-          -1
-        )}/${constraintOne.displayName.slice(-1)} card.`;
+            -1,
+          )}/${constraintOne.displayName.slice(-1)} card.`;
     }
     if (this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.Artist)) {
       return constraintOne.constraintType === ConstraintType.Artist
         ? `Name a card with art by ${constraintOne.displayName} with ${constraintTwo.displayName}.`
         : `Name a card with art by ${constraintTwo.displayName} with ${constraintOne.displayName}.`;
     }
-    if (this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.CreatureRulesText)) {
+    if (
+      this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.CreatureRulesText)
+    ) {
       return constraintOne.constraintType === ConstraintType.CreatureRulesText
         ? `Name a card with rules text '${constraintOne.displayName}' with ${constraintTwo.displayName}.`
         : `Name a card with rules text '${constraintTwo.displayName}' with ${constraintOne.displayName}.`;
@@ -174,7 +180,7 @@ export default class GriddeningService {
 
   private static readonly buildToughnessConstraintText = (
     constraintOne: GameConstraint,
-    constraintTwo: GameConstraint
+    constraintTwo: GameConstraint,
   ): string => {
     const articleOne = this.getArticle(constraintOne.displayName);
     const articleTwo = this.getArticle(constraintTwo.displayName);
@@ -184,7 +190,9 @@ export default class GriddeningService {
         ? `Name a card with art by ${constraintOne.displayName} with ${constraintTwo.displayName}.`
         : `Name a card with art by ${constraintTwo.displayName} with ${constraintOne.displayName}.`;
     }
-    if (this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.CreatureRulesText)) {
+    if (
+      this.eitherConstraintIsOfType(constraintOne, constraintTwo, ConstraintType.CreatureRulesText)
+    ) {
       return constraintOne.constraintType === ConstraintType.CreatureRulesText
         ? `Name a card with rules text '${constraintOne.displayName}' with ${constraintTwo.displayName}.`
         : `Name a card with rules text '${constraintTwo.displayName}' with ${constraintOne.displayName}.`;
@@ -196,11 +204,12 @@ export default class GriddeningService {
 
   private static readonly getArtistConstraintText = (
     constraintOne: GameConstraint,
-    constraintTwo: GameConstraint
+    constraintTwo: GameConstraint,
   ): string => {
-    const [artistConstraint, otherConstraint] = constraintOne.constraintType === ConstraintType.Artist
-      ? [constraintOne, constraintTwo]
-      : [constraintTwo, constraintOne];
+    const [artistConstraint, otherConstraint] =
+      constraintOne.constraintType === ConstraintType.Artist
+        ? [constraintOne, constraintTwo]
+        : [constraintTwo, constraintOne];
 
     const otherArticle = this.getArticle(otherConstraint.displayName);
 
@@ -209,11 +218,12 @@ export default class GriddeningService {
 
   private static readonly getRarityConstraintText = (
     constraintOne: GameConstraint,
-    constraintTwo: GameConstraint
+    constraintTwo: GameConstraint,
   ): string => {
-    const [rarityConstraint, otherConstraint] = constraintOne.constraintType === ConstraintType.Rarity
-      ? [constraintOne, constraintTwo]
-      : [constraintTwo, constraintOne];
+    const [rarityConstraint, otherConstraint] =
+      constraintOne.constraintType === ConstraintType.Rarity
+        ? [constraintOne, constraintTwo]
+        : [constraintTwo, constraintOne];
 
     const rarityArticle = this.getArticle(rarityConstraint.displayName);
 
@@ -222,7 +232,7 @@ export default class GriddeningService {
 
   private static readonly getRulesTextConstraintsText = (
     constraintOne: GameConstraint,
-    constraintTwo: GameConstraint
+    constraintTwo: GameConstraint,
   ): string => {
     const articleOne = this.getArticle(constraintOne.displayName);
     const articleTwo = this.getArticle(constraintTwo.displayName);
@@ -238,12 +248,12 @@ export default class GriddeningService {
 
     return constraintOne.constraintType === ConstraintType.CreatureRulesText
       ? `Name ${articleTwo} ${constraintTwo.displayName} card with rules text '${constraintOne.displayName}'.`
-      : `Name ${articleOne} ${constraintOne.displayName} card with rules text '${constraintTwo.displayName}'.`
-  }
+      : `Name ${articleOne} ${constraintOne.displayName} card with rules text '${constraintTwo.displayName}'.`;
+  };
 
   static getTextForConstraints = (
     constraintOne: GameConstraint,
-    constraintTwo: GameConstraint
+    constraintTwo: GameConstraint,
   ): string => {
     const constraintTextBuilders = [
       { type: ConstraintType.Set, builder: this.buildSetConstraintText },
@@ -257,20 +267,24 @@ export default class GriddeningService {
 
     for (const { type, builder } of constraintTextBuilders) {
       const text = this.buildConstraintText(constraintOne, constraintTwo, type, builder);
-      if (text !== '') {
+      if (text !== "") {
         return text;
       }
     }
 
-    if (constraintOne.constraintType === ConstraintType.Color && constraintTwo.constraintType === ConstraintType.Color) {
+    if (
+      constraintOne.constraintType === ConstraintType.Color &&
+      constraintTwo.constraintType === ConstraintType.Color
+    ) {
       return `Name a ${this.getColorPairText(
         constraintOne.displayName as Color,
-        constraintTwo.displayName as Color
+        constraintTwo.displayName as Color,
       )} card.`;
     }
 
-    return `Name ${this.getArticle(constraintOne.displayName)} ${constraintOne.displayName
-      } ${constraintTwo.displayName} card.`;
+    return `Name ${this.getArticle(constraintOne.displayName)} ${
+      constraintOne.displayName
+    } ${constraintTwo.displayName} card.`;
   };
 
   static getColorPairText = (colorOne: Color, colorTwo: Color): string => {
