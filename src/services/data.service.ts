@@ -91,6 +91,16 @@ export default class DataService {
     });
   }
 
+  static async getCorrectGuessesForPlayer(
+    playerRecordId: number,
+    gameId: number,
+  ): Promise<{ correctGuess: string }[]> {
+    return await this.prisma.correctGuesses.findMany({
+      where: { playerRecordId, gameId },
+      select: { correctGuess: true },
+    });
+  }
+
   static async createCorrectGuess(
     playerId: number,
     gameId: number,

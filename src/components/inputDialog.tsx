@@ -15,11 +15,16 @@ const getConstraintsText = (constraints: GameConstraint[], squareIndex: number):
     : "";
 };
 
+interface SubmitResult {
+  success: boolean;
+  duplicate: boolean;
+}
+
 const submitAnswer = async (
   playerId: string,
   squareIndex: number,
   guess: string,
-): Promise<boolean> => {
+): Promise<SubmitResult> => {
   const response = await fetch("/api/submitAnswer", {
     method: "POST",
     headers: {
@@ -32,7 +37,7 @@ const submitAnswer = async (
     }),
   });
 
-  return response.status === 200;
+  return { success: response.status === 200, duplicate: response.status === 409 };
 };
 
 interface InputProps {
@@ -48,6 +53,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
   const [currentValue, setCurrentValue] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -57,6 +63,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
     setCurrentValue("");
     setHighlightedIndex(-1);
     setShowDropdown(false);
+    setErrorMessage("");
     dialogRef.current?.close();
   }, [props]);
 
@@ -188,12 +195,24 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
           )}
         </div>
 
+        {/* Error Message */}
+        {errorMessage && (
+          <p className="text-red-400 text-sm font-[family-name:var(--font-body)] mb-3">
+            {errorMessage}
+          </p>
+        )}
+
         {/* Submit Button */}
         <div className="flex justify-end">
           <button
             onClick={() => {
               if (currentValue.length > 0) {
-                void submitAnswer(userId, props.dialogGridIndex, currentValue).then(() => {
+                setErrorMessage("");
+                void submitAnswer(userId, props.dialogGridIndex, currentValue).then((result) => {
+                  if (result.duplicate) {
+                    setErrorMessage("You've already used that card — try a different one!");
+                    return;
+                  }
                   handleClose();
                   props.setGameState({
                     ...props.gameState,

@@ -31,6 +31,11 @@ export async function POST(request: Request): Promise<Response> {
       return new Response("Incorrect guess", { status: 422 });
     }
 
+    const existingGuesses = await DataService.getCorrectGuessesForPlayer(player.id, game.id);
+    if (existingGuesses.some((guess) => guess.correctGuess === card.name)) {
+      return new Response("Card already used", { status: 409 });
+    }
+
     const imageUrl =
       card.image_uris !== undefined && card.image_uris != null
         ? card.image_uris.png
