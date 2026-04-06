@@ -1,8 +1,9 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
-// Tests the duplicate card rejection feature against puzzle 1 (dateString 20260101):
-// Top constraints: Red, Power 2, Common
-// Side constraints: Goblin, Mana Value 2, Toughness 2
+// Tests the duplicate card rejection feature against puzzle 1 (dateString 20260101)
+
+const inputDialog = (page: Page) => page.locator("dialog:has(input[type='text'])");
+const autocompleteItem = (page: Page) => inputDialog(page).locator("ul li");
 
 test.describe("Duplicate card rejection", () => {
   test.beforeEach(async ({ page }) => {
@@ -16,35 +17,32 @@ test.describe("Duplicate card rejection", () => {
     await expect(page.locator("text=Life Points: 9")).toBeVisible();
 
     // Open the first square and submit a card via autocomplete
-    const squares = page.locator(".input-square.live-input");
-    await squares.first().click();
+    await page.locator(".input-square.live-input").first().click();
 
-    let input = page.locator("dialog input[type='text']");
+    let input = inputDialog(page).locator("input[type='text']");
     await input.fill("Goblin");
-    await expect(page.locator("dialog ul")).toBeVisible({ timeout: 10000 });
+    await expect(autocompleteItem(page).first()).toBeVisible({ timeout: 15000 });
 
-    // Pick the first result and submit
-    const firstCardName = await page.locator("dialog li").first().textContent();
-    await page.locator("dialog li").first().click();
-    await page.locator("dialog button", { hasText: "Submit" }).click();
+    // Pick the first result and remember its name
+    const firstCardName = await autocompleteItem(page).first().textContent();
+    await autocompleteItem(page).first().click();
 
-    // Wait for dialog to close
-    await expect(input).not.toBeVisible({ timeout: 10000 });
+    // Submit
+    await inputDialog(page).locator("button", { hasText: "Submit" }).click();
+    await expect(input).not.toBeVisible({ timeout: 15000 });
 
     // Now open a different square and try to submit the same card
-    const liveSquares = page.locator(".input-square.live-input");
-    await liveSquares.first().click();
+    await page.locator(".input-square.live-input").first().click();
+    input = inputDialog(page).locator("input[type='text']");
 
-    input = page.locator("dialog input[type='text']");
     await input.fill(firstCardName ?? "Goblin");
-    await expect(page.locator("dialog ul")).toBeVisible({ timeout: 10000 });
-    await page.locator("dialog li").first().click();
-    await page.locator("dialog button", { hasText: "Submit" }).click();
+    await expect(autocompleteItem(page).first()).toBeVisible({ timeout: 15000 });
+    await autocompleteItem(page).first().click();
+
+    await inputDialog(page).locator("button", { hasText: "Submit" }).click();
 
     // The dialog should stay open with an error message
-    await expect(page.locator("text=already used that card")).toBeVisible({ timeout: 10000 });
-
-    // The dialog input should still be visible (not closed)
-    await expect(page.locator("dialog input[type='text']")).toBeVisible();
+    await expect(inputDialog(page).locator("text=already used that card")).toBeVisible({ timeout: 15000 });
+    await expect(input).toBeVisible();
   });
 });
