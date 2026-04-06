@@ -8,13 +8,11 @@ export default class DataService {
   private static readonly prisma = new PrismaClient();
 
   static async getNewestGame(): Promise<Game | undefined> {
-    const games = await this.prisma.game.findMany();
+    const game = await this.prisma.game.findFirst({
+      orderBy: { dateString: "desc" },
+    });
 
-    if (games.length === 0) return undefined;
-
-    const game = games.sort(
-      (gameA, gameB) => parseInt(gameB.dateString) - parseInt(gameA.dateString),
-    )[0] as Game;
+    if (game === null) return undefined;
 
     return new Game(game.id, game.dateString, game.constraintsJSON);
   }
@@ -80,10 +78,10 @@ export default class DataService {
     });
   }
 
-  static async updatePlayerLifeValue(playerId: number, newLifepoints: number): Promise<void> {
+  static async updatePlayerLifeValue(playerRecordId: number, newLifepoints: number): Promise<void> {
     await this.prisma.playerRecord.update({
       where: {
-        id: playerId,
+        id: playerRecordId,
       },
       data: {
         lifePoints: newLifepoints,
@@ -102,7 +100,7 @@ export default class DataService {
   }
 
   static async createCorrectGuess(
-    playerId: number,
+    playerRecordId: number,
     gameId: number,
     squareIndex: number,
     cardName: string,
@@ -110,7 +108,7 @@ export default class DataService {
   ): Promise<void> {
     await this.prisma.correctGuesses.create({
       data: {
-        playerRecordId: playerId,
+        playerRecordId,
         gameId,
         squareIndex,
         correctGuess: cardName,
