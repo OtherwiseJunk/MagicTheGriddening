@@ -4,6 +4,9 @@ import { test, expect, type Page } from "@playwright/test";
 
 const inputDialog = (page: Page) => page.locator("dialog:has(input[type='text'])");
 const autocompleteItem = (page: Page) => inputDialog(page).locator("ul li");
+const exactAutocompleteItem = (page: Page, cardName: string) =>
+  autocompleteItem(page).filter({ hasText: cardName });
+const duplicateTestCardName = "Battle Cry Goblin";
 
 test.describe("Duplicate card rejection", () => {
   test.beforeEach(async ({ page }) => {
@@ -20,12 +23,11 @@ test.describe("Duplicate card rejection", () => {
     await page.locator(".input-square.live-input").first().click();
 
     let input = inputDialog(page).locator("input[type='text']");
-    await input.fill("Goblin");
-    await expect(autocompleteItem(page).first()).toBeVisible({ timeout: 15000 });
-
-    // Pick the first result and remember its name
-    const firstCardName = await autocompleteItem(page).first().textContent();
-    await autocompleteItem(page).first().click();
+    await input.fill(duplicateTestCardName);
+    await expect(exactAutocompleteItem(page, duplicateTestCardName)).toBeVisible({
+      timeout: 15000,
+    });
+    await exactAutocompleteItem(page, duplicateTestCardName).click();
 
     // Submit
     await inputDialog(page).locator("button", { hasText: "Submit" }).click();
@@ -35,9 +37,11 @@ test.describe("Duplicate card rejection", () => {
     await page.locator(".input-square.live-input").first().click();
     input = inputDialog(page).locator("input[type='text']");
 
-    await input.fill(firstCardName ?? "Goblin");
-    await expect(autocompleteItem(page).first()).toBeVisible({ timeout: 15000 });
-    await autocompleteItem(page).first().click();
+    await input.fill(duplicateTestCardName);
+    await expect(exactAutocompleteItem(page, duplicateTestCardName)).toBeVisible({
+      timeout: 15000,
+    });
+    await exactAutocompleteItem(page, duplicateTestCardName).click();
 
     await inputDialog(page).locator("button", { hasText: "Submit" }).click();
 

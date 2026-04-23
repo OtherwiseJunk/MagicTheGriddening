@@ -9,6 +9,9 @@ import { test, expect, type Page } from "@playwright/test";
 const inputDialog = (page: Page) => page.locator("dialog:has(input[type='text'])");
 const autocompleteList = (page: Page) => inputDialog(page).locator("ul");
 const autocompleteItem = (page: Page) => autocompleteList(page).locator("li");
+const exactAutocompleteItem = (page: Page, cardName: string) =>
+  autocompleteItem(page).filter({ hasText: cardName });
+const duplicateTestCardName = "Battle Cry Goblin";
 
 test.describe("Game board", () => {
   test.beforeEach(async ({ page }) => {
@@ -101,12 +104,12 @@ test.describe("Game board", () => {
     await page.locator(".input-square.live-input").first().click();
     const input = inputDialog(page).locator("input[type='text']");
 
-    // Search for a card that matches Red + Goblin
-    await input.fill("Goblin");
-    await expect(autocompleteItem(page).first()).toBeVisible({ timeout: 15000 });
-
-    // Click the first autocomplete result
-    await autocompleteItem(page).first().click();
+    // Search for a known-valid card that matches Red + Goblin
+    await input.fill(duplicateTestCardName);
+    await expect(exactAutocompleteItem(page, duplicateTestCardName)).toBeVisible({
+      timeout: 15000,
+    });
+    await exactAutocompleteItem(page, duplicateTestCardName).click();
 
     // Submit the selected card
     await inputDialog(page).locator("button", { hasText: "Submit" }).click();
