@@ -1,10 +1,8 @@
 import { type GameConstraint } from "@/models/UI/gameConstraint";
 import { type CorrectGuess } from "@/models/UI/correctGuess";
 import { GameState } from "@/models/UI/gameState";
-import ScryfallService from "@/services/scryfall.service";
 import GriddeningService from "@/services/griddening.service";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { type Card } from "scryfall-sdk";
 
 const getConstraintsText = (constraints: GameConstraint[], squareIndex: number): string => {
   const [constraintOne, constraintTwo] = GriddeningService.getGameConstraintsForIndex(
@@ -20,6 +18,10 @@ interface SubmitResult {
   outcome: "correct" | "duplicate" | "incorrect" | "error";
   lifePoints?: number;
   correctGuess?: CorrectGuess;
+}
+
+interface AutocompleteResponse {
+  options: string[];
 }
 
 const submitAnswer = async (
@@ -86,6 +88,8 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const latestQueryRef = useRef("");
+  const debounceTimerRef = useRef<number | null>(null);
+  const autocompleteRequestRef = useRef<AbortController | null>(null);
 
   const handleClose = useCallback((): void => {
     props.setIsOpen(false);
@@ -94,6 +98,12 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
     setHighlightedIndex(-1);
     setShowDropdown(false);
     setErrorMessage("");
+    if (debounceTimerRef.current !== null) {
+      window.clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    autocompleteRequestRef.current?.abort();
+    autocompleteRequestRef.current = null;
     if (dialogRef.current?.open === true) {
       dialogRef.current.close();
     }
@@ -113,33 +123,65 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
     }
   }, [props.isOpen]);
 
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current !== null) {
+        window.clearTimeout(debounceTimerRef.current);
+      }
+      autocompleteRequestRef.current?.abort();
+    };
+  }, []);
+
+  const fetchCardOptions = async (query: string, signal: AbortSignal): Promise<string[]> => {
+    const response = await fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`, {
+      cache: "no-store",
+      signal,
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const responseBody = (await response.json()) as AutocompleteResponse;
+    return responseBody.options;
+  };
+
   const updateCardOptions = async (newValue: string): Promise<void> => {
     setCurrentValue(newValue);
     setHighlightedIndex(-1);
     latestQueryRef.current = newValue;
+    if (debounceTimerRef.current !== null) {
+      window.clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    autocompleteRequestRef.current?.abort();
+    autocompleteRequestRef.current = null;
 
     if (newValue.length >= 3) {
-      await ScryfallService.getCards(newValue).then((foundCards: Card[]) => {
-        if (latestQueryRef.current !== newValue) {
-          return;
-        }
-        const normalizedValue = newValue.toLowerCase();
-        const options = foundCards
-          .map((card) => card.name)
-          .filter((cardName) => cardName.toLowerCase().includes(normalizedValue))
-          .sort((left, right) => {
-            const leftExactMatch = left.toLowerCase() === normalizedValue;
-            const rightExactMatch = right.toLowerCase() === normalizedValue;
+      debounceTimerRef.current = window.setTimeout(() => {
+        const autocompleteRequest = new AbortController();
+        autocompleteRequestRef.current = autocompleteRequest;
 
-            if (leftExactMatch !== rightExactMatch) {
-              return leftExactMatch ? -1 : 1;
+        void fetchCardOptions(newValue, autocompleteRequest.signal)
+          .then((options) => {
+            if (latestQueryRef.current !== newValue) {
+              return;
             }
 
-            return left.localeCompare(right);
+            setCardOptions(options);
+            setShowDropdown(options.length > 0);
+          })
+          .catch((error: unknown) => {
+            if ((error as { name?: string }).name === "AbortError") {
+              return;
+            }
+
+            if (latestQueryRef.current === newValue) {
+              setCardOptions([]);
+              setShowDropdown(false);
+            }
           });
-        setCardOptions(options);
-        setShowDropdown(options.length > 0);
-      });
+      }, 200);
     } else {
       setCardOptions([]);
       setShowDropdown(false);

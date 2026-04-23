@@ -9,8 +9,11 @@ services:
       dockerfile: ./dockerfile
     environment:
       NODE_ENV: production
+      AUTOCOMPLETE_DATA_DIR: /app/data
     ports:
       - 3001:3000
+    volumes:
+      - griddening-volume:/app/data
 
   postgres:
     container_name: mtg-db
@@ -38,12 +41,13 @@ services:
       - BLUESKY_USERNAME=$BLUESKY_USERNAME
       - BLUESKY_PASSWORD=$BLUESKY_PASSWORD
 
-  logging:
-    container_name: mtg-logger
-    image: griddeninglogger
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/griddening?schema=public
-    restart: on-failure
+#  logging:
+#    container_name: mtg-logger
+#    image: griddeninglogger
+#    environment:
+#      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/griddening?schema=public
+#    restart: on-failure
 
 volumes:
   postgres-volume:
+  griddening-volume:
