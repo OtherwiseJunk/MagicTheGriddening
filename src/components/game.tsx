@@ -94,11 +94,7 @@ export default function Game(): React.JSX.Element {
             imageSource={gameConstraints[3]?.imageSrc}
             imageAltText={gameConstraints[3]?.imageAltText}
           />
-          <GameBoard
-            userId={userId}
-            gameState={gameState}
-            setGameState={setGameState}
-          />
+          <GameBoard userId={userId} gameState={gameState} setGameState={setGameState} />
           <HeaderSquare
             text={gameConstraints[4]?.displayName}
             imageSource={gameConstraints[4]?.imageSrc}

@@ -40,8 +40,11 @@ const submitAnswer = async (
     }),
   });
 
-  const isJsonResponse = response.headers.get("Content-Type")?.includes("application/json") ?? false;
-  const responseBody = isJsonResponse ? ((await response.json()) as Partial<SubmitResult>) : undefined;
+  const isJsonResponse =
+    response.headers.get("Content-Type")?.includes("application/json") ?? false;
+  const responseBody = isJsonResponse
+    ? ((await response.json()) as Partial<SubmitResult>)
+    : undefined;
 
   if (response.status === 200 && responseBody?.lifePoints !== undefined) {
     return {
@@ -250,47 +253,53 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
           <button
             onClick={() => {
               if (props.userId === "") {
-                setErrorMessage("Your session is still initializing. Please try again in a moment.");
+                setErrorMessage(
+                  "Your session is still initializing. Please try again in a moment.",
+                );
                 return;
               }
 
               if (currentValue.length > 0) {
                 setErrorMessage("");
-                void submitAnswer(props.userId, props.dialogGridIndex, currentValue).then((result) => {
-                  if (result.outcome === "duplicate") {
-                    setErrorMessage("You've already used that card — try a different one!");
-                    return;
-                  }
+                void submitAnswer(props.userId, props.dialogGridIndex, currentValue).then(
+                  (result) => {
+                    if (result.outcome === "duplicate") {
+                      setErrorMessage("You've already used that card — try a different one!");
+                      return;
+                    }
 
-                  if (result.outcome === "error" || result.lifePoints === undefined) {
-                    setErrorMessage("Something went wrong submitting that guess. Please try again.");
-                    return;
-                  }
+                    if (result.outcome === "error" || result.lifePoints === undefined) {
+                      setErrorMessage(
+                        "Something went wrong submitting that guess. Please try again.",
+                      );
+                      return;
+                    }
 
-                  const nextLifePoints = result.lifePoints;
-                  props.setGameState((currentGameState) => {
-                    const submittedGuess = result.correctGuess;
-                    const nextCorrectGuesses =
-                      submittedGuess === undefined
-                        ? currentGameState.correctGuesses
-                        : currentGameState.correctGuesses
-                            .filter(
-                              (correctGuess) =>
-                                correctGuess.squareIndex !== submittedGuess.squareIndex &&
-                                correctGuess.cardName !== submittedGuess.cardName,
-                            )
-                            .concat(submittedGuess)
-                            .sort((left, right) => left.squareIndex - right.squareIndex);
+                    const nextLifePoints = result.lifePoints;
+                    props.setGameState((currentGameState) => {
+                      const submittedGuess = result.correctGuess;
+                      const nextCorrectGuesses =
+                        submittedGuess === undefined
+                          ? currentGameState.correctGuesses
+                          : currentGameState.correctGuesses
+                              .filter(
+                                (correctGuess) =>
+                                  correctGuess.squareIndex !== submittedGuess.squareIndex &&
+                                  correctGuess.cardName !== submittedGuess.cardName,
+                              )
+                              .concat(submittedGuess)
+                              .sort((left, right) => left.squareIndex - right.squareIndex);
 
-                    return new GameState(
-                      currentGameState.gameConstraints,
-                      nextLifePoints,
-                      nextCorrectGuesses,
-                    );
-                  });
+                      return new GameState(
+                        currentGameState.gameConstraints,
+                        nextLifePoints,
+                        nextCorrectGuesses,
+                      );
+                    });
 
-                  handleClose();
-                });
+                    handleClose();
+                  },
+                );
               }
             }}
             disabled={props.userId === ""}
