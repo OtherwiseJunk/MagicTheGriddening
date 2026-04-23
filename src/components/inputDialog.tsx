@@ -1,6 +1,6 @@
 import { type GameConstraint } from "@/models/UI/gameConstraint";
 import { type CorrectGuess } from "@/models/UI/correctGuess";
-import { type GameState } from "@/models/UI/gameState";
+import { GameState } from "@/models/UI/gameState";
 import ScryfallService from "@/services/scryfall.service";
 import GriddeningService from "@/services/griddening.service";
 import React, { useCallback, useEffect, useRef, useState } from "react";
