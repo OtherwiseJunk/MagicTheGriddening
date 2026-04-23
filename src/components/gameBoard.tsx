@@ -6,9 +6,9 @@ import React, { useState } from "react";
 import InputDialog from "./inputDialog";
 
 interface GameBoardPrompts {
+  userId: string;
   gameState: GameState;
-  setGameState: (gameState: GameState) => void;
-  onGuessSubmitted: () => void;
+  setGameState: React.Dispatch<React.SetStateAction<GameState>>;
 }
 
 const inputSquares = (
@@ -106,14 +106,14 @@ export default function GameBoard(props: GameBoardPrompts): React.JSX.Element {
   return (
     <div className="grid col-span-3 row-span-3 grid-cols-3 grid-rows-3">
       {inputSquares(props, handleOpen, setDialogGridIndex)}
-      {InputDialog({
-        isOpen,
-        setIsOpen: setOpen,
-        dialogGridIndex,
-        gameState: props.gameState,
-        setGameState: props.setGameState,
-        onGuessSubmitted: props.onGuessSubmitted,
-      })}
+      <InputDialog
+        userId={props.userId}
+        isOpen={isOpen}
+        setIsOpen={setOpen}
+        dialogGridIndex={dialogGridIndex}
+        gameState={props.gameState}
+        setGameState={props.setGameState}
+      />
     </div>
   );
 }

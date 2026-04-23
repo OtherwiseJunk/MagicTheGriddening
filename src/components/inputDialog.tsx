@@ -1,4 +1,5 @@
 import { type GameConstraint } from "@/models/UI/gameConstraint";
+import { type CorrectGuess } from "@/models/UI/correctGuess";
 import { type GameState } from "@/models/UI/gameState";
 import ScryfallService from "@/services/scryfall.service";
 import GriddeningService from "@/services/griddening.service";
@@ -16,8 +17,9 @@ const getConstraintsText = (constraints: GameConstraint[], squareIndex: number):
 };
 
 interface SubmitResult {
-  success: boolean;
-  duplicate: boolean;
+  outcome: "correct" | "duplicate" | "incorrect" | "error";
+  lifePoints?: number;
+  correctGuess?: CorrectGuess;
 }
 
 const submitAnswer = async (
@@ -27,6 +29,7 @@ const submitAnswer = async (
 ): Promise<SubmitResult> => {
   const response = await fetch("/api/submitAnswer", {
     method: "POST",
+    cache: "no-store",
     headers: {
       "Content-Type": "application/json",
     },
@@ -37,13 +40,35 @@ const submitAnswer = async (
     }),
   });
 
-  return { success: response.status === 200, duplicate: response.status === 409 };
+  const isJsonResponse = response.headers.get("Content-Type")?.includes("application/json") ?? false;
+  const responseBody = isJsonResponse ? ((await response.json()) as Partial<SubmitResult>) : undefined;
+
+  if (response.status === 200 && responseBody?.lifePoints !== undefined) {
+    return {
+      outcome: "correct",
+      lifePoints: responseBody.lifePoints,
+      correctGuess: responseBody.correctGuess,
+    };
+  }
+
+  if (response.status === 409) {
+    return { outcome: "duplicate" };
+  }
+
+  if (response.status === 422 && responseBody?.lifePoints !== undefined) {
+    return {
+      outcome: "incorrect",
+      lifePoints: responseBody.lifePoints,
+    };
+  }
+
+  return { outcome: "error" };
 };
 
 interface InputProps {
+  userId: string;
   gameState: GameState;
-  setGameState: (gameState: GameState) => void;
-  onGuessSubmitted: () => void;
+  setGameState: React.Dispatch<React.SetStateAction<GameState>>;
   dialogGridIndex: number;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
@@ -57,6 +82,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
   const [errorMessage, setErrorMessage] = useState("");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const latestQueryRef = useRef("");
 
   const handleClose = useCallback((): void => {
     props.setIsOpen(false);
@@ -65,27 +91,49 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
     setHighlightedIndex(-1);
     setShowDropdown(false);
     setErrorMessage("");
-    dialogRef.current?.close();
+    if (dialogRef.current?.open === true) {
+      dialogRef.current.close();
+    }
   }, [props]);
 
   useEffect(() => {
     if (props.isOpen) {
-      dialogRef.current?.showModal();
-      setTimeout(() => inputRef.current?.focus(), 100);
+      if (dialogRef.current?.open !== true) {
+        dialogRef.current?.showModal();
+      }
+      const focusTimer = setTimeout(() => inputRef.current?.focus(), 100);
+      return () => clearTimeout(focusTimer);
     } else {
-      dialogRef.current?.close();
+      if (dialogRef.current?.open === true) {
+        dialogRef.current.close();
+      }
     }
   }, [props.isOpen]);
 
   const updateCardOptions = async (newValue: string): Promise<void> => {
     setCurrentValue(newValue);
     setHighlightedIndex(-1);
+    latestQueryRef.current = newValue;
 
     if (newValue.length >= 3) {
       await ScryfallService.getCards(newValue).then((foundCards: Card[]) => {
+        if (latestQueryRef.current !== newValue) {
+          return;
+        }
+        const normalizedValue = newValue.toLowerCase();
         const options = foundCards
           .map((card) => card.name)
-          .filter((cardName) => cardName.toLowerCase().includes(newValue.toLowerCase()));
+          .filter((cardName) => cardName.toLowerCase().includes(normalizedValue))
+          .sort((left, right) => {
+            const leftExactMatch = left.toLowerCase() === normalizedValue;
+            const rightExactMatch = right.toLowerCase() === normalizedValue;
+
+            if (leftExactMatch !== rightExactMatch) {
+              return leftExactMatch ? -1 : 1;
+            }
+
+            return left.localeCompare(right);
+          });
         setCardOptions(options);
         setShowDropdown(options.length > 0);
       });
@@ -118,24 +166,18 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
     }
   };
 
-  const [userId, setUserId] = useState<string>("");
-
-  useEffect(() => {
-    let storedUserId: string | null = localStorage.getItem("griddening.userId");
-    if (storedUserId == null) {
-      storedUserId = crypto.randomUUID();
-      localStorage.setItem("griddening.userId", storedUserId);
-    }
-    setUserId(storedUserId);
-  }, []);
-
   return (
     <dialog
       ref={dialogRef}
       onClose={handleClose}
-      className="bg-transparent p-0 max-w-[90vw] md:max-w-lg"
+      onClick={(e) => {
+        if (e.target === dialogRef.current) {
+          handleClose();
+        }
+      }}
+      className="bg-transparent p-0 max-w-[90vw] md:max-w-lg overflow-visible border-none backdrop:bg-black/60"
     >
-      <div className="paper-texture bg-dark-vellum p-5 md:p-8 bordered border-gold-leaf rounded-xl">
+      <div className="paper-texture relative overflow-visible bg-dark-vellum p-5 md:p-8 bordered border-gold-leaf rounded-xl">
         {/* Constraint Label */}
         <label className="block text-text-gold text-sm md:text-lg font-[family-name:var(--font-body)] font-semibold mb-4 input-label">
           {getConstraintsText(props.gameState.gameConstraints, props.dialogGridIndex)}
@@ -167,7 +209,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
           {showDropdown && (
             <ul
               className={[
-                "absolute z-50 w-full mt-1 max-h-48",
+                "absolute left-0 top-full z-50 w-full mt-1 max-h-[40vh]",
                 "overflow-y-auto bg-dark-vellum",
                 "border-2 border-gold-leaf/30 rounded-lg",
                 "shadow-[0_8px_24px_rgba(0,0,0,0.6)]",
@@ -207,18 +249,50 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
         <div className="flex justify-end">
           <button
             onClick={() => {
+              if (props.userId === "") {
+                setErrorMessage("Your session is still initializing. Please try again in a moment.");
+                return;
+              }
+
               if (currentValue.length > 0) {
                 setErrorMessage("");
-                void submitAnswer(userId, props.dialogGridIndex, currentValue).then((result) => {
-                  if (result.duplicate) {
+                void submitAnswer(props.userId, props.dialogGridIndex, currentValue).then((result) => {
+                  if (result.outcome === "duplicate") {
                     setErrorMessage("You've already used that card — try a different one!");
                     return;
                   }
+
+                  if (result.outcome === "error" || result.lifePoints === undefined) {
+                    setErrorMessage("Something went wrong submitting that guess. Please try again.");
+                    return;
+                  }
+
+                  props.setGameState((currentGameState) => {
+                    const submittedGuess = result.correctGuess;
+                    const nextCorrectGuesses =
+                      submittedGuess === undefined
+                        ? currentGameState.correctGuesses
+                        : currentGameState.correctGuesses
+                            .filter(
+                              (correctGuess) =>
+                                correctGuess.squareIndex !== submittedGuess.squareIndex &&
+                                correctGuess.cardName !== submittedGuess.cardName,
+                            )
+                            .concat(submittedGuess)
+                            .sort((left, right) => left.squareIndex - right.squareIndex);
+
+                    return new GameState(
+                      currentGameState.gameConstraints,
+                      result.lifePoints,
+                      nextCorrectGuesses,
+                    );
+                  });
+
                   handleClose();
-                  props.onGuessSubmitted();
                 });
               }
             }}
+            disabled={props.userId === ""}
             className={[
               "px-6 py-2 bg-mana-blue",
               "border-2 border-gold-leaf/60 rounded-lg",
@@ -227,6 +301,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
               "font-semibold tracking-wide",
               "hover:border-gold-leaf",
               "hover:shadow-[0_0_16px_rgba(201,168,76,0.3)]",
+              "disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-none",
               "active:scale-95 transition-all duration-200",
             ].join(" ")}
           >
