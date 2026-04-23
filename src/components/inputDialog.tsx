@@ -267,6 +267,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
                     return;
                   }
 
+                  const nextLifePoints = result.lifePoints;
                   props.setGameState((currentGameState) => {
                     const submittedGuess = result.correctGuess;
                     const nextCorrectGuesses =
@@ -283,7 +284,7 @@ export default function InputDialog(props: InputProps): React.JSX.Element {
 
                     return new GameState(
                       currentGameState.gameConstraints,
-                      result.lifePoints,
+                      nextLifePoints,
                       nextCorrectGuesses,
                     );
                   });
