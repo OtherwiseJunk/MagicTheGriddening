@@ -10,18 +10,29 @@ export async function GET(
   try {
     const gameState = await buildGameStateForUser(params.playerId);
     if (gameState.gameConstraints !== undefined && gameState.gameConstraints.length > 0) {
-      return new Response(JSON.stringify(gameState));
+      return new Response(JSON.stringify(gameState), {
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      });
     }
 
     return new Response(JSON.stringify({ error: "Failed to retrieve today's game" }), {
       status: 404,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      },
     });
   } catch (error) {
     console.error("Error retrieving game state:", error);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      },
     });
   }
 }

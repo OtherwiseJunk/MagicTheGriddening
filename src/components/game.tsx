@@ -10,12 +10,11 @@ import { type GameConstraint } from "@/models/UI/gameConstraint";
 export default function Game(): React.JSX.Element {
   const [gameState, setGameState] = useState<GameState>(new GameState([], -1, []));
   const [userId, setUserId] = useState<string>("");
-  const [refetchTrigger, setRefetchTrigger] = useState(0);
   async function getGameState(userId: string): Promise<void> {
-    const res = await fetch(`/api/gameState/${userId}`);
+    const res = await fetch(`/api/gameState/${userId}`, { cache: "no-store" });
     if (!res.ok) return;
     const data: GameState = await res.json();
-    setGameState(data);
+    setGameState(new GameState(data.gameConstraints, data.lifePoints, data.correctGuesses));
   }
 
   useEffect(() => {
@@ -32,7 +31,7 @@ export default function Game(): React.JSX.Element {
     if (userId !== "") {
       void getGameState(userId);
     }
-  }, [refetchTrigger, userId]);
+  }, [userId]);
 
   const lifePointsString = `Life Points: ${gameState.lifePoints}`;
   const gameConstraints: GameConstraint[] = gameState.gameConstraints;
@@ -96,11 +95,9 @@ export default function Game(): React.JSX.Element {
             imageAltText={gameConstraints[3]?.imageAltText}
           />
           <GameBoard
+            userId={userId}
             gameState={gameState}
             setGameState={setGameState}
-            onGuessSubmitted={() => {
-              setRefetchTrigger((n) => n + 1);
-            }}
           />
           <HeaderSquare
             text={gameConstraints[4]?.displayName}

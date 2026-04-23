@@ -65,6 +65,7 @@ describe("POST /api/submitAnswer", () => {
     const response = await POST(makeRequest({ playerId: "test-uuid", squareIndex: 0, guess: "Nonexistent Card" }));
 
     expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ outcome: "incorrect", lifePoints: 8 });
     expect(DataService.updatePlayerLifeValue).toHaveBeenCalledWith(1, 8);
   });
 
@@ -79,6 +80,15 @@ describe("POST /api/submitAnswer", () => {
     const response = await POST(makeRequest({ playerId: "test-uuid", squareIndex: 0, guess: "Lightning Bolt" }));
 
     expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      outcome: "correct",
+      lifePoints: 8,
+      correctGuess: {
+        cardName: "Lightning Bolt",
+        imageUrl: "http://example.com/bolt.png",
+        squareIndex: 0,
+      },
+    });
     expect(DataService.createCorrectGuess).toHaveBeenCalledWith(
       1, 1, 0, "Lightning Bolt", "http://example.com/bolt.png",
     );
@@ -98,6 +108,7 @@ describe("POST /api/submitAnswer", () => {
     const response = await POST(makeRequest({ playerId: "test-uuid", squareIndex: 1, guess: "Lightning Bolt" }));
 
     expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ outcome: "duplicate" });
     expect(DataService.updatePlayerLifeValue).not.toHaveBeenCalled();
     expect(DataService.createCorrectGuess).not.toHaveBeenCalled();
   });

@@ -50,6 +50,7 @@ describe("GET /api/gameState/[playerId]", () => {
     expect(body.lifePoints).toBe(9);
     expect(body.correctGuesses).toHaveLength(1);
     expect(body.gameConstraints).toHaveLength(6);
+    expect(response.headers.get("Cache-Control")).toContain("no-store");
   });
 
   it("returns game state with 9 life for new player", async () => {
