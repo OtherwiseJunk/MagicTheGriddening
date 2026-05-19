@@ -2,11 +2,9 @@ import { BskyAgent, RichText } from "@atproto/api";
 import * as dotenv from "dotenv";
 import { CronJob } from "cron";
 import * as process from "process";
-import { getDailyPuzzleAltText, getDailyPuzzleScreenshot, getPostText } from "./griddening.service";
+import { getDailyPuzzleAltText, getDailyPuzzleScreenshot, getPostText, ensureBotLabel } from "./griddening.service";
 
 dotenv.config();
-
-const BOT_LABEL = "!automated";
 
 // Create a Bluesky Agent
 const agent = new BskyAgent({
@@ -14,36 +12,6 @@ const agent = new BskyAgent({
 });
 
 let lastPostUri: { uri: string; cid: string } | undefined;
-
-async function ensureBotLabel(): Promise<void> {
-  const did = agent.session?.did;
-  if (!did) return;
-
-  const { data } = await agent.api.com.atproto.repo.getRecord({
-    repo: did,
-    collection: "app.bsky.actor.profile",
-    rkey: "self",
-  });
-
-  const record = data.record as Record<string, unknown>;
-  const labels = record.labels as { values?: { val: string }[] } | undefined;
-
-  if (labels?.values?.some((l) => l.val === BOT_LABEL)) return;
-
-  await agent.api.com.atproto.repo.putRecord({
-    repo: did,
-    collection: "app.bsky.actor.profile",
-    rkey: "self",
-    record: {
-      ...record,
-      labels: {
-        $type: "com.atproto.label.defs#selfLabels",
-        values: [...(labels?.values ?? []), { val: BOT_LABEL }],
-      },
-    },
-  });
-  console.log("Bot label registered.");
-}
 
 async function postPuzzleInAM() {
   lastPostUri = undefined;
@@ -67,7 +35,7 @@ async function postPuzzleInAM() {
     return;
   }
 
-  await ensureBotLabel();
+  await ensureBotLabel(agent);
 
   const image = await agent.uploadBlob(imageData, {
     encoding: "image/png",
