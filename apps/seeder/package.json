@@ -1,0 +1,37 @@
+{
+  "name": "grid-the-seedening",
+  "version": "1.0.0",
+  "description": "seeder for Magic: The Griddening",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "start": "node --loader ts-node/esm main.ts",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint . --fix",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "db:setup": "prisma migrate dev",
+    "db:reset": "prisma migrate reset",
+    "db:push": "prisma db push"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/node-schedule": "^2.1.5",
+    "@vitest/coverage-v8": "^3.2.4",
+    "oxfmt": "^0.13.0",
+    "oxlint": "^1.28.0",
+    "prisma": "^6.19.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "vitest": "^3.2.4",
+    "vitest-mock-extended": "^3.1.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "node-schedule": "^2.1.1",
+    "scryfall-sdk": "^5.0.3"
+  }
+}

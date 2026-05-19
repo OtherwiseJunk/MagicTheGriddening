@@ -1,0 +1,15 @@
+# Using the official Microsoft Dev Container image for Node.js & TypeScript.
+# It comes with Node.js, TypeScript, and common development tools pre-installed.
+FROM mcr.microsoft.com/devcontainers/typescript-node:20
+
+# The base image creates a non-root user 'node' with sudo access.
+# We'll switch to it to avoid running as root.
+USER node
+
+# The WORKDIR is already set to /workspaces/Grid-The-Seedening in the base image,
+# which is where VS Code will mount your project.
+
+# This Dockerfile is now much simpler because the dev container's entrypoint
+# and lifecycle are managed by the devcontainer.json configuration
+# (e.g., using `postCreateCommand` to run `npm install`).
+# The base image's default command keeps the container alive.
