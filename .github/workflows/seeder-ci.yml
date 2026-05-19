@@ -1,0 +1,115 @@
+name: Seeder CI
+
+on:
+  pull_request:
+    paths:
+      - "apps/seeder/**"
+      - "packages/**"
+
+defaults:
+  run:
+    working-directory: apps/seeder
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: griddening
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/griddening?schema=public
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Install Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20.x
+          cache: npm
+          cache-dependency-path: apps/seeder/package-lock.json
+      - name: Install Deps
+        run: npm install
+      - name: Lint
+        run: npm run lint
+      - name: Format Check
+        run: npm run format:check
+      - name: Test
+        run: npx vitest --coverage.enabled true
+      - name: Report Coverage
+        if: always()
+        uses: davelosert/vitest-coverage-report-action@02f3c2e641286b7fa308cd3e430783103ce6103b # v2
+      - name: Setup Database
+        run: npx prisma db push
+      - name: Integration Test - Generate Puzzles
+        run: node --loader ts-node/esm main.ts
+        env:
+          RUN_ONCE: true
+          MINIMUM_HITS: 1
+        timeout-minutes: 5
+      - name: Verify Puzzles Created
+        run: |
+          COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM \"Game\";" | tr -d ' ')
+          echo "Games created: $COUNT"
+          if [ "$COUNT" -lt 1 ]; then
+            echo "No games were created!"
+            exit 1
+          fi
+      - name: Build Docker Image
+        run: docker build -t grid-the-seedening:pr-test .
+      - name: Reset Database
+        run: psql "$DATABASE_URL" -c "DELETE FROM \"Game\";"
+      - name: Docker Integration Test
+        run: |
+          docker run --rm \
+            --network host \
+            -e DATABASE_URL="$DATABASE_URL" \
+            -e RUN_ONCE=true \
+            -e MINIMUM_HITS=1 \
+            grid-the-seedening:pr-test
+        timeout-minutes: 5
+      - name: Verify Docker Puzzles Created
+        run: |
+          COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM \"Game\";" | tr -d ' ')
+          echo "Games created by Docker container: $COUNT"
+          if [ "$COUNT" -lt 1 ]; then
+            echo "No games were created!"
+            exit 1
+          fi
+      - name: Reset Database Before Scheduler Test
+        run: psql "${DATABASE_URL%%\?*}" -c "DELETE FROM \"Game\";"
+      - name: Docker Scheduler Test
+        run: |
+          docker run -d --name scheduler-test \
+            --network host \
+            -e DATABASE_URL="$DATABASE_URL" \
+            -e MINIMUM_HITS=1 \
+            -e CRON_SCHEDULE="*/15 * * * * *" \
+            grid-the-seedening:pr-test
+          sleep 50
+          docker logs scheduler-test
+          FIRINGS=$(docker logs scheduler-test 2>&1 | grep -c "firing job" || true)
+          docker stop scheduler-test >/dev/null
+          docker rm scheduler-test >/dev/null
+          echo "Scheduler fired $FIRINGS time(s)"
+          if [ "$FIRINGS" -lt 2 ]; then
+            echo "Expected scheduler to fire at least 2 times"
+            exit 1
+          fi
+        timeout-minutes: 3

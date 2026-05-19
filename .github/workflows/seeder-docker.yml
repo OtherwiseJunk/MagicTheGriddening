@@ -1,0 +1,115 @@
+name: Seeder Docker
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "apps/seeder/**"
+      - "packages/**"
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/otherwisejunk/grid-the-seedening
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: griddening
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/griddening?schema=public
+
+    defaults:
+      run:
+        working-directory: apps/seeder
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Install Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20.x
+          cache: npm
+          cache-dependency-path: apps/seeder/package-lock.json
+      - name: Install Deps
+        run: npm install
+      - name: Lint
+        run: npm run lint
+      - name: Format Check
+        run: npm run format:check
+      - name: Test
+        run: npx vitest run
+      - name: Setup Database
+        run: npx prisma db push
+      - name: Build Docker Image
+        id: build
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4 # v6
+        with:
+          context: apps/seeder
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          load: true
+      - name: Docker Integration Test
+        run: |
+          docker run --rm \
+            --network host \
+            -e DATABASE_URL="$DATABASE_URL" \
+            -e RUN_ONCE=true \
+            -e MINIMUM_HITS=1 \
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+        timeout-minutes: 5
+      - name: Verify Puzzles Created
+        run: |
+          COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM \"Game\";" | tr -d ' ')
+          echo "Games created by Docker container: $COUNT"
+          if [ "$COUNT" -lt 1 ]; then
+            echo "No games were created!"
+            exit 1
+          fi
+      - name: Reset Database Before Scheduler Test
+        run: psql "${DATABASE_URL%%\?*}" -c "DELETE FROM \"Game\";"
+      - name: Docker Scheduler Test
+        run: |
+          docker run -d --name scheduler-test \
+            --network host \
+            -e DATABASE_URL="$DATABASE_URL" \
+            -e MINIMUM_HITS=1 \
+            -e CRON_SCHEDULE="*/15 * * * * *" \
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          sleep 50
+          docker logs scheduler-test
+          FIRINGS=$(docker logs scheduler-test 2>&1 | grep -c "firing job" || true)
+          docker stop scheduler-test >/dev/null
+          docker rm scheduler-test >/dev/null
+          echo "Scheduler fired $FIRINGS time(s)"
+          if [ "$FIRINGS" -lt 2 ]; then
+            echo "Expected scheduler to fire at least 2 times"
+            exit 1
+          fi
+        timeout-minutes: 3
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1 # v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push Docker image
+        run: docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
