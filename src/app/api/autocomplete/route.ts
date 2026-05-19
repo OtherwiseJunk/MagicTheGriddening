@@ -3,8 +3,6 @@ import AutocompleteService from "@/services/autocomplete.service";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-AutocompleteService.prime();
-
 export async function GET(request: Request): Promise<Response> {
   try {
     const query = new URL(request.url).searchParams.get("q") ?? "";

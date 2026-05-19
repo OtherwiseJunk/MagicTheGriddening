@@ -48,10 +48,6 @@ export function getAutocompleteMatches(
 }
 
 export default class AutocompleteService {
-  static prime(): void {
-    BulkDataService.prime();
-  }
-
   static async getSuggestions(
     query: string,
     limit: number = DEFAULT_MAX_RESULTS,
