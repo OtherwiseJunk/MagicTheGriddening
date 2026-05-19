@@ -1,53 +1,60 @@
-version: "3.4"
-
 services:
-  magicthegriddening:
-    container_name: mtg-ui
-    image: magicthegriddening
-    build:
-      context: .
-      dockerfile: ./dockerfile
-    environment:
-      NODE_ENV: production
-      AUTOCOMPLETE_DATA_DIR: /app/data
-    ports:
-      - 3001:3000
-    volumes:
-      - griddening-volume:/app/data
-
   postgres:
     container_name: mtg-db
     image: postgres:14-alpine
     volumes:
       - postgres-volume:/var/lib/postgresql/data
     environment:
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=griddening
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: griddening
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  puzzle-seeder:
+  web:
+    container_name: mtg-web
+    build:
+      context: ./apps/web
+      dockerfile: dockerfile
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/griddening
+      BULK_DATA_DIR: /app/data
+    ports:
+      - "3000:3000"
+    volumes:
+      - card-data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  seeder:
     container_name: mtg-seeder
-    image: ghcr.io/otherwisejunk/grid-the-seedening:main
+    build:
+      context: ./apps/seeder
+      dockerfile: dockerfile
     environment:
-      - TZ=$TZ
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/griddening?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/griddening
+      TZ: ${TZ:-America/New_York}
+      CRON_SCHEDULE: ${CRON_SCHEDULE:-30 00 * * *}
+    depends_on:
+      postgres:
+        condition: service_healthy
 
-  bsky-poster:
-    container_name: mtg-poster
-    image: ghcr.io/otherwisejunk/griddening-bsky-bot:main
+  bsky-bot:
+    container_name: mtg-bsky-bot
+    build:
+      context: ./apps/bsky-bot
+      dockerfile: Dockerfile
     environment:
-      - TZ=$TZ
-      - NODE_ENV=production
-      - BLUESKY_USERNAME=$BLUESKY_USERNAME
-      - BLUESKY_PASSWORD=$BLUESKY_PASSWORD
-
-#  logging:
-#    container_name: mtg-logger
-#    image: griddeninglogger
-#    environment:
-#      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/griddening?schema=public
-#    restart: on-failure
+      NODE_ENV: production
+      BLUESKY_USERNAME: ${BLUESKY_USERNAME}
+      BLUESKY_PASSWORD: ${BLUESKY_PASSWORD}
+      TZ: ${TZ:-America/New_York}
 
 volumes:
   postgres-volume:
-  griddening-volume:
+  card-data:
