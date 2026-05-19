@@ -29,6 +29,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: apps/bsky-bot/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: apps/bsky-bot
+
+      - name: Lint
+        run: npm run lint
+        working-directory: apps/bsky-bot
+
+      - name: Format check
+        run: npm run fmt:check
+        working-directory: apps/bsky-bot
+
+      - name: Test
+        run: npm test
+        working-directory: apps/bsky-bot
+
       - name: Install cosign
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
