@@ -1,24 +1,38 @@
+// tests/autocomplete.service.test.ts
 import { describe, expect, it } from "vitest";
-import {
-  buildAutocompleteCardNames,
-  getAutocompleteMatches,
-} from "@/services/autocomplete.service";
+import { buildAutocompleteNames, getAutocompleteMatches } from "@/services/autocomplete.service";
+import { type LocalCard } from "@/models/local-card";
+
+function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
+  return {
+    name: "Forest",
+    faceNames: [],
+    type_line: "Basic Land — Forest",
+    colors: [],
+    cmc: 0,
+    rarity: "common",
+    oracle_text: "",
+    power: undefined,
+    toughness: undefined,
+    artist: "John Avon",
+    set: "m20",
+    imagePng: "/forest.png",
+    ...overrides,
+  };
+}
 
 describe("AutocompleteService helpers", () => {
-  it("builds a deduplicated, alphabetized list of paper card names and face names", () => {
-    const cardNames = buildAutocompleteCardNames([
-      { name: "Forest", games: ["paper"] },
-      { name: "Forest", games: ["paper"] },
-      {
-        name: "Delver of Secrets",
-        games: ["paper"],
-        card_faces: [{ name: "Delver of Secrets" }, { name: "Insectile Aberration" }],
-      },
-      { name: "Alchemy Card", games: ["arena"] },
-      { name: "MTGO Card", games: ["mtgo"] },
+  it("builds a deduplicated, alphabetized list of card names and face names", () => {
+    const names = buildAutocompleteNames([
+      makeCard({ name: "Forest" }),
+      makeCard({ name: "Forest" }),
+      makeCard({
+        name: "Delver of Secrets // Insectile Aberration",
+        faceNames: ["Delver of Secrets", "Insectile Aberration"],
+      }),
     ]);
 
-    expect(cardNames).toEqual(["Delver of Secrets", "Forest", "Insectile Aberration"]);
+    expect(names).toEqual(["Delver of Secrets", "Forest", "Insectile Aberration"]);
   });
 
   it("puts exact case-insensitive matches first and keeps other matches alphabetized", () => {
