@@ -1,7 +1,7 @@
 import { type GameConstraint } from "@/models/UI/gameConstraint";
 import DataService from "@/services/data.service";
 import GriddeningService from "@/services/griddening.service";
-import ScryfallService from "@/services/scryfall.service";
+import CardValidationService from "@/services/card-validation.service";
 import { type PlayerRecord } from "@prisma/client";
 
 interface SubmitRequest {
@@ -36,12 +36,11 @@ export async function POST(request: Request): Promise<Response> {
       constraints,
       args.squareIndex,
     );
-    const query = `${args.guess} ${constraintOne.scryfallQuery} ${constraintTwo.scryfallQuery}`;
-    const cards = await ScryfallService.getCards(query);
-    const player: PlayerRecord = await DataService.getPlayerRecord(args.playerId, game.id);
-    const card = cards.find((card) => card.name === args.guess);
 
-    if (card === undefined) {
+    const card = await CardValidationService.findCard(args.guess);
+    const player: PlayerRecord = await DataService.getPlayerRecord(args.playerId, game.id);
+
+    if (card === undefined || !CardValidationService.matchesAllConstraints(card, [constraintOne, constraintTwo])) {
       const nextLifePoints = player.lifePoints - 1;
       await DataService.updatePlayerLifeValue(player.id, nextLifePoints);
       return jsonResponse({ outcome: "incorrect", lifePoints: nextLifePoints }, 422);
@@ -52,17 +51,13 @@ export async function POST(request: Request): Promise<Response> {
       return jsonResponse({ outcome: "duplicate" }, 409);
     }
 
-    const imageUrl =
-      card.image_uris !== undefined && card.image_uris != null
-        ? card.image_uris.png
-        : card.card_faces?.[0]?.image_uris?.png;
     const nextLifePoints = player.lifePoints - 1;
     await DataService.createCorrectGuess(
       player.id,
       game.id,
       args.squareIndex,
       card.name,
-      imageUrl ?? "/card-not-found.png",
+      card.imagePng,
     );
     await DataService.updatePlayerLifeValue(player.id, nextLifePoints);
     return jsonResponse(
@@ -71,7 +66,7 @@ export async function POST(request: Request): Promise<Response> {
         lifePoints: nextLifePoints,
         correctGuess: {
           cardName: card.name,
-          imageUrl: imageUrl ?? "/card-not-found.png",
+          imageUrl: card.imagePng,
           squareIndex: args.squareIndex,
         },
       },

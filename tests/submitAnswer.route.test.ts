@@ -1,7 +1,9 @@
+// tests/submitAnswer.route.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "@/app/api/submitAnswer/route";
 import { Game } from "@/models/database/game";
 import { ConstraintType } from "@/models/UI/gameConstraint";
+import { type LocalCard } from "@/models/local-card";
 
 const mockConstraints = JSON.stringify([
   { displayName: "Red", constraintType: ConstraintType.Color, scryfallQuery: "c:R" },
@@ -13,8 +15,25 @@ const mockConstraints = JSON.stringify([
 ]);
 
 const mockGame = new Game(1, "20260305", mockConstraints);
-
 const mockPlayer = { id: 1, playerId: "test-uuid", gameId: 1, lifePoints: 9 };
+
+function makeMockCard(overrides: Partial<LocalCard> = {}): LocalCard {
+  return {
+    name: "Lightning Bolt",
+    faceNames: [],
+    type_line: "Instant",
+    colors: ["R"],
+    cmc: 1,
+    rarity: "common",
+    oracle_text: "Lightning Bolt deals 3 damage to any target.",
+    power: undefined,
+    toughness: undefined,
+    artist: "Christopher Moeller",
+    set: "lea",
+    imagePng: "http://example.com/bolt.png",
+    ...overrides,
+  };
+}
 
 vi.mock("@/services/data.service", () => ({
   default: {
@@ -26,14 +45,15 @@ vi.mock("@/services/data.service", () => ({
   },
 }));
 
-vi.mock("@/services/scryfall.service", () => ({
+vi.mock("@/services/card-validation.service", () => ({
   default: {
-    getCards: vi.fn(),
+    findCard: vi.fn(),
+    matchesAllConstraints: vi.fn(),
   },
 }));
 
 import DataService from "@/services/data.service";
-import ScryfallService from "@/services/scryfall.service";
+import CardValidationService from "@/services/card-validation.service";
 
 function makeRequest(body: object): Request {
   return new Request("http://localhost/api/submitAnswer", {
@@ -57,24 +77,36 @@ describe("POST /api/submitAnswer", () => {
     expect(await response.text()).toBe("Game Not Found");
   });
 
-  it("returns 422 and deducts life for incorrect guess", async () => {
+  it("returns 422 and deducts life when card not found locally", async () => {
     vi.mocked(DataService.getTodaysGame).mockResolvedValue(mockGame);
     vi.mocked(DataService.getPlayerRecord).mockResolvedValue(mockPlayer);
-    vi.mocked(ScryfallService.getCards).mockResolvedValue([]);
+    vi.mocked(CardValidationService.findCard).mockResolvedValue(undefined);
 
     const response = await POST(makeRequest({ playerId: "test-uuid", squareIndex: 0, guess: "Nonexistent Card" }));
 
     expect(response.status).toBe(422);
     expect(await response.json()).toEqual({ outcome: "incorrect", lifePoints: 8 });
     expect(DataService.updatePlayerLifeValue).toHaveBeenCalledWith(1, 8);
+    expect(CardValidationService.matchesAllConstraints).not.toHaveBeenCalled();
+  });
+
+  it("returns 422 and deducts life when card found but fails constraints", async () => {
+    vi.mocked(DataService.getTodaysGame).mockResolvedValue(mockGame);
+    vi.mocked(DataService.getPlayerRecord).mockResolvedValue(mockPlayer);
+    vi.mocked(CardValidationService.findCard).mockResolvedValue(makeMockCard());
+    vi.mocked(CardValidationService.matchesAllConstraints).mockReturnValue(false);
+
+    const response = await POST(makeRequest({ playerId: "test-uuid", squareIndex: 0, guess: "Lightning Bolt" }));
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ outcome: "incorrect", lifePoints: 8 });
   });
 
   it("returns 200 for correct guess", async () => {
     vi.mocked(DataService.getTodaysGame).mockResolvedValue(mockGame);
     vi.mocked(DataService.getPlayerRecord).mockResolvedValue(mockPlayer);
-    vi.mocked(ScryfallService.getCards).mockResolvedValue([
-      { name: "Lightning Bolt", image_uris: { png: "http://example.com/bolt.png" } } as any,
-    ]);
+    vi.mocked(CardValidationService.findCard).mockResolvedValue(makeMockCard());
+    vi.mocked(CardValidationService.matchesAllConstraints).mockReturnValue(true);
     vi.mocked(DataService.getCorrectGuessesForPlayer).mockResolvedValue([]);
 
     const response = await POST(makeRequest({ playerId: "test-uuid", squareIndex: 0, guess: "Lightning Bolt" }));
@@ -98,9 +130,8 @@ describe("POST /api/submitAnswer", () => {
   it("returns 409 for duplicate card without deducting life", async () => {
     vi.mocked(DataService.getTodaysGame).mockResolvedValue(mockGame);
     vi.mocked(DataService.getPlayerRecord).mockResolvedValue(mockPlayer);
-    vi.mocked(ScryfallService.getCards).mockResolvedValue([
-      { name: "Lightning Bolt", image_uris: { png: "http://example.com/bolt.png" } } as any,
-    ]);
+    vi.mocked(CardValidationService.findCard).mockResolvedValue(makeMockCard());
+    vi.mocked(CardValidationService.matchesAllConstraints).mockReturnValue(true);
     vi.mocked(DataService.getCorrectGuessesForPlayer).mockResolvedValue([
       { correctGuess: "Lightning Bolt" },
     ]);
@@ -113,39 +144,24 @@ describe("POST /api/submitAnswer", () => {
     expect(DataService.createCorrectGuess).not.toHaveBeenCalled();
   });
 
-  it("falls back to card_faces for double-faced cards", async () => {
+  it("uses imagePng from LocalCard for double-faced cards", async () => {
     vi.mocked(DataService.getTodaysGame).mockResolvedValue(mockGame);
     vi.mocked(DataService.getPlayerRecord).mockResolvedValue(mockPlayer);
-    vi.mocked(ScryfallService.getCards).mockResolvedValue([
-      {
-        name: "Delver of Secrets",
-        image_uris: undefined,
-        card_faces: [{ image_uris: { png: "http://example.com/delver.png" } }],
-      } as any,
-    ]);
+    vi.mocked(CardValidationService.findCard).mockResolvedValue(
+      makeMockCard({
+        name: "Delver of Secrets // Insectile Aberration",
+        faceNames: ["Delver of Secrets", "Insectile Aberration"],
+        imagePng: "http://example.com/delver.png",
+      }),
+    );
+    vi.mocked(CardValidationService.matchesAllConstraints).mockReturnValue(true);
     vi.mocked(DataService.getCorrectGuessesForPlayer).mockResolvedValue([]);
 
     const response = await POST(makeRequest({ playerId: "test-uuid", squareIndex: 0, guess: "Delver of Secrets" }));
 
     expect(response.status).toBe(200);
     expect(DataService.createCorrectGuess).toHaveBeenCalledWith(
-      1, 1, 0, "Delver of Secrets", "http://example.com/delver.png",
-    );
-  });
-
-  it("uses fallback image when no image_uris or card_faces", async () => {
-    vi.mocked(DataService.getTodaysGame).mockResolvedValue(mockGame);
-    vi.mocked(DataService.getPlayerRecord).mockResolvedValue(mockPlayer);
-    vi.mocked(ScryfallService.getCards).mockResolvedValue([
-      { name: "Weird Card", image_uris: undefined, card_faces: undefined } as any,
-    ]);
-    vi.mocked(DataService.getCorrectGuessesForPlayer).mockResolvedValue([]);
-
-    const response = await POST(makeRequest({ playerId: "test-uuid", squareIndex: 0, guess: "Weird Card" }));
-
-    expect(response.status).toBe(200);
-    expect(DataService.createCorrectGuess).toHaveBeenCalledWith(
-      1, 1, 0, "Weird Card", "/card-not-found.png",
+      1, 1, 0, "Delver of Secrets // Insectile Aberration", "http://example.com/delver.png",
     );
   });
 
