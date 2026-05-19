@@ -77,7 +77,11 @@ class BulkDataService {
   }
 
   private ensureRefreshTimer(): void {
-    if (this.refreshTimer !== null || !Number.isFinite(REFRESH_INTERVAL_MS) || REFRESH_INTERVAL_MS <= 0) {
+    if (
+      this.refreshTimer !== null ||
+      !Number.isFinite(REFRESH_INTERVAL_MS) ||
+      REFRESH_INTERVAL_MS <= 0
+    ) {
       return;
     }
     this.refreshTimer = setInterval(() => {
@@ -153,10 +157,7 @@ class BulkDataService {
     return bulkDataFile;
   }
 
-  private async downloadBulkDataFile(
-    downloadUri: string,
-    destinationPath: string,
-  ): Promise<void> {
+  private async downloadBulkDataFile(downloadUri: string, destinationPath: string): Promise<void> {
     const response = await fetch(downloadUri, {
       headers: { Accept: "application/json;q=0.9,*/*;q=0.8", "User-Agent": SCRYFALL_USER_AGENT },
       cache: "no-store",

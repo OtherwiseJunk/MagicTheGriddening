@@ -53,9 +53,7 @@ export function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
       const faces = card.card_faces ?? [];
       // Use Array.from rather than spread — tsconfig targets es5
       const faceColors =
-        faces.length > 0
-          ? Array.from(new Set(faces.flatMap((f) => f.colors ?? [])))
-          : undefined;
+        faces.length > 0 ? Array.from(new Set(faces.flatMap((f) => f.colors ?? []))) : undefined;
       // Fall back to color_identity when face union is empty (colorless DFCs)
       const colors =
         card.colors !== undefined
@@ -69,8 +67,7 @@ export function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
           .map((f) => f.oracle_text ?? "")
           .filter(Boolean)
           .join("\n");
-      const imagePng =
-        card.image_uris?.png ?? faces[0]?.image_uris?.png ?? "/card-not-found.png";
+      const imagePng = card.image_uris?.png ?? faces[0]?.image_uris?.png ?? "/card-not-found.png";
 
       return {
         name: card.name,

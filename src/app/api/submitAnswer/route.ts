@@ -40,7 +40,10 @@ export async function POST(request: Request): Promise<Response> {
     const card = await CardValidationService.findCard(args.guess);
     const player: PlayerRecord = await DataService.getPlayerRecord(args.playerId, game.id);
 
-    if (card === undefined || !CardValidationService.matchesAllConstraints(card, [constraintOne, constraintTwo])) {
+    if (
+      card === undefined ||
+      !CardValidationService.matchesAllConstraints(card, [constraintOne, constraintTwo])
+    ) {
       const nextLifePoints = player.lifePoints - 1;
       await DataService.updatePlayerLifeValue(player.id, nextLifePoints);
       return jsonResponse({ outcome: "incorrect", lifePoints: nextLifePoints }, 422);
