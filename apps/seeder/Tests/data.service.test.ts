@@ -35,13 +35,10 @@ describe("Data Service", () => {
     test("() -> most recent date", async () => {
       prismaMock.game.findFirst.mockResolvedValue(games[1]);
 
-      const gameDate: Date | undefined =
-        await dataService.getDateOfNewestGame();
+      const gameDate: Date | undefined = await dataService.getDateOfNewestGame();
 
       expect(gameDate).not.toBe(undefined);
-      expect(gameDate!.toDateString()).toBe(
-        new Date("05/21/1984").toDateString(),
-      );
+      expect(gameDate!.toDateString()).toBe(new Date("05/21/1984").toDateString());
     });
   });
 
@@ -56,9 +53,7 @@ describe("Data Service", () => {
 
     test("should return expected datetime for valid string", () => {
       const dateOne = dataService.dateStringToDate("19841231");
-      expect(dateOne!.toDateString()).toBe(
-        new Date("12/31/1984").toDateString(),
-      );
+      expect(dateOne!.toDateString()).toBe(new Date("12/31/1984").toDateString());
       const dateTwo = dataService.dateStringToDate("19840101");
       expect(dateTwo!.toDateString()).toBe(new Date(1984, 0, 1).toDateString());
     });

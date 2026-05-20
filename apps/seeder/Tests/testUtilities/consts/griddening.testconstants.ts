@@ -2,16 +2,8 @@ import { GameConstraint, ConstraintType } from "../../../types/GameConstraint";
 import { ScryfallHelper } from "../scryfall.helper";
 import * as Scry from "scryfall-sdk";
 
-const vintageSet: Scry.Set = ScryfallHelper.generateScryfallSet(
-  "1993-01-01",
-  "Vintage",
-  "V",
-);
-const modernSet: Scry.Set = ScryfallHelper.generateScryfallSet(
-  "2003-01-01",
-  "Modern",
-  "M",
-);
+const vintageSet: Scry.Set = ScryfallHelper.generateScryfallSet("1993-01-01", "Vintage", "V");
+const modernSet: Scry.Set = ScryfallHelper.generateScryfallSet("2003-01-01", "Modern", "M");
 export const pioneerSet: Scry.Set = ScryfallHelper.generateScryfallSet(
   "2013-01-01",
   "Pioneer",
@@ -32,10 +24,16 @@ export const firstPioneerSet: Scry.Set = ScryfallHelper.generateScryfallSet(
   "Ravnica I think",
   "RTR",
 );
-export const dayAfterFirstPioneerSet: Scry.Set =
-  ScryfallHelper.generateScryfallSet("2012-10-04", "not a set", "nas");
-export const dayBeforeFirstPioneerSet: Scry.Set =
-  ScryfallHelper.generateScryfallSet("2012-10-06", "not a set", "nas");
+export const dayAfterFirstPioneerSet: Scry.Set = ScryfallHelper.generateScryfallSet(
+  "2012-10-04",
+  "not a set",
+  "nas",
+);
+export const dayBeforeFirstPioneerSet: Scry.Set = ScryfallHelper.generateScryfallSet(
+  "2012-10-06",
+  "not a set",
+  "nas",
+);
 export const dayBefore2013Set: Scry.Set = ScryfallHelper.generateScryfallSet(
   "2012-12-31",
   "not a set",
@@ -84,29 +82,11 @@ export const setsWithExpectedIsPioneerReturns = [
 ];
 
 export const setsWithExpectedConstraintReturns = [
-  [
-    vintageSet,
-    new GameConstraint(
-      vintageSet.name,
-      ConstraintType.Set,
-      `set:${vintageSet.code}`,
-    ),
-  ],
-  [
-    modernSet,
-    new GameConstraint(
-      modernSet.name,
-      ConstraintType.Set,
-      `set:${modernSet.code}`,
-    ),
-  ],
+  [vintageSet, new GameConstraint(vintageSet.name, ConstraintType.Set, `set:${vintageSet.code}`)],
+  [modernSet, new GameConstraint(modernSet.name, ConstraintType.Set, `set:${modernSet.code}`)],
   [
     noReleaseAtSet,
-    new GameConstraint(
-      noReleaseAtSet.name,
-      ConstraintType.Set,
-      `set:${noReleaseAtSet.code}`,
-    ),
+    new GameConstraint(noReleaseAtSet.name, ConstraintType.Set, `set:${noReleaseAtSet.code}`),
   ],
   [
     dayAfterFirstPioneerSet,
@@ -126,43 +106,20 @@ export const setsWithExpectedConstraintReturns = [
   ],
   [
     dayBefore2013Set,
-    new GameConstraint(
-      dayBefore2013Set.name,
-      ConstraintType.Set,
-      `set:${dayBefore2013Set.code}`,
-    ),
+    new GameConstraint(dayBefore2013Set.name, ConstraintType.Set, `set:${dayBefore2013Set.code}`),
   ],
   [
     firstDayOf2013Set,
-    new GameConstraint(
-      firstDayOf2013Set.name,
-      ConstraintType.Set,
-      `set:${firstDayOf2013Set.code}`,
-    ),
+    new GameConstraint(firstDayOf2013Set.name, ConstraintType.Set, `set:${firstDayOf2013Set.code}`),
   ],
   [
     firstPioneerSet,
-    new GameConstraint(
-      firstPioneerSet.name,
-      ConstraintType.Set,
-      `set:${firstPioneerSet.code}`,
-    ),
+    new GameConstraint(firstPioneerSet.name, ConstraintType.Set, `set:${firstPioneerSet.code}`),
   ],
-  [
-    pioneerSet,
-    new GameConstraint(
-      pioneerSet.name,
-      ConstraintType.Set,
-      `set:${pioneerSet.code}`,
-    ),
-  ],
+  [pioneerSet, new GameConstraint(pioneerSet.name, ConstraintType.Set, `set:${pioneerSet.code}`)],
   [
     standardSet,
-    new GameConstraint(
-      standardSet.name,
-      ConstraintType.Set,
-      `set:${standardSet.code}`,
-    ),
+    new GameConstraint(standardSet.name, ConstraintType.Set, `set:${standardSet.code}`),
   ],
 ];
 
@@ -180,26 +137,10 @@ export const setInputs = [
 ];
 
 export const expectedSetOutputs = [
-  new GameConstraint(
-    standardSet.name,
-    ConstraintType.Set,
-    `set:${standardSet.code}`,
-  ),
-  new GameConstraint(
-    pioneerSet.name,
-    ConstraintType.Set,
-    `set:${pioneerSet.code}`,
-  ),
-  new GameConstraint(
-    firstPioneerSet.name,
-    ConstraintType.Set,
-    `set:${firstPioneerSet.code}`,
-  ),
-  new GameConstraint(
-    firstDayOf2013Set.name,
-    ConstraintType.Set,
-    `set:${firstDayOf2013Set.code}`,
-  ),
+  new GameConstraint(standardSet.name, ConstraintType.Set, `set:${standardSet.code}`),
+  new GameConstraint(pioneerSet.name, ConstraintType.Set, `set:${pioneerSet.code}`),
+  new GameConstraint(firstPioneerSet.name, ConstraintType.Set, `set:${firstPioneerSet.code}`),
+  new GameConstraint(firstDayOf2013Set.name, ConstraintType.Set, `set:${firstDayOf2013Set.code}`),
 ];
 
 export const namesToSanitizeWithExpectedResult = [

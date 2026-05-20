@@ -4,10 +4,7 @@ import { ConstraintType, GameConstraint } from "../types/GameConstraint.js";
 import { ScryfallMockedService } from "../__mocks__/scryfall.service.js";
 import { cloneMapOfDecks } from "../Utilities/map.helper.js";
 import { PuzzleType } from "../types/Puzzle.js";
-import {
-  pioneerSet,
-  standardSet,
-} from "./testUtilities/consts/griddening.testconstants.js";
+import { pioneerSet, standardSet } from "./testUtilities/consts/griddening.testconstants.js";
 
 const scryfallServiceMock = new ScryfallMockedService();
 const griddeningService = new GriddeningService(scryfallServiceMock);
@@ -92,10 +89,7 @@ describe("Performance", () => {
 
       const start = performance.now();
       for (let i = 0; i < 100; i++) {
-        await griddeningService.intersectionHasMinimumHits(
-          fakeConstraint,
-          fakeConstraint,
-        );
+        await griddeningService.intersectionHasMinimumHits(fakeConstraint, fakeConstraint);
       }
       const elapsed = performance.now() - start;
 
@@ -136,14 +130,10 @@ describe("Performance", () => {
 
       let rerolls = 0;
       const maxAttempts = 50;
-      let puzzle = griddeningService.generateRandomPuzzleBoard(
-        cloneMapOfDecks(deckMap),
-      );
+      let puzzle = griddeningService.generateRandomPuzzleBoard(cloneMapOfDecks(deckMap));
 
       while (!puzzle && rerolls < maxAttempts) {
-        puzzle = griddeningService.generateRandomPuzzleBoard(
-          cloneMapOfDecks(deckMap),
-        );
+        puzzle = griddeningService.generateRandomPuzzleBoard(cloneMapOfDecks(deckMap));
         rerolls++;
       }
 

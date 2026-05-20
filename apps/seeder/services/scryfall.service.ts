@@ -12,9 +12,8 @@ export class ScryfallService implements IScryfallService {
     if (this.queryCountMap.has(query)) {
       return this.queryCountMap.get(query);
     }
-    const queryCardCount = (
-      await Scry.Cards.search(query, 1).cancelAfterPage().waitForAll()
-    ).length;
+    const queryCardCount = (await Scry.Cards.search(query, 1).cancelAfterPage().waitForAll())
+      .length;
     this.queryCountMap.set(query, queryCardCount);
     return queryCardCount;
   }

@@ -1,19 +1,13 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "typescript"
-  ],
+  "plugins": ["typescript"],
   "categories": {
     "correctness": "off"
   },
   "env": {
     "builtin": true
   },
-  "ignorePatterns": [
-    "dist",
-    "node_modules",
-    ".DS_Store"
-  ],
+  "ignorePatterns": ["dist", "node_modules", ".DS_Store"],
   "rules": {
     "for-direction": "error",
     "no-async-promise-executor": "error",
@@ -1217,12 +1211,7 @@
   },
   "overrides": [
     {
-      "files": [
-        "**/*.ts",
-        "**/*.tsx",
-        "**/*.mts",
-        "**/*.cts"
-      ],
+      "files": ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
       "rules": {
         "no-const-assign": "off",
         "no-dupe-class-members": "off",

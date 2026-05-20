@@ -76,13 +76,9 @@ const colorlessLayouts: SlotLayout[] = [
 
 export class GriddeningService {
   constructor(private scryfallService: IScryfallService) {}
-  minimumHits = process.env.MINIMUM_HITS
-    ? parseInt(process.env.MINIMUM_HITS)
-    : 10;
+  minimumHits = process.env.MINIMUM_HITS ? parseInt(process.env.MINIMUM_HITS) : 10;
 
-  generateRandomPuzzleBoard(
-    constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>,
-  ) {
+  generateRandomPuzzleBoard(constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>) {
     const boardType = this.getRandomInt(5);
     console.log(`got puzzle type ${PuzzleType[boardType]}`);
     const boardSubtype = this.getRandomSubtype(boardType);
@@ -90,30 +86,15 @@ export class GriddeningService {
 
     switch (boardType) {
       case PuzzleType.CreatureFocused:
-        return this.generateRandomCreatureBoard(
-          constraintDeckByConstraintType,
-          boardSubtype,
-        );
+        return this.generateRandomCreatureBoard(constraintDeckByConstraintType, boardSubtype);
       case PuzzleType.FourColors:
-        return this.generateRandomFourColorBoard(
-          constraintDeckByConstraintType,
-          boardSubtype,
-        );
+        return this.generateRandomFourColorBoard(constraintDeckByConstraintType, boardSubtype);
       case PuzzleType.TwoColors:
-        return this.generateRandomTwoColorBoard(
-          constraintDeckByConstraintType,
-          boardSubtype,
-        );
+        return this.generateRandomTwoColorBoard(constraintDeckByConstraintType, boardSubtype);
       case PuzzleType.Colorless:
-        return this.generateRandomColorlessBoard(
-          constraintDeckByConstraintType,
-          boardSubtype,
-        );
+        return this.generateRandomColorlessBoard(constraintDeckByConstraintType, boardSubtype);
       case PuzzleType.ArtistFocused:
-        return this.generateRandomArtistBoard(
-          constraintDeckByConstraintType,
-          boardSubtype,
-        );
+        return this.generateRandomArtistBoard(constraintDeckByConstraintType, boardSubtype);
     }
   }
 
@@ -121,8 +102,9 @@ export class GriddeningService {
     constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>,
     fourColorBoardType: number,
   ): Puzzle {
-    const [set, color, type, rarity, manaValue, artist] =
-      this.getColorFocusedDecks(constraintDeckByConstraintType);
+    const [set, color, type, rarity, manaValue, artist] = this.getColorFocusedDecks(
+      constraintDeckByConstraintType,
+    );
     const decks = { set, color, type, rarity, manaValue, artist };
     const puzzle: Puzzle = {
       topRow: [this.drawFrom(color), this.drawFrom(color)],
@@ -138,8 +120,9 @@ export class GriddeningService {
     constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>,
     twoColorBoardType: number,
   ): Puzzle {
-    const [set, color, type, rarity, manaValue, artist] =
-      this.getColorFocusedDecks(constraintDeckByConstraintType);
+    const [set, color, type, rarity, manaValue, artist] = this.getColorFocusedDecks(
+      constraintDeckByConstraintType,
+    );
     const decks = { set, color, type, rarity, manaValue, artist };
     const puzzle: Puzzle = {
       topRow: [this.drawFrom(color)],
@@ -207,12 +190,11 @@ export class GriddeningService {
     constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>,
     colorlessBoardType: number,
   ): Puzzle {
-    const [set, color, type, rarity, manaValue, artist] =
-      this.getColorFocusedDecks(constraintDeckByConstraintType);
+    const [set, color, type, rarity, manaValue, artist] = this.getColorFocusedDecks(
+      constraintDeckByConstraintType,
+    );
     const filteredType = type.filter((constraint) =>
-      ["Land", "Artifact", "Creature", "Instant", "Sorcery"].includes(
-        constraint.displayName,
-      ),
+      ["Land", "Artifact", "Creature", "Instant", "Sorcery"].includes(constraint.displayName),
     );
     const decks = { set, color, type, rarity, manaValue, artist, filteredType };
     const puzzle: Puzzle = {
@@ -228,9 +210,7 @@ export class GriddeningService {
   private drawFrom(deck: GameConstraint[]): GameConstraint {
     const constraint = deck.shift();
     if (!constraint) {
-      throw new Error(
-        "Constraint deck is empty — not enough constraints to build puzzle",
-      );
+      throw new Error("Constraint deck is empty — not enough constraints to build puzzle");
     }
     return constraint;
   }
@@ -259,33 +239,21 @@ export class GriddeningService {
     return this.getRandomInt(subtypeCounts[boardType]);
   }
 
-  private getDefaultDecks(
-    constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>,
-  ) {
+  private getDefaultDecks(constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>) {
     const colorConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.Color,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.Color) as GameConstraint[],
     );
     const rarityConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.Rarity,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.Rarity) as GameConstraint[],
     );
     const manaValueConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.ManaValue,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.ManaValue) as GameConstraint[],
     );
     const cardTypeConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.Type,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.Type) as GameConstraint[],
     );
     const artistConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.Artist,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.Artist) as GameConstraint[],
     );
 
     return [
@@ -301,59 +269,36 @@ export class GriddeningService {
     constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>,
   ) {
     const setConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.Set,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.Set) as GameConstraint[],
     );
 
-    return [
-      setConstraints,
-      ...this.getDefaultDecks(constraintDeckByConstraintType),
-    ];
+    return [setConstraints, ...this.getDefaultDecks(constraintDeckByConstraintType)];
   }
 
-  private getCreatureDecks(
-    constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>,
-  ) {
+  private getCreatureDecks(constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>) {
     const creatureRaceConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.CreatureRaceTypes,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.CreatureRaceTypes) as GameConstraint[],
     );
     const creatureJobConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.CreatureJobTypes,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.CreatureJobTypes) as GameConstraint[],
     );
     const creatureRulesTextConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.CreatureRulesText,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.CreatureRulesText) as GameConstraint[],
     );
     const powerConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.Power,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.Power) as GameConstraint[],
     );
     const toughnessConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.Toughness,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.Toughness) as GameConstraint[],
     );
     const colorConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.Color,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.Color) as GameConstraint[],
     );
     const rarityConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.Rarity,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.Rarity) as GameConstraint[],
     );
     const manaValueConstraints = shuffleArray(
-      constraintDeckByConstraintType.get(
-        ConstraintType.ManaValue,
-      ) as GameConstraint[],
+      constraintDeckByConstraintType.get(ConstraintType.ManaValue) as GameConstraint[],
     );
 
     return [
@@ -451,20 +396,11 @@ export class GriddeningService {
       [ConstraintType.Power, shuffleArray(powerConstraints)],
       [ConstraintType.Toughness, shuffleArray(toughnessConstraints)],
       [ConstraintType.Artist, shuffleArray(artistConstraints)],
-      [
-        ConstraintType.CreatureRulesText,
-        shuffleArray(creatureRulesTextConstraints),
-      ],
+      [ConstraintType.CreatureRulesText, shuffleArray(creatureRulesTextConstraints)],
       [ConstraintType.CreatureRaceTypes, shuffleArray(creatureRaceConstraints)],
       [ConstraintType.CreatureJobTypes, shuffleArray(creatureJobConstraints)],
-      [
-        ConstraintType.EnchantmentSubtypes,
-        shuffleArray(enchantmentSubtypeTypeConstraints),
-      ],
-      [
-        ConstraintType.ArtifactSubtypes,
-        shuffleArray(artifactSubtypesConstraints),
-      ],
+      [ConstraintType.EnchantmentSubtypes, shuffleArray(enchantmentSubtypeTypeConstraints)],
+      [ConstraintType.ArtifactSubtypes, shuffleArray(artifactSubtypesConstraints)],
     ]);
   }
 
