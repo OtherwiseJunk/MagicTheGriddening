@@ -1,7 +1,7 @@
 services:
   postgres:
     container_name: mtg-db
-    image: postgres:14-alpine
+    image: postgres:17-alpine
     volumes:
       - postgres-volume:/var/lib/postgresql/data
     environment:

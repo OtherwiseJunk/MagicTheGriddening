@@ -29,15 +29,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Use Node.js 22.x
+      - name: Use Node.js 24.x
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22.x
+          node-version: 24.x
           cache: npm
           cache-dependency-path: apps/bsky-bot/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
         working-directory: apps/bsky-bot
 
       - name: Lint

@@ -1,6 +1,6 @@
 # Using the official Microsoft Dev Container image for Node.js & TypeScript.
 # It comes with Node.js, TypeScript, and common development tools pre-installed.
-FROM mcr.microsoft.com/devcontainers/typescript-node:20
+FROM mcr.microsoft.com/devcontainers/typescript-node:24
 
 # The base image creates a non-root user 'node' with sudo access.
 # We'll switch to it to avoid running as root.
