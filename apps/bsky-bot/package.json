@@ -5,8 +5,8 @@
     "test": "jest",
     "lint": "oxlint .",
     "lint:fix": "oxlint . --fix",
-    "fmt": "oxfmt --write .",
-    "fmt:check": "oxfmt --check ."
+    "fmt": "oxfmt -c ../../.oxfmtrc.json --write .",
+    "fmt:check": "oxfmt -c ../../.oxfmtrc.json --check ."
   },
   "dependencies": {
     "@atproto/api": "^0.6.20",

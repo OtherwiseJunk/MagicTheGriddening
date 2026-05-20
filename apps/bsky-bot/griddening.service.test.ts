@@ -37,7 +37,11 @@ const descriptionForConstraintTestCases = [
   { constraintType: 1, displayName: "Sorcery", expectedText: "Sorcery (Type)" },
   { constraintType: 2, displayName: "Mana Value 3", expectedText: "Mana Value 3" },
   { constraintType: 3, displayName: "Red", expectedText: "Red (Color)" },
-  { constraintType: 4, displayName: "Battle for Zendikar", expectedText: "Battle for Zendikar (Set)" },
+  {
+    constraintType: 4,
+    displayName: "Battle for Zendikar",
+    expectedText: "Battle for Zendikar (Set)",
+  },
   { constraintType: 5, displayName: "Power 5", expectedText: "Power 5" },
   { constraintType: 6, displayName: "Toughness 5", expectedText: "Toughness 5" },
   { constraintType: 7, displayName: "Artist: John Avon", expectedText: "Artist: John Avon" },
@@ -73,8 +77,12 @@ function cleanup() {
 }
 
 describe("GriddeningService", () => {
-  beforeAll(() => { cleanup(); });
-  afterAll(() => { cleanup(); });
+  beforeAll(() => {
+    cleanup();
+  });
+  afterAll(() => {
+    cleanup();
+  });
 
   describe("getDailyPuzzleScreenshot", () => {
     beforeEach(() => {
@@ -129,7 +137,9 @@ https://magicthegridden.ing
   });
 
   describe("getPuppeteerOptionsByEnv", () => {
-    afterEach(() => { process.env.NODE_ENV = "test"; });
+    afterEach(() => {
+      process.env.NODE_ENV = "test";
+    });
 
     it("returns production options when NODE_ENV is production", () => {
       process.env.NODE_ENV = "production";

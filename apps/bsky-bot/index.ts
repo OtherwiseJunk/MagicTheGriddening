@@ -2,7 +2,12 @@ import { BskyAgent, RichText } from "@atproto/api";
 import * as dotenv from "dotenv";
 import { CronJob } from "cron";
 import * as process from "process";
-import { getDailyPuzzleAltText, getDailyPuzzleScreenshot, getPostText, ensureBotLabel } from "./griddening.service";
+import {
+  getDailyPuzzleAltText,
+  getDailyPuzzleScreenshot,
+  getPostText,
+  ensureBotLabel,
+} from "./griddening.service";
 
 dotenv.config();
 
