@@ -6,6 +6,7 @@ import {
   generateAltTextFromGameState,
   getPuppeteerOptionsByEnv,
   ensureBotLabel,
+  repostDailyPuzzle,
   BOT_LABEL,
 } from "./griddening.service";
 import fs from "fs";
@@ -152,6 +153,30 @@ https://magicthegridden.ing
 
     it("returns empty object for non-production NODE_ENV", () => {
       expect(getPuppeteerOptionsByEnv()).toEqual({});
+    });
+  });
+
+  describe("repostDailyPuzzle", () => {
+    function makeRepostAgent() {
+      return {
+        login: jest.fn().mockResolvedValue({ success: true }),
+        repost: jest.fn().mockResolvedValue({}),
+      };
+    }
+
+    it("does nothing when lastPostUri is undefined", async () => {
+      const agent = makeRepostAgent();
+      await repostDailyPuzzle(agent as any, undefined);
+      expect(agent.login).not.toHaveBeenCalled();
+      expect(agent.repost).not.toHaveBeenCalled();
+    });
+
+    it("logs in and reposts when lastPostUri is set", async () => {
+      const agent = makeRepostAgent();
+      const uri = { uri: "at://did:plc:test/post/abc", cid: "bafytest" };
+      await repostDailyPuzzle(agent as any, uri);
+      expect(agent.login).toHaveBeenCalled();
+      expect(agent.repost).toHaveBeenCalledWith(uri.uri, uri.cid);
     });
   });
 

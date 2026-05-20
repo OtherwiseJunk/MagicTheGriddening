@@ -100,6 +100,19 @@ https://magicthegridden.ing
 #MagicTheGriddening`;
 }
 
+export async function repostDailyPuzzle(
+  agent: BskyAgent,
+  lastPostUri: { uri: string; cid: string } | undefined,
+): Promise<void> {
+  if (!lastPostUri) return;
+  await agent.login({
+    identifier: process.env.BLUESKY_USERNAME!,
+    password: process.env.BLUESKY_PASSWORD!,
+  });
+  await agent.repost(lastPostUri.uri, lastPostUri.cid);
+  console.log("Just reposted!");
+}
+
 export async function ensureBotLabel(agent: BskyAgent): Promise<void> {
   const did = agent.session?.did;
   if (!did) return;

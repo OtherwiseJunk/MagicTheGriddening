@@ -7,6 +7,7 @@ import {
   getDailyPuzzleScreenshot,
   getPostText,
   ensureBotLabel,
+  repostDailyPuzzle,
 } from "./griddening.service";
 
 dotenv.config();
@@ -69,14 +70,7 @@ async function postPuzzleInAM() {
 }
 
 async function repostPuzzleInEvening() {
-  await agent.login({
-    identifier: process.env.BLUESKY_USERNAME!,
-    password: process.env.BLUESKY_PASSWORD!,
-  });
-  if (lastPostUri) {
-    await agent.repost(lastPostUri.uri, lastPostUri.cid);
-    console.log("Just reposted!");
-  }
+  await repostDailyPuzzle(agent, lastPostUri);
 }
 
 const amPostSchedule = "0 8 * * *"; // Run once every day at 8 AM ET
