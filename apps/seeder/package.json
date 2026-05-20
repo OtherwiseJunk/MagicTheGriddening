@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest",
-    "start": "node --loader ts-node/esm main.ts",
+    "start": "tsx main.ts",
     "lint": "oxlint .",
     "lint:fix": "oxlint . --fix",
     "format": "oxfmt -c ../../.oxfmtrc.json .",
@@ -29,7 +29,7 @@
     "oxfmt": "^0.44.0",
     "oxlint": "^1.28.0",
     "prisma": "^6.19.0",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
     "typescript": "^5.3.3",
     "vitest": "^3.2.4",
     "vitest-mock-extended": "^3.1.0"

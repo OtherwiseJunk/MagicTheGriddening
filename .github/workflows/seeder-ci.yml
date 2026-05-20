@@ -62,7 +62,7 @@ jobs:
       - name: Setup Database
         run: npx prisma db push
       - name: Integration Test - Generate Puzzles
-        run: node --loader ts-node/esm main.ts
+        run: npx tsx main.ts
         env:
           RUN_ONCE: true
           MINIMUM_HITS: 1
