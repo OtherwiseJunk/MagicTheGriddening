@@ -7,6 +7,7 @@ export default defineConfig({
     setupFiles: [],
     coverage: {
       provider: "v8",
+      reporter: ["text", "json", "json-summary"],
     },
   },
 });
