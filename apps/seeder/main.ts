@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 const scryfall = new ScryfallService(Scry);
 const griddening = new GriddeningService(scryfall);
 const dataService = new DataService(prisma);
-const puzzleBuffer = 5;
+const puzzleBuffer = process.env.PUZZLE_BUFFER ? parseInt(process.env.PUZZLE_BUFFER) : 5;
 const puzzleGenerationTimeoutMs = 600_000;
 
 async function start() {
