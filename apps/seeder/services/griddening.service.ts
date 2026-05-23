@@ -11,6 +11,8 @@ import {
   powerConstraints,
   toughnessConstraints,
   creatureRaceConstraints,
+  powerCompatibleRaceConstraints,
+  toughnessCompatibleRaceConstraints,
   creatureJobConstraints,
   enchantmentSubtypeTypeConstraints,
   artifactSubtypesConstraints,
@@ -21,6 +23,7 @@ import {
 } from "../constants/constraintTypes.js";
 
 type SlotLayout = { top: string[]; side: string[] };
+type CreatureSlotLayout = SlotLayout & { racePool: "power" | "toughness" | "general" };
 
 const fourColorLayouts: SlotLayout[] = [
   { top: ["set"], side: ["type"] },
@@ -44,11 +47,11 @@ const twoColorLayouts: SlotLayout[] = [
   { top: ["artist", "rarity"], side: ["manaValue", "color"] },
 ];
 
-const creatureLayouts: SlotLayout[] = [
-  { top: ["power"], side: ["toughness"] },
-  { top: ["power"], side: ["creatureRulesText"] },
-  { top: ["creatureRulesText"], side: ["toughness"] },
-  { top: ["rarity"], side: ["manaValue"] },
+const creatureLayouts: CreatureSlotLayout[] = [
+  { top: ["power"],             side: ["toughness"],        racePool: "power"     },
+  { top: ["power"],             side: ["creatureRulesText"], racePool: "power"     },
+  { top: ["creatureRulesText"], side: ["toughness"],         racePool: "toughness" },
+  { top: ["rarity"],            side: ["manaValue"],         racePool: "general"   },
 ];
 
 const artistLayouts: SlotLayout[] = [
@@ -138,16 +141,10 @@ export class GriddeningService {
     constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>,
     creatureBoardType: number,
   ): Puzzle {
-    const [
-      creatureRace,
-      creatureJob,
-      creatureRulesText,
-      color,
-      power,
-      toughness,
-      rarity,
-      manaValue,
-    ] = this.getCreatureDecks(constraintDeckByConstraintType);
+    const layout = creatureLayouts[creatureBoardType];
+    const [, creatureJob, creatureRulesText, color, power, toughness, rarity, manaValue] =
+      this.getCreatureDecks(constraintDeckByConstraintType);
+    const creatureRace = this.getCreatureRacePool(layout.racePool);
     const decks = {
       creatureRace,
       creatureJob,
@@ -164,7 +161,7 @@ export class GriddeningService {
       topRow: [this.drawFrom(creatureJob), this.drawFrom(color)],
       sideRow: [this.drawFrom(creatureRace), this.drawFrom(color)],
     };
-    this.fillFromLayout(puzzle, creatureLayouts[creatureBoardType], decks);
+    this.fillFromLayout(puzzle, layout, decks);
     return puzzle;
   }
 
@@ -205,6 +202,17 @@ export class GriddeningService {
     };
     this.fillFromLayout(puzzle, colorlessLayouts[colorlessBoardType], decks);
     return puzzle;
+  }
+
+  private getCreatureRacePool(racePool: "power" | "toughness" | "general"): GameConstraint[] {
+    switch (racePool) {
+      case "power":
+        return shuffleArray([...powerCompatibleRaceConstraints]);
+      case "toughness":
+        return shuffleArray([...toughnessCompatibleRaceConstraints]);
+      case "general":
+        return shuffleArray([...creatureRaceConstraints]);
+    }
   }
 
   private drawFrom(deck: GameConstraint[]): GameConstraint {

@@ -48,6 +48,31 @@ const creatureRaceTypes = [
   "Bird",
 ];
 
+// Creatures that regularly have power ≥ 5 — safe for power-slot layouts
+const powerCompatibleRaceTypes = [
+  "Dragon",
+  "Eldrazi",
+  "Hydra",
+  "Angel",
+  "Demon",
+  "Dinosaur",
+  "Sphinx",
+  "Horror",
+  "Beast",
+  "Elemental",
+  "God",
+  "Phyrexian",
+  "Werewolf",
+];
+
+// Creatures with regularly high toughness — power pool + defensively large types
+const toughnessCompatibleRaceTypes = [
+  ...powerCompatibleRaceTypes,
+  "Wall",    // 0 power but high toughness is the whole design
+  "Treefolk", // notorious for high toughness (Doran, Indomitable Ancients)
+  "Spider",   // reach + high toughness is the Spider identity
+];
+
 const creatureJobTypes = [
   "Cleric",
   "Soldier",
@@ -67,6 +92,14 @@ export const cardTypeConstraints: GameConstraint[] = cardTypes.map(
 );
 
 export const creatureRaceConstraints: GameConstraint[] = creatureRaceTypes.map(
+  (cardType) => new GameConstraint(cardType, ConstraintType.CreatureRaceTypes, `t:${cardType}`),
+);
+
+export const powerCompatibleRaceConstraints: GameConstraint[] = powerCompatibleRaceTypes.map(
+  (cardType) => new GameConstraint(cardType, ConstraintType.CreatureRaceTypes, `t:${cardType}`),
+);
+
+export const toughnessCompatibleRaceConstraints: GameConstraint[] = toughnessCompatibleRaceTypes.map(
   (cardType) => new GameConstraint(cardType, ConstraintType.CreatureRaceTypes, `t:${cardType}`),
 );
 
