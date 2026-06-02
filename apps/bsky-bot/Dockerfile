@@ -1,10 +1,19 @@
-FROM node:24-slim
+FROM node:24-slim AS builder
+
+WORKDIR /home/app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY ./ ./
+RUN npm run build
+
+FROM node:24-slim AS runner
 
 ENV NODE_ENV=production
 
 WORKDIR /home/app
 
-# Install Chrome before copying source so this layer is cached independently
 RUN apt-get update \
     && apt-get install -y wget gnupg \
     && install -m 0755 -d /etc/apt/keyrings \
@@ -18,15 +27,14 @@ RUN apt-get update \
        --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Install deps before copying source so this layer is cached unless package.json changes
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --omit=dev
 
-COPY ./ ./
+COPY --from=builder /home/app/dist ./dist
 
 RUN groupadd -r app && useradd -rm -g app -G audio,video app \
     && chown -R app:app /home/app
 
 USER app
 
-ENTRYPOINT [ "npm", "start" ]
+ENTRYPOINT ["node", "dist/index.js"]

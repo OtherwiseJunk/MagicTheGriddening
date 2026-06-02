@@ -33,3 +33,18 @@ jobs:
         run: npm run fmt:check
       - name: Test
         run: npm test
+      - name: Build Docker image
+        run: docker build -t bsky-bot-test .
+      - name: Docker startup smoke test
+        run: |
+          docker run -d --name bsky-smoke \
+            -e BLUESKY_USERNAME=test \
+            -e BLUESKY_PASSWORD=test \
+            bsky-bot-test
+          sleep 5
+          EXIT_CODE=$(docker inspect bsky-smoke --format='{{.State.ExitCode}}')
+          docker rm -f bsky-smoke
+          if [ "$EXIT_CODE" = "127" ]; then
+            echo "Container exited with code 127 (command not found - likely missing runtime dependency)"
+            exit 1
+          fi

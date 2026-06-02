@@ -67,8 +67,8 @@ jobs:
         run: npm ci
       - name: Build production Docker image
         run: docker build -t magicthegriddening -f dockerfile .
-      - name: Run Prisma migrations
-        run: npx prisma migrate deploy
+      - name: Push DB schema
+        run: npx prisma db push
       - name: Seed test data
         run: PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d griddening < e2e/seed.sql
       - name: Start app
@@ -127,8 +127,8 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
-      - name: Run Prisma migrations
-        run: npx prisma migrate deploy
+      - name: Push DB schema
+        run: npx prisma db push
       - name: Seed test data
         run: PGPASSWORD=postgres psql -h localhost -p 5433 -U postgres -d griddening_e2e < e2e/seed.sql
       - name: Run e2e tests
