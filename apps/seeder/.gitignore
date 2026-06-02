@@ -1,0 +1,11 @@
+# Node
+node_modules
+# Keep environment variables out of version control
+
+# Environment
+.env
+# Coverage reports, too
+coverage/**
+.DS_Store
+/data
+.devcontainer/

@@ -1,0 +1,32 @@
+{
+  "scripts": {
+    "start": "ts-node index.ts",
+    "build": "tsc",
+    "test": "jest",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint . --fix",
+    "format": "oxfmt -c ../../.oxfmtrc.json --write .",
+    "fmt": "oxfmt -c ../../.oxfmtrc.json --write .",
+    "fmt:check": "oxfmt -c ../../.oxfmtrc.json --check ."
+  },
+  "dependencies": {
+    "@atproto/api": "^0.6.20",
+    "cron": "^3.1.0",
+    "dotenv": "^16.3.1",
+    "png-js": "^1.0.0",
+    "process": "^0.11.10",
+    "puppeteer": "^22.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
+    "@babel/preset-typescript": "^7.23.3",
+    "@types/jest": "^29.5.12",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "oxfmt": "^0.44.0",
+    "oxlint": "^1.59.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

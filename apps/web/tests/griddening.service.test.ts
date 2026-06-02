@@ -5,7 +5,6 @@ import {
   ConstraintType,
 } from "../src/models/UI/gameConstraint";
 import GriddeningService from "../src/services/griddening.service";
-import { g } from "vitest/dist/suite-IbNSsUWN.js";
 import { Color } from "@/constants/constraintConstants";
 
 describe("getTextForConstraints", () => {
