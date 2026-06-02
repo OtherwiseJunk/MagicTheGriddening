@@ -27,7 +27,7 @@ async function start() {
 
   if (date == undefined) {
     console.log("No games found in DB, starting from scratch.");
-    await generatePuzzles(puzzleBuffer, 0);
+    await generatePuzzles(puzzleBuffer, calculateStartingDayOffset(date));
     return;
   }
 
@@ -171,7 +171,12 @@ function logPuzzle(puzzle: Puzzle) {
 export function calculateOffsetFromToday(date: Date) {
   const now = new Date();
   const difference = Math.ceil(Math.round(date.getTime() - now.getTime()) / (1000 * 3600 * 24));
-  return difference;
+  return difference || 0;
+}
+
+export function calculateStartingDayOffset(newestGameDate: Date | undefined): number {
+  if (newestGameDate === undefined) return -1;
+  return calculateOffsetFromToday(newestGameDate);
 }
 
 if (!process.env.VITEST) {
