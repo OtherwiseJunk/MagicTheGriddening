@@ -41,7 +41,7 @@ services:
     volumes:
       - card-data:/app/data
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health | grep -q '\"status\":\"ok\"'"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health | grep -q '\"status\":\"ok\"'"]
       interval: 30s
       timeout: 5s
       retries: 5
