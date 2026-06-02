@@ -1,7 +1,6 @@
 import { cloneMapOfDecks, shuffleArray } from "./Utilities/map.helper.js";
 import { GriddeningService } from "./services/griddening.service.js";
-import { ScryfallService } from "./services/scryfall.service.js";
-import * as Scry from "scryfall-sdk";
+import { CardDataService } from "./services/card-data.service.js";
 import { Puzzle, PuzzleType } from "./types/Puzzle.js";
 import { ConstraintType, GameConstraint } from "./types/GameConstraint.js";
 import { DataService } from "./services/data.service.js";
@@ -9,13 +8,21 @@ import { PrismaClient } from "@prisma/client";
 import schedule from "node-schedule";
 
 const prisma = new PrismaClient();
-const scryfall = new ScryfallService(Scry);
-const griddening = new GriddeningService(scryfall);
+const cardDataService = new CardDataService();
 const dataService = new DataService(prisma);
+
+let griddening: GriddeningService;
+
+async function initGriddening() {
+  const [cards, sets] = await Promise.all([cardDataService.getCards(), cardDataService.getSets()]);
+  console.log(`Card database loaded: ${cards.length} cards, ${sets.length} sets`);
+  griddening = new GriddeningService(cards, sets);
+}
 const puzzleBuffer = process.env.PUZZLE_BUFFER ? parseInt(process.env.PUZZLE_BUFFER) : 5;
 const puzzleGenerationTimeoutMs = 600_000;
 
 async function start() {
+  await initGriddening();
   const date = await dataService.getDateOfNewestGame();
 
   if (date == undefined) {
@@ -42,7 +49,7 @@ async function start() {
 
 async function generatePuzzles(puzzleCount: number, dayOffset: number) {
   console.log("Starting...");
-  const deckMap = await griddening.createConstraintDeck();
+  const deckMap = griddening.createConstraintDeck();
 
   for (let i = 1; i < puzzleCount + 1; i++) {
     console.log(`Generating ${i + 1} puzzle...`);
@@ -90,7 +97,7 @@ async function generateValidPuzzle(
   while (!isValid) {
     const topRow = puzzle.topRow as GameConstraint[];
     const sideRow = puzzle.sideRow as GameConstraint[];
-    const intersectionsValid = await intersectionsAreValid(sideRow, topRow);
+    const intersectionsValid = intersectionsAreValid(sideRow, topRow);
 
     if (intersectionsValid) {
       isValid = true;
@@ -124,10 +131,10 @@ async function generateValidPuzzle(
   return puzzle;
 }
 
-async function intersectionsAreValid(sideRow: GameConstraint[], topRow: GameConstraint[]) {
+function intersectionsAreValid(sideRow: GameConstraint[], topRow: GameConstraint[]) {
   for (const top of topRow) {
     for (const side of sideRow) {
-      if (!(await griddening.intersectionHasMinimumHits(top, side))) {
+      if (!griddening.intersectionHasMinimumHits(top, side)) {
         return false;
       }
     }

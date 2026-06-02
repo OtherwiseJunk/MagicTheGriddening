@@ -1,49 +1,26 @@
-import { GameConstraint, ConstraintType } from "../../../types/GameConstraint";
-import { ScryfallHelper } from "../scryfall.helper";
-import * as Scry from "scryfall-sdk";
+import { GameConstraint, ConstraintType } from "../../../types/GameConstraint.js";
+import { LocalSet } from "../../../types/LocalSet.js";
 
-const vintageSet: Scry.Set = ScryfallHelper.generateScryfallSet("1993-01-01", "Vintage", "V");
-const modernSet: Scry.Set = ScryfallHelper.generateScryfallSet("2003-01-01", "Modern", "M");
-export const pioneerSet: Scry.Set = ScryfallHelper.generateScryfallSet(
-  "2013-01-01",
-  "Pioneer",
-  "P",
-);
-export const standardSet: Scry.Set = ScryfallHelper.generateScryfallSet(
-  "2021-01-01",
-  "Standard",
-  "S",
-);
-export const noReleaseAtSet: Scry.Set = ScryfallHelper.generateScryfallSet(
-  undefined,
-  "No Release",
-  "NR",
-);
-export const firstPioneerSet: Scry.Set = ScryfallHelper.generateScryfallSet(
-  "2012-10-05",
-  "Ravnica I think",
-  "RTR",
-);
-export const dayAfterFirstPioneerSet: Scry.Set = ScryfallHelper.generateScryfallSet(
-  "2012-10-04",
-  "not a set",
-  "nas",
-);
-export const dayBeforeFirstPioneerSet: Scry.Set = ScryfallHelper.generateScryfallSet(
-  "2012-10-06",
-  "not a set",
-  "nas",
-);
-export const dayBefore2013Set: Scry.Set = ScryfallHelper.generateScryfallSet(
-  "2012-12-31",
-  "not a set",
-  "nas",
-);
-export const firstDayOf2013Set: Scry.Set = ScryfallHelper.generateScryfallSet(
-  "2013-01-01",
-  "not a set",
-  "nas",
-);
+function makeLocalSet(
+  released_at: string | undefined,
+  name: string,
+  code: string,
+  set_type: string = "core",
+): LocalSet {
+  return { code, name, set_type, released_at };
+}
+
+const vintageSet = makeLocalSet("1993-01-01", "Vintage", "V");
+const modernSet = makeLocalSet("2003-01-01", "Modern", "M");
+export const pioneerSet = makeLocalSet("2013-01-01", "Pioneer", "P");
+export const standardSet = makeLocalSet("2021-01-01", "Standard", "S", "expansion");
+export const noReleaseAtSet = makeLocalSet(undefined, "No Release", "NR");
+export const firstPioneerSet = makeLocalSet("2012-10-05", "Ravnica I think", "RTR");
+export const dayAfterFirstPioneerSet = makeLocalSet("2012-10-04", "not a set", "nas");
+export const dayBeforeFirstPioneerSet = makeLocalSet("2012-10-06", "not a set", "nas");
+export const dayBefore2013Set = makeLocalSet("2012-12-31", "not a set", "nas");
+export const firstDayOf2013Set = makeLocalSet("2013-01-01", "not a set", "nas");
+
 export const setTypesToFilter = [
   "masters",
   "alchemy",
@@ -68,7 +45,7 @@ export const setTypesToFilter = [
   "minigame",
 ];
 
-export const setsWithExpectedIsPioneerReturns = [
+export const setsWithExpectedIsPioneerReturns: [LocalSet, boolean][] = [
   [vintageSet, false],
   [modernSet, false],
   [noReleaseAtSet, false],
@@ -81,7 +58,7 @@ export const setsWithExpectedIsPioneerReturns = [
   [standardSet, true],
 ];
 
-export const setsWithExpectedConstraintReturns = [
+export const setsWithExpectedConstraintReturns: [LocalSet, GameConstraint][] = [
   [vintageSet, new GameConstraint(vintageSet.name, ConstraintType.Set, `set:${vintageSet.code}`)],
   [modernSet, new GameConstraint(modernSet.name, ConstraintType.Set, `set:${modernSet.code}`)],
   [
@@ -123,7 +100,7 @@ export const setsWithExpectedConstraintReturns = [
   ],
 ];
 
-export const setInputs = [
+export const setInputs: LocalSet[] = [
   vintageSet,
   modernSet,
   noReleaseAtSet,
@@ -143,7 +120,7 @@ export const expectedSetOutputs = [
   new GameConstraint(firstDayOf2013Set.name, ConstraintType.Set, `set:${firstDayOf2013Set.code}`),
 ];
 
-export const namesToSanitizeWithExpectedResult = [
+export const namesToSanitizeWithExpectedResult: [string, string][] = [
   ["Foreign Black Border", ""],
   ["Limited Edition Alpha", "Alpha"],
   ["Limited Edition Beta", "Beta"],

@@ -55,6 +55,9 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/griddening
       TZ: ${TZ:-America/New_York}
       CRON_SCHEDULE: ${CRON_SCHEDULE:-30 00 * * *}
+      BULK_DATA_DIR: /app/data
+    volumes:
+      - card-data:/app/data
     depends_on:
       postgres:
         condition: service_healthy

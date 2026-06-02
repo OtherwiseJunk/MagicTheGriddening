@@ -1,4 +1,8 @@
+import { LocalCard } from "./LocalCard.js";
+
 export class GameConstraint {
+  public localFilter?: (card: LocalCard) => boolean;
+
   constructor(
     public displayName: string,
     public constraintType: ConstraintType,

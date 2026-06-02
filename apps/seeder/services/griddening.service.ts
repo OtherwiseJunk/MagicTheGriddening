@@ -1,7 +1,7 @@
 import { ConstraintType, GameConstraint } from "../types/GameConstraint.js";
-import * as Scry from "scryfall-sdk";
-import { IScryfallService } from "./scryfall.service.js";
-import { PuzzleType, Puzzle } from "../types/Puzzle.js";
+import { LocalCard } from "../types/LocalCard.js";
+import { LocalSet } from "../types/LocalSet.js";
+import { Puzzle, PuzzleType } from "../types/Puzzle.js";
 import { shuffleArray } from "../Utilities/map.helper.js";
 import {
   colorConstraints,
@@ -78,7 +78,10 @@ const colorlessLayouts: SlotLayout[] = [
 ];
 
 export class GriddeningService {
-  constructor(private scryfallService: IScryfallService) {}
+  constructor(
+    private cards: LocalCard[] = [],
+    private sets: LocalSet[] = [],
+  ) {}
   minimumHits = process.env.MINIMUM_HITS ? parseInt(process.env.MINIMUM_HITS) : 10;
 
   generateRandomPuzzleBoard(constraintDeckByConstraintType: Map<ConstraintType, GameConstraint[]>) {
@@ -204,6 +207,95 @@ export class GriddeningService {
     return puzzle;
   }
 
+  isPioneerSet(set: LocalSet): boolean {
+    if (set.released_at == undefined) return false;
+    const releaseYear = parseInt(set.released_at.split("-")[0]);
+    if (releaseYear > 2012) return true;
+    if (set.released_at === "2012-10-05") return true;
+    return false;
+  }
+
+  isCoreOrExpansionSet(set: LocalSet): boolean {
+    return ["core", "expansion"].includes(set.set_type);
+  }
+
+  sanitizeName(name: string): string {
+    return name
+      .replace("Foreign Black Border", "")
+      .replace("Limited Edition Alpha", "Alpha")
+      .replace("Limited Edition Beta", "Beta")
+      .replace("Unlimited Edition", "Unlimited")
+      .replace("Revised Edition", "Revised")
+      .replace("Fourth Edition", "4th Edition")
+      .replace("Fifth Edition", "5th Edition")
+      .replace("Classic Sixth Edition", "6th Edition")
+      .replace("Seventh Edition", "7th Edition")
+      .replace("Eighth Edition", "8th Edition")
+      .replace("Ninth Edition", "9th Edition")
+      .replace("Tenth Edition", "10th Edition")
+      .trim();
+  }
+
+  buildSetConstraintFromLocalSet(set: LocalSet): GameConstraint {
+    const constraint = new GameConstraint(
+      this.sanitizeName(set.name),
+      ConstraintType.Set,
+      `set:${set.code}`,
+    );
+    const setCode = set.code;
+    constraint.localFilter = (card) => card.set === setCode;
+    return constraint;
+  }
+
+  getSetConstraints(): GameConstraint[] {
+    return this.sets
+      .filter((set) => this.isCoreOrExpansionSet(set))
+      .filter((set) => this.isPioneerSet(set))
+      .map((set) => this.buildSetConstraintFromLocalSet(set));
+  }
+
+  intersectionHasMinimumHits(
+    gameConstraintOne: GameConstraint,
+    gameConstraintTwo: GameConstraint,
+  ): boolean {
+    const filterOne = gameConstraintOne.localFilter;
+    const filterTwo = gameConstraintTwo.localFilter;
+    if (!filterOne || !filterTwo) {
+      return true;
+    }
+    const count = this.cards.filter((card) => filterOne(card) && filterTwo(card)).length;
+    return count >= this.minimumHits;
+  }
+
+  createConstraintDeck(): Map<ConstraintType, GameConstraint[]> {
+    const setConstraints = shuffleArray(this.getSetConstraints());
+
+    return new Map<ConstraintType, GameConstraint[]>([
+      [ConstraintType.Set, setConstraints],
+      [ConstraintType.Color, shuffleArray(colorConstraints)],
+      [ConstraintType.ManaValue, shuffleArray(manaValueConstraints)],
+      [ConstraintType.Rarity, shuffleArray(rarityConstraints)],
+      [ConstraintType.Type, shuffleArray(cardTypeConstraints)],
+      [ConstraintType.Power, shuffleArray(powerConstraints)],
+      [ConstraintType.Toughness, shuffleArray(toughnessConstraints)],
+      [ConstraintType.Artist, shuffleArray(artistConstraints)],
+      [ConstraintType.CreatureRulesText, shuffleArray(creatureRulesTextConstraints)],
+      [ConstraintType.CreatureRaceTypes, shuffleArray(creatureRaceConstraints)],
+      [ConstraintType.CreatureJobTypes, shuffleArray(creatureJobConstraints)],
+      [ConstraintType.EnchantmentSubtypes, shuffleArray(enchantmentSubtypeTypeConstraints)],
+      [ConstraintType.ArtifactSubtypes, shuffleArray(artifactSubtypesConstraints)],
+    ]);
+  }
+
+  getDateStringByOffset(dayOffset: number = 0): string {
+    let now = new Date();
+    now = this.addDays(now, dayOffset);
+    return `${now.getFullYear()}${now
+      .getMonth()
+      .toString()
+      .padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}`;
+  }
+
   private getCreatureRacePool(racePool: "power" | "toughness" | "general"): GameConstraint[] {
     switch (racePool) {
       case "power":
@@ -319,97 +411,6 @@ export class GriddeningService {
       rarityConstraints,
       manaValueConstraints,
     ];
-  }
-
-  isPioneerSet(set: Scry.Set) {
-    if (set.released_at == undefined) return false;
-
-    const releaseYear = parseInt(set.released_at.split("-")[0]);
-    if (releaseYear > 2012) {
-      return true;
-    } else if (set.released_at === "2012-10-05") {
-      return true;
-    }
-
-    return false;
-  }
-
-  isCoreOrExpansionSet(set: Scry.Set) {
-    return ["core", "expansion"].includes(set.set_type);
-  }
-
-  sanitizeSet(set: Scry.Set): Scry.Set {
-    set.name = set.name
-      .replace("Foreign Black Border", "")
-      .replace("Limited Edition Alpha", "Alpha")
-      .replace("Limited Edition Beta", "Beta")
-      .replace("Unlimited Edition", "Unlimited")
-      .replace("Revised Edition", "Revised")
-      .replace("Fourth Edition", "4th Edition")
-      .replace("Fifth Edition", "5th Edition")
-      .replace("Classic Sixth Edition", "6th Edition")
-      .replace("Seventh Edition", "7th Edition")
-      .replace("Eighth Edition", "8th Edition")
-      .replace("Ninth Edition", "9th Edition")
-      .replace("Tenth Edition", "10th Edition")
-      .trim();
-
-    return set;
-  }
-
-  buildSetConstraintFromScryfallSet(set: Scry.Set) {
-    return new GameConstraint(set.name, ConstraintType.Set, `set:${set.code}`);
-  }
-
-  getDateStringByOffset(dayOffset: number = 0): string {
-    let now = new Date();
-    now = this.addDays(now, dayOffset);
-    return `${now.getFullYear()}${now
-      .getMonth()
-      .toString()
-      .padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}`;
-  }
-
-  async getSetConstraints(): Promise<GameConstraint[]> {
-    let sets = await this.scryfallService.getAllSets();
-
-    if (sets == undefined) return [];
-    sets = sets.filter((set) => set != undefined);
-
-    return sets
-      .filter(this.isCoreOrExpansionSet)
-      .map((set) => this.sanitizeSet(set))
-      .filter(this.isPioneerSet)
-      .map(this.buildSetConstraintFromScryfallSet);
-  }
-
-  async intersectionHasMinimumHits(
-    gameConstraintOne: GameConstraint,
-    gameConstraintTwo: GameConstraint,
-  ): Promise<boolean> {
-    const query = `${gameConstraintOne.scryfallQuery} ${gameConstraintTwo.scryfallQuery}`;
-    const cardCount = await this.scryfallService.getFirstPageCardCount(query);
-    return cardCount >= this.minimumHits;
-  }
-
-  async createConstraintDeck(): Promise<Map<ConstraintType, GameConstraint[]>> {
-    const setConstraints = shuffleArray(await this.getSetConstraints());
-
-    return new Map<ConstraintType, GameConstraint[]>([
-      [ConstraintType.Set, setConstraints],
-      [ConstraintType.Color, shuffleArray(colorConstraints)],
-      [ConstraintType.ManaValue, shuffleArray(manaValueConstraints)],
-      [ConstraintType.Rarity, shuffleArray(rarityConstraints)],
-      [ConstraintType.Type, shuffleArray(cardTypeConstraints)],
-      [ConstraintType.Power, shuffleArray(powerConstraints)],
-      [ConstraintType.Toughness, shuffleArray(toughnessConstraints)],
-      [ConstraintType.Artist, shuffleArray(artistConstraints)],
-      [ConstraintType.CreatureRulesText, shuffleArray(creatureRulesTextConstraints)],
-      [ConstraintType.CreatureRaceTypes, shuffleArray(creatureRaceConstraints)],
-      [ConstraintType.CreatureJobTypes, shuffleArray(creatureJobConstraints)],
-      [ConstraintType.EnchantmentSubtypes, shuffleArray(enchantmentSubtypeTypeConstraints)],
-      [ConstraintType.ArtifactSubtypes, shuffleArray(artifactSubtypesConstraints)],
-    ]);
   }
 
   private getRandomInt(max: number) {
