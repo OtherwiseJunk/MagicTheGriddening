@@ -48,10 +48,10 @@ const twoColorLayouts: SlotLayout[] = [
 ];
 
 const creatureLayouts: CreatureSlotLayout[] = [
-  { top: ["power"],             side: ["toughness"],        racePool: "power"     },
-  { top: ["power"],             side: ["creatureRulesText"], racePool: "power"     },
-  { top: ["creatureRulesText"], side: ["toughness"],         racePool: "toughness" },
-  { top: ["rarity"],            side: ["manaValue"],         racePool: "general"   },
+  { top: ["power"], side: ["toughness"], racePool: "power" },
+  { top: ["power"], side: ["creatureRulesText"], racePool: "power" },
+  { top: ["creatureRulesText"], side: ["toughness"], racePool: "toughness" },
+  { top: ["rarity"], side: ["manaValue"], racePool: "general" },
 ];
 
 const artistLayouts: SlotLayout[] = [

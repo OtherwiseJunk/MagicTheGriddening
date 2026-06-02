@@ -5,6 +5,7 @@
     "test": "jest",
     "lint": "oxlint .",
     "lint:fix": "oxlint . --fix",
+    "format": "oxfmt -c ../../.oxfmtrc.json --write .",
     "fmt": "oxfmt -c ../../.oxfmtrc.json --write .",
     "fmt:check": "oxfmt -c ../../.oxfmtrc.json --check ."
   },

@@ -68,9 +68,9 @@ const powerCompatibleRaceTypes = [
 // Creatures with regularly high toughness — power pool + defensively large types
 const toughnessCompatibleRaceTypes = [
   ...powerCompatibleRaceTypes,
-  "Wall",    // 0 power but high toughness is the whole design
+  "Wall", // 0 power but high toughness is the whole design
   "Treefolk", // notorious for high toughness (Doran, Indomitable Ancients)
-  "Spider",   // reach + high toughness is the Spider identity
+  "Spider", // reach + high toughness is the Spider identity
 ];
 
 const creatureJobTypes = [
@@ -99,9 +99,10 @@ export const powerCompatibleRaceConstraints: GameConstraint[] = powerCompatibleR
   (cardType) => new GameConstraint(cardType, ConstraintType.CreatureRaceTypes, `t:${cardType}`),
 );
 
-export const toughnessCompatibleRaceConstraints: GameConstraint[] = toughnessCompatibleRaceTypes.map(
-  (cardType) => new GameConstraint(cardType, ConstraintType.CreatureRaceTypes, `t:${cardType}`),
-);
+export const toughnessCompatibleRaceConstraints: GameConstraint[] =
+  toughnessCompatibleRaceTypes.map(
+    (cardType) => new GameConstraint(cardType, ConstraintType.CreatureRaceTypes, `t:${cardType}`),
+  );
 
 export const creatureJobConstraints: GameConstraint[] = creatureJobTypes.map(
   (cardType) => new GameConstraint(cardType, ConstraintType.CreatureJobTypes, `t:${cardType}`),

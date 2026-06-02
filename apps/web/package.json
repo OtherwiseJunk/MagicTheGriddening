@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "oxlint --deny-warnings src",
     "lint:fix": "oxlint --fix src",
+    "format": "oxfmt -c ../../.oxfmtrc.json --write src",
     "fmt": "oxfmt -c ../../.oxfmtrc.json --write src",
     "fmt:check": "oxfmt -c ../../.oxfmtrc.json --check src",
     "test": "npx vitest",

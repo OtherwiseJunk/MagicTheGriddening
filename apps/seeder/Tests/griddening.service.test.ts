@@ -230,29 +230,46 @@ describe("Griddening Service", () => {
   describe("generateRandomCreatureBoard race pool selection", async () => {
     const mapOfDecks = await griddeningService.createConstraintDeck();
     const powerDisplayNames = new Set(powerCompatibleRaceConstraints.map((c) => c.displayName));
-    const toughnessDisplayNames = new Set(toughnessCompatibleRaceConstraints.map((c) => c.displayName));
+    const toughnessDisplayNames = new Set(
+      toughnessCompatibleRaceConstraints.map((c) => c.displayName),
+    );
     const allDisplayNames = new Set(creatureRaceConstraints.map((c) => c.displayName));
 
     test("subtype 0 (power/toughness) race is drawn from the power-compatible pool", () => {
       for (let i = 0; i < 20; i++) {
-        const puzzle = griddeningService.generateRandomCreatureBoard(cloneMapOfDecks(mapOfDecks), 0);
-        const race = puzzle.sideRow.find((c) => c.constraintType === ConstraintType.CreatureRaceTypes)!;
+        const puzzle = griddeningService.generateRandomCreatureBoard(
+          cloneMapOfDecks(mapOfDecks),
+          0,
+        );
+        const race = puzzle.sideRow.find(
+          (c) => c.constraintType === ConstraintType.CreatureRaceTypes,
+        )!;
         expect(powerDisplayNames.has(race.displayName)).toBe(true);
       }
     });
 
     test("subtype 1 (power/rulesText) race is drawn from the power-compatible pool", () => {
       for (let i = 0; i < 20; i++) {
-        const puzzle = griddeningService.generateRandomCreatureBoard(cloneMapOfDecks(mapOfDecks), 1);
-        const race = puzzle.sideRow.find((c) => c.constraintType === ConstraintType.CreatureRaceTypes)!;
+        const puzzle = griddeningService.generateRandomCreatureBoard(
+          cloneMapOfDecks(mapOfDecks),
+          1,
+        );
+        const race = puzzle.sideRow.find(
+          (c) => c.constraintType === ConstraintType.CreatureRaceTypes,
+        )!;
         expect(powerDisplayNames.has(race.displayName)).toBe(true);
       }
     });
 
     test("subtype 2 (rulesText/toughness) race is drawn from the toughness-compatible pool", () => {
       for (let i = 0; i < 20; i++) {
-        const puzzle = griddeningService.generateRandomCreatureBoard(cloneMapOfDecks(mapOfDecks), 2);
-        const race = puzzle.sideRow.find((c) => c.constraintType === ConstraintType.CreatureRaceTypes)!;
+        const puzzle = griddeningService.generateRandomCreatureBoard(
+          cloneMapOfDecks(mapOfDecks),
+          2,
+        );
+        const race = puzzle.sideRow.find(
+          (c) => c.constraintType === ConstraintType.CreatureRaceTypes,
+        )!;
         expect(toughnessDisplayNames.has(race.displayName)).toBe(true);
       }
     });
@@ -260,8 +277,13 @@ describe("Griddening Service", () => {
     test("subtype 2 (rulesText/toughness) can produce Wall", () => {
       const races = new Set<string>();
       for (let i = 0; i < 200; i++) {
-        const puzzle = griddeningService.generateRandomCreatureBoard(cloneMapOfDecks(mapOfDecks), 2);
-        const race = puzzle.sideRow.find((c) => c.constraintType === ConstraintType.CreatureRaceTypes)!;
+        const puzzle = griddeningService.generateRandomCreatureBoard(
+          cloneMapOfDecks(mapOfDecks),
+          2,
+        );
+        const race = puzzle.sideRow.find(
+          (c) => c.constraintType === ConstraintType.CreatureRaceTypes,
+        )!;
         races.add(race.displayName);
       }
       expect(races.has("Wall")).toBe(true);
@@ -269,16 +291,26 @@ describe("Griddening Service", () => {
 
     test("subtype 3 (rarity/manaValue) race is drawn from the general pool", () => {
       for (let i = 0; i < 20; i++) {
-        const puzzle = griddeningService.generateRandomCreatureBoard(cloneMapOfDecks(mapOfDecks), 3);
-        const race = puzzle.sideRow.find((c) => c.constraintType === ConstraintType.CreatureRaceTypes)!;
+        const puzzle = griddeningService.generateRandomCreatureBoard(
+          cloneMapOfDecks(mapOfDecks),
+          3,
+        );
+        const race = puzzle.sideRow.find(
+          (c) => c.constraintType === ConstraintType.CreatureRaceTypes,
+        )!;
         expect(allDisplayNames.has(race.displayName)).toBe(true);
       }
     });
 
     test("power pool races never appear in subtype 0 are not Wall or Bear", () => {
       for (let i = 0; i < 20; i++) {
-        const puzzle = griddeningService.generateRandomCreatureBoard(cloneMapOfDecks(mapOfDecks), 0);
-        const race = puzzle.sideRow.find((c) => c.constraintType === ConstraintType.CreatureRaceTypes)!;
+        const puzzle = griddeningService.generateRandomCreatureBoard(
+          cloneMapOfDecks(mapOfDecks),
+          0,
+        );
+        const race = puzzle.sideRow.find(
+          (c) => c.constraintType === ConstraintType.CreatureRaceTypes,
+        )!;
         expect(race.displayName).not.toBe("Wall");
         expect(race.displayName).not.toBe("Bear");
         expect(race.displayName).not.toBe("Insect");
@@ -359,46 +391,44 @@ describe("Griddening Service", () => {
       return puzzle;
     }
 
-    test(
-      "generating 100 puzzles produces a balanced type distribution",
-      async () => {
-        const SAMPLE_SIZE = 100;
-        const TYPE_COUNT = Object.values(PuzzleType).filter((v) => typeof v === "number").length;
-        // 2× expected share — scales automatically as new puzzle types are added.
-        // With 5 types: max=40 (~5σ above mean). With 9 types: max=22 (~3.5σ above mean).
-        // Both catch the original 70% FourColors bias while remaining stable under random variation.
-        const MAX_SHARE = Math.round((SAMPLE_SIZE / TYPE_COUNT) * 2);
-        const MIN_APPEARANCES = 3; // every type should appear at least 3 times in 100
+    test("generating 100 puzzles produces a balanced type distribution", async () => {
+      const SAMPLE_SIZE = 100;
+      const TYPE_COUNT = Object.values(PuzzleType).filter((v) => typeof v === "number").length;
+      // 2× expected share — scales automatically as new puzzle types are added.
+      // With 5 types: max=40 (~5σ above mean). With 9 types: max=22 (~3.5σ above mean).
+      // Both catch the original 70% FourColors bias while remaining stable under random variation.
+      const MAX_SHARE = Math.round((SAMPLE_SIZE / TYPE_COUNT) * 2);
+      const MIN_APPEARANCES = 3; // every type should appear at least 3 times in 100
 
-        const puzzles = await Promise.all(
-          Array.from({ length: SAMPLE_SIZE }, () => generateValidPuzzle()),
-        );
+      const puzzles = await Promise.all(
+        Array.from({ length: SAMPLE_SIZE }, () => generateValidPuzzle()),
+      );
 
-        const countsByType: Record<number, number> = {};
-        for (const puzzle of puzzles) {
-          countsByType[puzzle.type] = (countsByType[puzzle.type] ?? 0) + 1;
-        }
+      const countsByType: Record<number, number> = {};
+      for (const puzzle of puzzles) {
+        countsByType[puzzle.type] = (countsByType[puzzle.type] ?? 0) + 1;
+      }
 
-        const typeNames = Object.fromEntries(
-          Object.values(PuzzleType)
-            .filter((v) => typeof v === "number")
-            .map((v) => [v, PuzzleType[v as number]]),
-        );
+      const typeNames = Object.fromEntries(
+        Object.values(PuzzleType)
+          .filter((v) => typeof v === "number")
+          .map((v) => [v, PuzzleType[v as number]]),
+      );
 
-        for (const type of Object.values(PuzzleType).filter((v) => typeof v === "number") as number[]) {
-          const count = countsByType[type] ?? 0;
-          expect(
-            count,
-            `${typeNames[type]} appeared ${count} times — expected at least ${MIN_APPEARANCES}`,
-          ).toBeGreaterThanOrEqual(MIN_APPEARANCES);
-          expect(
-            count,
-            `${typeNames[type]} appeared ${count}/${SAMPLE_SIZE} times — suspected bias (max ${MAX_SHARE})`,
-          ).toBeLessThanOrEqual(MAX_SHARE);
-        }
-      },
-      15_000,
-    );
+      for (const type of Object.values(PuzzleType).filter(
+        (v) => typeof v === "number",
+      ) as number[]) {
+        const count = countsByType[type] ?? 0;
+        expect(
+          count,
+          `${typeNames[type]} appeared ${count} times — expected at least ${MIN_APPEARANCES}`,
+        ).toBeGreaterThanOrEqual(MIN_APPEARANCES);
+        expect(
+          count,
+          `${typeNames[type]} appeared ${count}/${SAMPLE_SIZE} times — suspected bias (max ${MAX_SHARE})`,
+        ).toBeLessThanOrEqual(MAX_SHARE);
+      }
+    }, 15_000);
   });
 
   describe("getDateStringByOffset", async () => {
