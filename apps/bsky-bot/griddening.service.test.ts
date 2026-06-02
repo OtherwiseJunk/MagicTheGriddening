@@ -206,6 +206,22 @@ https://magicthegridden.ing
       };
     }
 
+    it("adds label when profile record does not exist", async () => {
+      const agent = makeAgent();
+      agent.api.com.atproto.repo.getRecord.mockResolvedValue({ data: { record: undefined } });
+      await ensureBotLabel(agent as any);
+      expect(agent.api.com.atproto.repo.putRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          record: expect.objectContaining({
+            labels: {
+              $type: "com.atproto.label.defs#selfLabels",
+              values: [{ val: BOT_LABEL }],
+            },
+          }),
+        }),
+      );
+    });
+
     it("does nothing when no session exists", async () => {
       const agent = makeAgent();
       agent.session = undefined as any;

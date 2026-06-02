@@ -123,7 +123,7 @@ export async function ensureBotLabel(agent: BskyAgent): Promise<void> {
     rkey: "self",
   });
 
-  const record = data.record as Record<string, unknown>;
+  const record = (data.record ?? {}) as Record<string, unknown>;
   const labels = record.labels as { values?: { val: string }[] } | undefined;
 
   if (labels?.values?.some((l) => l.val === BOT_LABEL)) return;
