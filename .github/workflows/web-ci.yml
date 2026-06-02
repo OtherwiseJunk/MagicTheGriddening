@@ -126,8 +126,14 @@ jobs:
       - run: npm ci
       - name: Generate Prisma client
         run: npx prisma generate
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('apps/web/package-lock.json') }}
       - name: Install Playwright browsers
         run: npx playwright install chromium
+        timeout-minutes: 5
       - name: Run Prisma migrations
         run: npx prisma migrate deploy
       - name: Seed test data
