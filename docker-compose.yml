@@ -40,6 +40,12 @@ services:
       - "3001:3000"
     volumes:
       - card-data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health | grep -q '\"status\":\"ok\"'"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
@@ -74,6 +80,13 @@ services:
       BLUESKY_USERNAME: ${BLUESKY_USERNAME}
       BLUESKY_PASSWORD: ${BLUESKY_PASSWORD}
       TZ: ${TZ:-America/New_York}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      web:
+        condition: service_healthy
 
 volumes:
   postgres-volume:
