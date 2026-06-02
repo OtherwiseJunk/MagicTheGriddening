@@ -1,5 +1,5 @@
 import { expect, test, describe } from "vitest";
-import { calculateOffsetFromToday } from "../main.js";
+import { calculateOffsetFromToday, calculateStartingDayOffset } from "../main.js";
 
 describe("Main", () => {
   describe("calculateOffsetFromToday", () => {
@@ -15,6 +15,17 @@ describe("Main", () => {
       const date = new Date();
       date.setDate(date.getDate() - 1);
       expect(calculateOffsetFromToday(date)).toBe(-1);
+    });
+  });
+
+  describe("calculateStartingDayOffset", () => {
+    test("returns -1 when no games exist so first puzzle is today", () => {
+      expect(calculateStartingDayOffset(undefined)).toBe(-1);
+    });
+    test("returns offset of newest game when games exist", () => {
+      const date = new Date();
+      date.setDate(date.getDate() + 3);
+      expect(calculateStartingDayOffset(date)).toBe(3);
     });
   });
 });
