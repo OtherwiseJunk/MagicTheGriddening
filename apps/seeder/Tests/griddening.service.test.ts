@@ -1,9 +1,8 @@
 import { expect, test, describe, beforeEach } from "vitest";
 import { GriddeningService } from "../services/griddening.service.js";
 import { ConstraintType, GameConstraint } from "../types/GameConstraint.js";
-import * as Scry from "scryfall-sdk";
-import { ScryfallHelper } from "./testUtilities/scryfall.helper.js";
-import { ScryfallMockedService } from "../__mocks__/scryfall.service.js";
+import { LocalCard } from "../types/LocalCard.js";
+import { LocalSet } from "../types/LocalSet.js";
 import {
   pioneerSet,
   standardSet,
@@ -15,6 +14,8 @@ import {
   expectedSetOutputs,
 } from "./testUtilities/consts/griddening.testconstants.js";
 import {
+  colorConstraints,
+  rarityConstraints,
   powerCompatibleRaceConstraints,
   toughnessCompatibleRaceConstraints,
   creatureRaceConstraints,
@@ -22,123 +23,186 @@ import {
 import { PuzzleType } from "../types/Puzzle.js";
 import { cloneMapOfDecks } from "../Utilities/map.helper.js";
 
-const scryfallServiceMock = new ScryfallMockedService();
-const griddeningService = new GriddeningService(scryfallServiceMock);
+function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
+  return {
+    name: "Test Card",
+    faceNames: [],
+    type_line: "Creature — Human Warrior",
+    colors: ["W"],
+    cmc: 2,
+    rarity: "common",
+    oracle_text: "",
+    power: "2",
+    toughness: "2",
+    artist: "Test Artist",
+    set: "m21",
+    imagePng: "",
+    ...overrides,
+  };
+}
+
+const griddeningService = new GriddeningService([], []);
 
 describe("Griddening Service", () => {
   describe("createConstraintDeck", () => {
-    test("returns map of constraint arrays for each Contraint Type", async () => {
-      scryfallServiceMock.setAllSets([pioneerSet, standardSet]);
-
-      const mapConstraintDecks = await griddeningService.createConstraintDeck();
+    test("returns map of constraint arrays for each Constraint Type", () => {
+      const service = new GriddeningService([], [pioneerSet, standardSet]);
+      const mapConstraintDecks = service.createConstraintDeck();
       expect(mapConstraintDecks.size).toBe(ConstraintType.__LENGTH);
     });
   });
 
   describe("isPioneerSet", () => {
-    test.each(setsWithExpectedIsPioneerReturns)("(%o) -> %o", (scrySet, expectedResult) => {
-      const isPioneerSet = griddeningService.isPioneerSet(scrySet as Scry.Set);
+    test.each(setsWithExpectedIsPioneerReturns)("(%o) -> %o", (localSet, expectedResult) => {
+      const isPioneerSet = griddeningService.isPioneerSet(localSet);
       expect(isPioneerSet).toBe(expectedResult);
     });
   });
 
-  describe("sanitizeSet", () => {
-    test.each(setTypesToFilter)("(set.setType === %s) -> unmodified set name", (setType) => {
-      const filteredScryfallSet = ScryfallHelper.generateScryfallSet(
-        "1993-01-01",
-        setType,
-        "f",
-        setType,
-      );
-      expect(griddeningService.sanitizeSet(filteredScryfallSet).name).toBe(
-        filteredScryfallSet.name,
-      );
+  describe("isCoreOrExpansionSet", () => {
+    test.each(setTypesToFilter)("(set_type === %s) -> false", (setType) => {
+      const set: LocalSet = {
+        code: "f",
+        name: setType,
+        set_type: setType,
+        released_at: "1993-01-01",
+      };
+      expect(griddeningService.isCoreOrExpansionSet(set)).toBe(false);
+    });
+
+    test("core set returns true", () => {
+      const set: LocalSet = {
+        code: "m21",
+        name: "Core Set 2021",
+        set_type: "core",
+        released_at: "2020-07-03",
+      };
+      expect(griddeningService.isCoreOrExpansionSet(set)).toBe(true);
+    });
+
+    test("expansion set returns true", () => {
+      const set: LocalSet = {
+        code: "ktk",
+        name: "Khans of Tarkir",
+        set_type: "expansion",
+        released_at: "2014-09-26",
+      };
+      expect(griddeningService.isCoreOrExpansionSet(set)).toBe(true);
+    });
+  });
+
+  describe("sanitizeName", () => {
+    test.each(setTypesToFilter)("(setName === %s) -> unmodified set name", (setType) => {
+      expect(griddeningService.sanitizeName(setType)).toBe(setType);
     });
     test.each(namesToSanitizeWithExpectedResult)(
-      "(set.setName === %s) -> set.setName === %s",
+      "(setName === %s) -> setName === %s",
       (inputSetName, outputSetName) => {
-        const scryfallSet = ScryfallHelper.generateScryfallSet("1993-01-01", inputSetName, "f");
-        const outputSet = griddeningService.sanitizeSet(scryfallSet);
-
-        if (outputSet == undefined) {
-          expect("").toBe(outputSetName);
-        } else {
-          expect(outputSet!.name).toBe(outputSetName);
-        }
+        expect(griddeningService.sanitizeName(inputSetName)).toBe(outputSetName);
       },
     );
   });
 
-  describe("buildSetConstraintFromScryfallSet", () => {
+  describe("buildSetConstraintFromLocalSet", () => {
     test.each(setsWithExpectedConstraintReturns)("(%o) -> %o", (inputSet, outputConstraint) => {
-      const constraint = griddeningService.buildSetConstraintFromScryfallSet(inputSet as Scry.Set);
-      expect(constraint.displayName).toBe((outputConstraint as GameConstraint).displayName);
+      const constraint = griddeningService.buildSetConstraintFromLocalSet(inputSet);
+      expect(constraint.displayName).toBe(outputConstraint.displayName);
       expect(constraint.constraintType).toBe(ConstraintType.Set);
-      expect(constraint.imageAltText).toBe((outputConstraint as GameConstraint).imageAltText);
-      expect(constraint.imageSrc).toBe((outputConstraint as GameConstraint).imageSrc);
-      expect(constraint.scryfallQuery).toBe((outputConstraint as GameConstraint).scryfallQuery);
+      expect(constraint.imageAltText).toBe(outputConstraint.imageAltText);
+      expect(constraint.imageSrc).toBe(outputConstraint.imageSrc);
+      expect(constraint.scryfallQuery).toBe(outputConstraint.scryfallQuery);
+    });
+
+    test("produced constraint has localFilter matching set code", () => {
+      const set: LocalSet = {
+        code: "ktk",
+        name: "Khans of Tarkir",
+        set_type: "expansion",
+        released_at: "2014-09-26",
+      };
+      const constraint = griddeningService.buildSetConstraintFromLocalSet(set);
+      expect(constraint.localFilter!(makeCard({ set: "ktk" }))).toBe(true);
+      expect(constraint.localFilter!(makeCard({ set: "m21" }))).toBe(false);
     });
   });
 
   describe("getSetConstraints", () => {
-    test("should return qualifying pioneer set constraints", async () => {
-      scryfallServiceMock.setAllSets(setInputs);
-
-      const setConstraints = await griddeningService.getSetConstraints();
-
+    test("should return qualifying pioneer set constraints", () => {
+      const service = new GriddeningService([], setInputs);
+      const setConstraints = service.getSetConstraints();
       expect(setConstraints.length).toBe(expectedSetOutputs.length);
     });
   });
 
   describe("intersectionHasMinimumHits", () => {
-    const fakeConstraint = new GameConstraint("", ConstraintType.Set, "");
+    const black = colorConstraints.find((c) => c.displayName === "Black")!;
+    const mythic = rarityConstraints.find((c) => c.displayName === "Mythic")!;
 
-    test("returns true when intersection has 10 or more hits when no MINIMUM_HITS environment varaible is set", async () => {
-      scryfallServiceMock.setHitCount(10);
-      expect(
-        await griddeningService.intersectionHasMinimumHits(fakeConstraint, fakeConstraint),
-      ).toBeTruthy();
+    test("returns true when at least 10 local cards match both constraints", () => {
+      const cards: LocalCard[] = Array.from({ length: 10 }, (_, i) =>
+        makeCard({ colors: ["B"], rarity: "mythic", name: `Card ${i}` }),
+      );
+      const service = new GriddeningService(cards, []);
+      expect(service.intersectionHasMinimumHits(black, mythic)).toBe(true);
     });
-    test("returns false when intersection has less than 10 hits when no MINIMUM_HITS environment varaible is set", async () => {
-      scryfallServiceMock.setHitCount(9);
-      expect(
-        await griddeningService.intersectionHasMinimumHits(fakeConstraint, fakeConstraint),
-      ).toBeFalsy();
+
+    test("returns false when fewer than 10 local cards match both constraints", () => {
+      const cards: LocalCard[] = Array.from({ length: 9 }, (_, i) =>
+        makeCard({ colors: ["B"], rarity: "mythic", name: `Card ${i}` }),
+      );
+      const service = new GriddeningService(cards, []);
+      expect(service.intersectionHasMinimumHits(black, mythic)).toBe(false);
     });
-    test("returns true when intersection has process.env.MINIMUM_HITS or more hits", async () => {
-      scryfallServiceMock.setHitCount(7);
+
+    test("returns true when either constraint lacks a localFilter (optimistic fallback)", () => {
+      const noFilterConstraint = new GameConstraint("Unknown", ConstraintType.Set, "set:xyz");
+      const service = new GriddeningService([], []);
+      expect(service.intersectionHasMinimumHits(noFilterConstraint, black)).toBe(true);
+      expect(service.intersectionHasMinimumHits(black, noFilterConstraint)).toBe(true);
+      expect(service.intersectionHasMinimumHits(noFilterConstraint, noFilterConstraint)).toBe(true);
+    });
+
+    test("respects MINIMUM_HITS environment variable", () => {
+      const cards: LocalCard[] = Array.from({ length: 7 }, (_, i) =>
+        makeCard({ colors: ["B"], rarity: "mythic", name: `Card ${i}` }),
+      );
       process.env.MINIMUM_HITS = "7";
-      const service = new GriddeningService(scryfallServiceMock);
-      expect(await service.intersectionHasMinimumHits(fakeConstraint, fakeConstraint)).toBeTruthy();
+      const service = new GriddeningService(cards, []);
+      expect(service.intersectionHasMinimumHits(black, mythic)).toBe(true);
+      delete process.env.MINIMUM_HITS;
     });
-    test("returns false when intersection has less than process.env.MINIMUM_HITS hits", async () => {
-      scryfallServiceMock.setHitCount(6);
+
+    test("returns false when MINIMUM_HITS not reached", () => {
+      const cards: LocalCard[] = Array.from({ length: 6 }, (_, i) =>
+        makeCard({ colors: ["B"], rarity: "mythic", name: `Card ${i}` }),
+      );
       process.env.MINIMUM_HITS = "7";
-      const service = new GriddeningService(scryfallServiceMock);
-      expect(await service.intersectionHasMinimumHits(fakeConstraint, fakeConstraint)).toBeFalsy();
+      const service = new GriddeningService(cards, []);
+      expect(service.intersectionHasMinimumHits(black, mythic)).toBe(false);
+      delete process.env.MINIMUM_HITS;
     });
   });
 
-  describe("generateRandomCreatureBoard", async () => {
-    const mapOfDecks = await griddeningService.createConstraintDeck();
+  describe("generateRandomCreatureBoard", () => {
+    const mapOfDecks = new GriddeningService([], [pioneerSet, standardSet]).createConstraintDeck();
     let copyDeck: Map<ConstraintType, GameConstraint[]>;
     beforeEach(() => {
       copyDeck = cloneMapOfDecks(mapOfDecks);
     });
 
     for (let i = 0; i < 4; i++) {
-      test(`Should return a puzzle with a type of CreatureFocused Puzzle for subtype ${i}`, async () => {
+      test(`Should return a puzzle with a type of CreatureFocused Puzzle for subtype ${i}`, () => {
         const puzzle = griddeningService.generateRandomCreatureBoard(copyDeck, i);
         expect(puzzle.type).toBe(PuzzleType.CreatureFocused);
       });
 
-      test(`Should return a puzzle.subType of ${i} for subtype ${i}`, async () => {
+      test(`Should return a puzzle.subType of ${i} for subtype ${i}`, () => {
         const puzzle = griddeningService.generateRandomCreatureBoard(copyDeck, i);
         expect(puzzle.subType).toBe(i);
       });
     }
 
-    test("Should return a top row with a Color, Power, and Creature Job constraint and a side row with a Creature Race, Toughness, and Color constraint for subtype 0", async () => {
+    test("Should return a top row with a Color, Power, and Creature Job constraint and a side row with a Creature Race, Toughness, and Color constraint for subtype 0", () => {
       const puzzle = griddeningService.generateRandomCreatureBoard(copyDeck, 0);
       expect(puzzle.topRow.length).toBe(3);
       expect(puzzle.sideRow.length).toBe(3);
@@ -159,7 +223,7 @@ describe("Griddening Service", () => {
       ).toBe(1);
     });
 
-    test("Should return a top row with a Color, Power, and Creature Job constraint and a side row with a Creature Race, Creature Rules Text, and Color constraint for subtype 1", async () => {
+    test("Should return a top row with a Color, Power, and Creature Job constraint and a side row with a Creature Race, Creature Rules Text, and Color constraint for subtype 1", () => {
       const puzzle = griddeningService.generateRandomCreatureBoard(copyDeck, 1);
       expect(puzzle.topRow.length).toBe(3);
       expect(puzzle.sideRow.length).toBe(3);
@@ -180,7 +244,7 @@ describe("Griddening Service", () => {
       ).toBe(1);
     });
 
-    test("Should return a top row with a Color, Power, and Creature Job constraint and a side row with a Creature Race, Toughness, and Color constraint for subtype 2", async () => {
+    test("Should return a top row with a Color, Power, and Creature Job constraint and a side row with a Creature Race, Toughness, and Color constraint for subtype 2", () => {
       const puzzle = griddeningService.generateRandomCreatureBoard(copyDeck, 2);
       expect(puzzle.topRow.length).toBe(3);
       expect(puzzle.sideRow.length).toBe(3);
@@ -203,7 +267,7 @@ describe("Griddening Service", () => {
       ).toBe(1);
     });
 
-    test("Should return a top row with a Color, Rarity, and Creature Job constraint and a side row with a Creature Race, ManaValue, and Color constraint for subtype 3", async () => {
+    test("Should return a top row with a Color, Rarity, and Creature Job constraint and a side row with a Creature Race, ManaValue, and Color constraint for subtype 3", () => {
       const puzzle = griddeningService.generateRandomCreatureBoard(copyDeck, 3);
       expect(puzzle.topRow.length).toBe(3);
       expect(puzzle.sideRow.length).toBe(3);
@@ -227,8 +291,8 @@ describe("Griddening Service", () => {
     });
   });
 
-  describe("generateRandomCreatureBoard race pool selection", async () => {
-    const mapOfDecks = await griddeningService.createConstraintDeck();
+  describe("generateRandomCreatureBoard race pool selection", () => {
+    const mapOfDecks = new GriddeningService([], [pioneerSet, standardSet]).createConstraintDeck();
     const powerDisplayNames = new Set(powerCompatibleRaceConstraints.map((c) => c.displayName));
     const toughnessDisplayNames = new Set(
       toughnessCompatibleRaceConstraints.map((c) => c.displayName),
@@ -353,10 +417,12 @@ describe("Griddening Service", () => {
       );
     });
 
-    test("should throw when a layout deck runs out of entries", async () => {
-      const mapOfDecks = await griddeningService.createConstraintDeck();
+    test("should throw when a layout deck runs out of entries", () => {
+      const mapOfDecks = new GriddeningService(
+        [],
+        [pioneerSet, standardSet],
+      ).createConstraintDeck();
       const sparseDecks = cloneMapOfDecks(mapOfDecks);
-      // Keep only 1 color constraint — skeleton needs 2 for FourColors
       sparseDecks.set(ConstraintType.Color, [
         new GameConstraint("Red", ConstraintType.Color, "c:R"),
       ]);
@@ -367,42 +433,25 @@ describe("Griddening Service", () => {
     });
   });
 
-  describe("puzzle type distribution", async () => {
-    // Use a fresh service with pioneer-era sets and high hit count so all
-    // intersections always pass — this isolates distribution from validation bias
-    const distributionMock = new ScryfallMockedService();
-    distributionMock.setAllSets([pioneerSet, standardSet]);
-    distributionMock.setHitCount(15); // always exceeds MINIMUM_HITS=10
-    const distributionService = new GriddeningService(distributionMock);
-    const deckMap = await distributionService.createConstraintDeck();
+  describe("puzzle type distribution", () => {
+    const distributionService = new GriddeningService([], [pioneerSet, standardSet]);
+    const deckMap = distributionService.createConstraintDeck();
 
-    async function generateValidPuzzle() {
+    function generateValidPuzzle(): ReturnType<GriddeningService["generateRandomPuzzleBoard"]> {
       let puzzle = distributionService.generateRandomPuzzleBoard(cloneMapOfDecks(deckMap));
       while (!puzzle) {
         puzzle = distributionService.generateRandomPuzzleBoard(cloneMapOfDecks(deckMap));
       }
-      // Validate all 9 intersections — always passes since hitCount=15
-      for (const top of puzzle.topRow) {
-        for (const side of puzzle.sideRow) {
-          const valid = await distributionService.intersectionHasMinimumHits(top, side);
-          if (!valid) return generateValidPuzzle();
-        }
-      }
       return puzzle;
     }
 
-    test("generating 100 puzzles produces a balanced type distribution", async () => {
+    test("generating 100 puzzles produces a balanced type distribution", () => {
       const SAMPLE_SIZE = 100;
       const TYPE_COUNT = Object.values(PuzzleType).filter((v) => typeof v === "number").length;
-      // 2× expected share — scales automatically as new puzzle types are added.
-      // With 5 types: max=40 (~5σ above mean). With 9 types: max=22 (~3.5σ above mean).
-      // Both catch the original 70% FourColors bias while remaining stable under random variation.
       const MAX_SHARE = Math.round((SAMPLE_SIZE / TYPE_COUNT) * 2);
-      const MIN_APPEARANCES = 3; // every type should appear at least 3 times in 100
+      const MIN_APPEARANCES = 3;
 
-      const puzzles = await Promise.all(
-        Array.from({ length: SAMPLE_SIZE }, () => generateValidPuzzle()),
-      );
+      const puzzles = Array.from({ length: SAMPLE_SIZE }, () => generateValidPuzzle());
 
       const countsByType: Record<number, number> = {};
       for (const puzzle of puzzles) {
@@ -431,8 +480,8 @@ describe("Griddening Service", () => {
     }, 15_000);
   });
 
-  describe("getDateStringByOffset", async () => {
-    test("should return today's date for offset 0", async () => {
+  describe("getDateStringByOffset", () => {
+    test("should return today's date for offset 0", () => {
       const date = griddeningService.getDateStringByOffset(0);
       const today = new Date();
       const dateString = `${today.getFullYear()}${today

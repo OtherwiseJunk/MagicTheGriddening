@@ -1,21 +1,17 @@
 import { expect, test, describe, beforeEach } from "vitest";
 import { GriddeningService } from "../services/griddening.service.js";
 import { ConstraintType, GameConstraint } from "../types/GameConstraint.js";
-import { ScryfallMockedService } from "../__mocks__/scryfall.service.js";
 import { cloneMapOfDecks } from "../Utilities/map.helper.js";
 import { PuzzleType } from "../types/Puzzle.js";
 import { pioneerSet, standardSet } from "./testUtilities/consts/griddening.testconstants.js";
 
-const scryfallServiceMock = new ScryfallMockedService();
-const griddeningService = new GriddeningService(scryfallServiceMock);
+const griddeningService = new GriddeningService([], [pioneerSet, standardSet]);
 
 describe("Performance", () => {
   describe("constraint deck creation", () => {
-    test("should create a constraint deck in under 50ms", async () => {
-      scryfallServiceMock.setAllSets([pioneerSet, standardSet]);
-
+    test("should create a constraint deck in under 50ms", () => {
       const start = performance.now();
-      const deck = await griddeningService.createConstraintDeck();
+      const deck = griddeningService.createConstraintDeck();
       const elapsed = performance.now() - start;
 
       expect(deck.size).toBe(ConstraintType.__LENGTH);
@@ -26,9 +22,8 @@ describe("Performance", () => {
   describe("board generation", () => {
     let deckMap: Map<ConstraintType, GameConstraint[]>;
 
-    beforeEach(async () => {
-      scryfallServiceMock.setAllSets([pioneerSet, standardSet]);
-      deckMap = await griddeningService.createConstraintDeck();
+    beforeEach(() => {
+      deckMap = griddeningService.createConstraintDeck();
     });
 
     const boardGenerators: [string, PuzzleType, number][] = [
@@ -82,14 +77,12 @@ describe("Performance", () => {
   });
 
   describe("intersection validation", () => {
-    const fakeConstraint = new GameConstraint("", ConstraintType.Set, "");
+    const noFilterConstraint = new GameConstraint("", ConstraintType.Set, "");
 
-    test("100 intersection checks should complete in under 50ms with cached results", async () => {
-      scryfallServiceMock.setHitCount(10);
-
+    test("100 intersection checks should complete in under 50ms", () => {
       const start = performance.now();
       for (let i = 0; i < 100; i++) {
-        await griddeningService.intersectionHasMinimumHits(fakeConstraint, fakeConstraint);
+        griddeningService.intersectionHasMinimumHits(noFilterConstraint, noFilterConstraint);
       }
       const elapsed = performance.now() - start;
 
@@ -100,14 +93,11 @@ describe("Performance", () => {
   describe("full puzzle generation cycle", () => {
     let deckMap: Map<ConstraintType, GameConstraint[]>;
 
-    beforeEach(async () => {
-      scryfallServiceMock.setAllSets([pioneerSet, standardSet]);
-      deckMap = await griddeningService.createConstraintDeck();
+    beforeEach(() => {
+      deckMap = griddeningService.createConstraintDeck();
     });
 
-    test("generating and validating 5 puzzles should complete in under 200ms", async () => {
-      scryfallServiceMock.setHitCount(10);
-
+    test("generating and validating 5 puzzles should complete in under 200ms", () => {
       const start = performance.now();
       for (let i = 0; i < 5; i++) {
         const deck = cloneMapOfDecks(deckMap);
@@ -115,7 +105,7 @@ describe("Performance", () => {
         if (puzzle) {
           for (const top of puzzle.topRow) {
             for (const side of puzzle.sideRow) {
-              await griddeningService.intersectionHasMinimumHits(top, side);
+              griddeningService.intersectionHasMinimumHits(top, side);
             }
           }
         }
@@ -125,9 +115,7 @@ describe("Performance", () => {
       expect(elapsed).toBeLessThan(200);
     });
 
-    test("rerolling until valid should not take excessive attempts", async () => {
-      scryfallServiceMock.setHitCount(10);
-
+    test("rerolling until valid should not take excessive attempts", () => {
       let rerolls = 0;
       const maxAttempts = 50;
       let puzzle = griddeningService.generateRandomPuzzleBoard(cloneMapOfDecks(deckMap));
@@ -145,9 +133,8 @@ describe("Performance", () => {
   describe("cloneMapOfDecks", () => {
     let deckMap: Map<ConstraintType, GameConstraint[]>;
 
-    beforeEach(async () => {
-      scryfallServiceMock.setAllSets([pioneerSet, standardSet]);
-      deckMap = await griddeningService.createConstraintDeck();
+    beforeEach(() => {
+      deckMap = griddeningService.createConstraintDeck();
     });
 
     test("cloning deck map 1000 times should complete in under 100ms", () => {
