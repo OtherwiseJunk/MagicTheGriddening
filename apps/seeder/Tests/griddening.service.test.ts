@@ -229,11 +229,6 @@ describe("Griddening Service", () => {
 
   describe("generateRandomCreatureBoard race pool selection", async () => {
     const mapOfDecks = await griddeningService.createConstraintDeck();
-    let copyDeck: Map<ConstraintType, GameConstraint[]>;
-    beforeEach(() => {
-      copyDeck = cloneMapOfDecks(mapOfDecks);
-    });
-
     const powerDisplayNames = new Set(powerCompatibleRaceConstraints.map((c) => c.displayName));
     const toughnessDisplayNames = new Set(toughnessCompatibleRaceConstraints.map((c) => c.displayName));
     const allDisplayNames = new Set(creatureRaceConstraints.map((c) => c.displayName));
