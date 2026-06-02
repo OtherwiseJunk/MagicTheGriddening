@@ -121,7 +121,7 @@ describe("Griddening Service", () => {
 
   describe("generateRandomCreatureBoard", async () => {
     const mapOfDecks = await griddeningService.createConstraintDeck();
-    let copyDeck: Map<ConstraintType, GameConstraint[]> = cloneMapOfDecks(mapOfDecks);
+    let copyDeck: Map<ConstraintType, GameConstraint[]>;
     beforeEach(() => {
       copyDeck = cloneMapOfDecks(mapOfDecks);
     });
