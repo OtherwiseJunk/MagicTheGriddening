@@ -37,4 +37,11 @@ model CorrectGuesses{
   correctGuess String
   squareIndex Int
   imageSource String
+  createdAt DateTime @default(now())
+}
+
+model Player {
+  uuid      String   @id
+  shortCode String   @unique
+  createdAt DateTime @default(now())
 }
