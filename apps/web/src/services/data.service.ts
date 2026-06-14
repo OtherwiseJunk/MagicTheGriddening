@@ -180,9 +180,9 @@ export default class DataService {
   static async getGlobalCardPicks(
     gameId: number,
     squareIndex: number,
-  ): Promise<{ available: boolean; picks?: { card: string; count: number }[] }> {
-    const distinctPlayers = await this.prisma.playerRecord.count({ where: { gameId } });
-    if (distinctPlayers < 10) return { available: false };
+  ): Promise<{ available: boolean; totalPlayers?: number; picks?: { card: string; count: number }[] }> {
+    const totalPlayers = await this.prisma.playerRecord.count({ where: { gameId } });
+    if (totalPlayers < 10) return { available: false };
 
     const grouped = await this.prisma.correctGuesses.groupBy({
       by: ["correctGuess"],
@@ -193,6 +193,7 @@ export default class DataService {
 
     return {
       available: true,
+      totalPlayers,
       picks: grouped.map((g) => ({ card: g.correctGuess, count: g._count.correctGuess })),
     };
   }
