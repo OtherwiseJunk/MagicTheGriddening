@@ -20,7 +20,7 @@ function persistUserId(uuid: string): void {
   document.cookie = `${COOKIE_KEY}=${uuid};max-age=${COOKIE_MAX_AGE};path=/;SameSite=Lax`;
 }
 
-interface PlayerContextValue {
+export interface PlayerContextValue {
   userId: string;
   shortCode: string | null;
   shortCodeError: string | null;
@@ -30,7 +30,7 @@ interface PlayerContextValue {
   restorePlayer: (newId: string) => void;
 }
 
-const PlayerContext = createContext<PlayerContextValue | null>(null);
+export const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 export function usePlayer(): PlayerContextValue {
   const ctx = useContext(PlayerContext);
