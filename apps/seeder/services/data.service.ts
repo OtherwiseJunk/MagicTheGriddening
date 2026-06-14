@@ -21,12 +21,14 @@ export class DataService {
   async createNewGame(
     dateString: string,
     validGameConstraints: GameConstraint[],
-  ): Promise<Game | undefined> {
-    return await this.prisma.game.create({
-      data: {
+  ): Promise<Game> {
+    return await this.prisma.game.upsert({
+      where: { dateString },
+      create: {
         dateString,
         constraintsJSON: JSON.stringify(validGameConstraints),
       },
+      update: {},
     });
   }
 
