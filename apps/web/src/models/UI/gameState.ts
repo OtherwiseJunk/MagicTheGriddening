@@ -6,5 +6,6 @@ export class GameState {
     public gameConstraints: GameConstraint[],
     public lifePoints: number,
     public correctGuesses: CorrectGuess[],
+    public gameId?: number,
   ) {}
 }
