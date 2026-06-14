@@ -162,7 +162,9 @@ class BulkDataService {
   private async parseJsonArrayFromFile(filePath: string): Promise<unknown[]> {
     const items: unknown[] = [];
     const stream = streamArray.withParserAsStream();
-    createReadStream(filePath).pipe(stream);
+    const rs = createReadStream(filePath);
+    rs.on("error", (e) => stream.destroy(e));
+    rs.pipe(stream);
     for await (const item of stream) {
       items.push((item as { key: number; value: unknown }).value);
     }

@@ -51,6 +51,7 @@ interface CardIndexFile {
   generatedAt: string;
   sourceUpdatedAt: string;
   cards: LocalCard[];
+  sets?: LocalSet[];
 }
 
 const BULK_DATA_TYPE = "default_cards";
@@ -130,11 +131,61 @@ function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
   });
 }
 
+function buildLocalSets(rawCards: ScryfallBulkCard[]): LocalSet[] {
+  const setMap = new Map<string, LocalSet>();
+  for (const card of rawCards) {
+    if (!(card.games?.includes("paper") ?? false)) continue;
+    if (card.set && !setMap.has(card.set)) {
+      setMap.set(card.set, {
+        code: card.set,
+        name: card.set_name ?? "",
+        set_type: card.set_type ?? "",
+        released_at: card.released_at,
+      });
+    }
+  }
+  return Array.from(setMap.values());
+}
+
+type CardDataCache = { cards: LocalCard[]; sets: LocalSet[] };
+
 export class CardDataService {
-  private initPromise: Promise<LocalCard[]> | null = null;
+  private initPromise: Promise<CardDataCache> | null = null;
 
   async getSets(): Promise<LocalSet[]> {
-    const cards = await this.getCards();
+    return (await this.init()).sets;
+  }
+
+  async getCards(): Promise<LocalCard[]> {
+    return (await this.init()).cards;
+  }
+
+  private async init(): Promise<CardDataCache> {
+    if (!this.initPromise) {
+      this.initPromise = this.loadOrDownload();
+    }
+    return this.initPromise;
+  }
+
+  private async loadOrDownload(): Promise<CardDataCache> {
+    const dataDir = getDataDirectory();
+    const indexPath = path.join(dataDir, "card-index.json");
+
+    await mkdir(dataDir, { recursive: true });
+
+    try {
+      const stored = JSON.parse(await readFile(indexPath, "utf8")) as CardIndexFile;
+      const sets = stored.sets ?? this.setsFromCards(stored.cards);
+      console.log(`Loaded ${stored.cards.length} cards from disk (${indexPath})`);
+      return { cards: stored.cards, sets };
+    } catch {
+      console.log("card-index.json not found — downloading from Scryfall...");
+    }
+
+    return this.downloadAndSave(dataDir, indexPath);
+  }
+
+  private setsFromCards(cards: LocalCard[]): LocalSet[] {
     const setMap = new Map<string, LocalSet>();
     for (const card of cards) {
       if (!setMap.has(card.set)) {
@@ -149,31 +200,7 @@ export class CardDataService {
     return Array.from(setMap.values());
   }
 
-  async getCards(): Promise<LocalCard[]> {
-    if (!this.initPromise) {
-      this.initPromise = this.loadOrDownload();
-    }
-    return this.initPromise;
-  }
-
-  private async loadOrDownload(): Promise<LocalCard[]> {
-    const dataDir = getDataDirectory();
-    const indexPath = path.join(dataDir, "card-index.json");
-
-    await mkdir(dataDir, { recursive: true });
-
-    try {
-      const stored = JSON.parse(await readFile(indexPath, "utf8")) as CardIndexFile;
-      console.log(`Loaded ${stored.cards.length} cards from disk (${indexPath})`);
-      return stored.cards;
-    } catch {
-      console.log("card-index.json not found — downloading from Scryfall...");
-    }
-
-    return this.downloadAndSave(dataDir, indexPath);
-  }
-
-  private async downloadAndSave(dataDir: string, indexPath: string): Promise<LocalCard[]> {
+  private async downloadAndSave(dataDir: string, indexPath: string): Promise<CardDataCache> {
     const bulkDataFile = await this.fetchBulkDataFile();
     const tempBulkPath = path.join(dataDir, `bulk-${randomUUID()}.json`);
     const tempIndexPath = path.join(dataDir, `index-${randomUUID()}.json`);
@@ -182,15 +209,17 @@ export class CardDataService {
       await this.downloadBulkDataFile(bulkDataFile.download_uri, tempBulkPath);
       const rawCards = await this.parseJsonArrayFromFile(tempBulkPath);
       const cards = buildLocalCards(rawCards);
+      const sets = buildLocalSets(rawCards);
       const indexFile: CardIndexFile = {
         generatedAt: new Date().toISOString(),
         sourceUpdatedAt: bulkDataFile.updated_at,
         cards,
+        sets,
       };
       await writeFile(tempIndexPath, JSON.stringify(indexFile), "utf8");
       await rename(tempIndexPath, indexPath);
       console.log(`Downloaded and saved ${cards.length} cards to ${indexPath}`);
-      return cards;
+      return { cards, sets };
     } finally {
       await rm(tempBulkPath, { force: true }).catch(() => undefined);
       await rm(tempIndexPath, { force: true }).catch(() => undefined);
@@ -215,7 +244,9 @@ export class CardDataService {
   private async parseJsonArrayFromFile(filePath: string): Promise<ScryfallBulkCard[]> {
     const cards: ScryfallBulkCard[] = [];
     const stream = streamArray.withParserAsStream();
-    createReadStream(filePath).pipe(stream);
+    const rs = createReadStream(filePath);
+    rs.on("error", (e) => stream.destroy(e));
+    rs.pipe(stream);
     for await (const item of stream) {
       cards.push((item as { key: number; value: ScryfallBulkCard }).value);
     }
