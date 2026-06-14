@@ -56,7 +56,7 @@ export function matchesConstraint(card: LocalCard, constraint: GameConstraint): 
     case ConstraintType.EnchantmentSubtypes:
       return matchesTypeQuery(card.type_line, scryfallQuery);
     case ConstraintType.Rarity:
-      return card.rarity === (RARITY_MAP[scryfallQuery.slice(2)] ?? "");
+      return card.rarities.includes(RARITY_MAP[scryfallQuery.slice(2)] ?? "");
     case ConstraintType.Color:
       return matchesColorQuery(card.colors, scryfallQuery);
     case ConstraintType.ManaValue:
@@ -66,11 +66,11 @@ export function matchesConstraint(card: LocalCard, constraint: GameConstraint): 
     case ConstraintType.Toughness:
       return card.toughness !== undefined && card.toughness === scryfallQuery.slice(4);
     case ConstraintType.Artist:
-      return card.artist.toLowerCase().includes(scryfallQuery.slice(2).toLowerCase());
+      return card.artists.some((a) => a.toLowerCase().includes(scryfallQuery.slice(2).toLowerCase()));
     case ConstraintType.CreatureRulesText:
       return matchesOracleTextQuery(card.oracle_text, scryfallQuery, nameForSubstitution);
     case ConstraintType.Set:
-      return card.set === scryfallQuery.slice(4);
+      return card.sets.includes(scryfallQuery.slice(4));
     default:
       return false;
   }

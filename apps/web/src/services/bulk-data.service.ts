@@ -14,7 +14,7 @@ interface ScryfallBulkDataFile {
   download_uri: string;
 }
 
-const BULK_DATA_TYPE = "oracle_cards";
+const BULK_DATA_TYPE = "default_cards";
 const DEFAULT_REFRESH_INTERVAL_HOURS = 24;
 const SCRYFALL_API_URL = "https://api.scryfall.com/bulk-data";
 const SCRYFALL_USER_AGENT =
@@ -23,7 +23,7 @@ const DATA_DIRECTORY =
   process.env.BULK_DATA_DIR ??
   process.env.AUTOCOMPLETE_DATA_DIR ??
   path.join(process.cwd(), "data");
-const RAW_BULK_FILE_PATH = path.join(DATA_DIRECTORY, "scryfall-oracle-cards.json");
+const RAW_BULK_FILE_PATH = path.join(DATA_DIRECTORY, "scryfall-default-cards.json");
 const INDEX_FILE_PATH = path.join(DATA_DIRECTORY, "card-index.json");
 const REFRESH_INTERVAL_MS =
   Number(
