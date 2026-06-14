@@ -1,10 +1,17 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { IoDocumentTextOutline } from "react-icons/io5";
 
 export default function RulesDialog(): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (!localStorage.getItem("griddening.hasSeenRules")) {
+      localStorage.setItem("griddening.hasSeenRules", "true");
+      dialogRef.current?.showModal();
+    }
+  }, []);
 
   return (
     <>
