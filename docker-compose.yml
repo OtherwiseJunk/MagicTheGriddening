@@ -21,7 +21,7 @@ services:
     build:
       context: ./apps/seeder
       dockerfile: dockerfile
-    entrypoint: ["npx", "prisma", "db", "push", "--accept-data-loss"]
+    entrypoint: ["npx", "tsx", "migrate.ts"]
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/griddening
     depends_on:
