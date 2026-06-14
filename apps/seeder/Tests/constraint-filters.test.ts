@@ -22,12 +22,16 @@ function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
     type_line: "Creature — Human Warrior",
     colors: ["W"],
     cmc: 2,
-    rarity: "common",
+    rarities: ["common"],
     oracle_text: "",
     power: "2",
     toughness: "2",
-    artist: "Test Artist",
+    artists: ["Test Artist"],
+    sets: ["m21"],
     set: "m21",
+    set_name: "",
+    set_type: "",
+    released_at: undefined,
     imagePng: "",
     ...overrides,
   };
@@ -96,23 +100,23 @@ describe("rarity constraint local filters", () => {
   });
 
   it("mythic matches mythic rarity cards", () => {
-    expect(mythic.localFilter!(makeCard({ rarity: "mythic" }))).toBe(true);
-    expect(mythic.localFilter!(makeCard({ rarity: "rare" }))).toBe(false);
+    expect(mythic.localFilter!(makeCard({ rarities: ["mythic"] }))).toBe(true);
+    expect(mythic.localFilter!(makeCard({ rarities: ["rare"] }))).toBe(false);
   });
 
   it("rare matches rare rarity cards", () => {
-    expect(rare.localFilter!(makeCard({ rarity: "rare" }))).toBe(true);
-    expect(rare.localFilter!(makeCard({ rarity: "common" }))).toBe(false);
+    expect(rare.localFilter!(makeCard({ rarities: ["rare"] }))).toBe(true);
+    expect(rare.localFilter!(makeCard({ rarities: ["common"] }))).toBe(false);
   });
 
   it("uncommon matches uncommon rarity cards", () => {
-    expect(uncommon.localFilter!(makeCard({ rarity: "uncommon" }))).toBe(true);
-    expect(uncommon.localFilter!(makeCard({ rarity: "rare" }))).toBe(false);
+    expect(uncommon.localFilter!(makeCard({ rarities: ["uncommon"] }))).toBe(true);
+    expect(uncommon.localFilter!(makeCard({ rarities: ["rare"] }))).toBe(false);
   });
 
   it("common matches common rarity cards", () => {
-    expect(common.localFilter!(makeCard({ rarity: "common" }))).toBe(true);
-    expect(common.localFilter!(makeCard({ rarity: "uncommon" }))).toBe(false);
+    expect(common.localFilter!(makeCard({ rarities: ["common"] }))).toBe(true);
+    expect(common.localFilter!(makeCard({ rarities: ["uncommon"] }))).toBe(false);
   });
 });
 
@@ -241,19 +245,19 @@ describe("artist constraint local filters", () => {
   });
 
   it("Rebecca Guay filter matches Guay case-insensitively", () => {
-    expect(guay.localFilter!(makeCard({ artist: "Rebecca Guay" }))).toBe(true);
-    expect(guay.localFilter!(makeCard({ artist: "REBECCA GUAY" }))).toBe(true);
-    expect(guay.localFilter!(makeCard({ artist: "John Avon" }))).toBe(false);
+    expect(guay.localFilter!(makeCard({ artists: ["Rebecca Guay"] }))).toBe(true);
+    expect(guay.localFilter!(makeCard({ artists: ["REBECCA GUAY"] }))).toBe(true);
+    expect(guay.localFilter!(makeCard({ artists: ["John Avon"] }))).toBe(false);
   });
 
   it("John Avon filter matches Avon", () => {
-    expect(avon.localFilter!(makeCard({ artist: "John Avon" }))).toBe(true);
-    expect(avon.localFilter!(makeCard({ artist: "Rebecca Guay" }))).toBe(false);
+    expect(avon.localFilter!(makeCard({ artists: ["John Avon"] }))).toBe(true);
+    expect(avon.localFilter!(makeCard({ artists: ["Rebecca Guay"] }))).toBe(false);
   });
 
   it("Kev Walker filter matches Walker", () => {
-    expect(walker.localFilter!(makeCard({ artist: "Kev Walker" }))).toBe(true);
-    expect(walker.localFilter!(makeCard({ artist: "Rebecca Guay" }))).toBe(false);
+    expect(walker.localFilter!(makeCard({ artists: ["Kev Walker"] }))).toBe(true);
+    expect(walker.localFilter!(makeCard({ artists: ["Rebecca Guay"] }))).toBe(false);
   });
 });
 
