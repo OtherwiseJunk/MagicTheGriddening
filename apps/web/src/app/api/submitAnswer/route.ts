@@ -41,7 +41,7 @@ export async function POST(request: Request): Promise<Response> {
     const player: PlayerRecord = await DataService.getPlayerRecord(args.playerId, game.id);
 
     if (card === undefined) {
-      console.warn(`[submitAnswer] card not found in index: "${args.guess}"`);
+      console.warn("[submitAnswer] card not found in index", { guess: args.guess });
       const nextLifePoints = player.lifePoints - 1;
       await DataService.updatePlayerLifeValue(player.id, nextLifePoints);
       return jsonResponse({ outcome: "incorrect", lifePoints: nextLifePoints }, 422);

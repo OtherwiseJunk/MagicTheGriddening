@@ -22,13 +22,13 @@ export class DataService {
     dateString: string,
     validGameConstraints: GameConstraint[],
   ): Promise<Game> {
-    return await this.prisma.game.upsert({
-      where: { dateString },
-      create: {
-        dateString,
-        constraintsJSON: JSON.stringify(validGameConstraints),
-      },
-      update: {},
+    const existing = await this.prisma.game.findUnique({ where: { dateString } });
+    if (existing) {
+      console.log(`[createNewGame] ${dateString} already exists — skipping`);
+      return existing;
+    }
+    return await this.prisma.game.create({
+      data: { dateString, constraintsJSON: JSON.stringify(validGameConstraints) },
     });
   }
 
