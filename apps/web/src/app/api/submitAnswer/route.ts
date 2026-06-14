@@ -40,10 +40,23 @@ export async function POST(request: Request): Promise<Response> {
     const card = await CardValidationService.findCard(args.guess);
     const player: PlayerRecord = await DataService.getPlayerRecord(args.playerId, game.id);
 
-    if (
-      card === undefined ||
-      !CardValidationService.matchesAllConstraints(card, [constraintOne, constraintTwo])
-    ) {
+    if (card === undefined) {
+      console.warn(`[submitAnswer] card not found in index: "${args.guess}"`);
+      const nextLifePoints = player.lifePoints - 1;
+      await DataService.updatePlayerLifeValue(player.id, nextLifePoints);
+      return jsonResponse({ outcome: "incorrect", lifePoints: nextLifePoints }, 422);
+    }
+
+    const activeConstraints = [constraintOne, constraintTwo];
+    if (!CardValidationService.matchesAllConstraints(card, activeConstraints)) {
+      for (const c of activeConstraints) {
+        if (!CardValidationService.matchesConstraint(card, c)) {
+          console.warn(
+            `[submitAnswer] "${card.name}" failed constraint "${c.displayName}" (type=${c.constraintType} query=${c.scryfallQuery})`,
+            { rarities: card.rarities, artists: card.artists, sets: card.sets, colors: card.colors, cmc: card.cmc, type_line: card.type_line },
+          );
+        }
+      }
       const nextLifePoints = player.lifePoints - 1;
       await DataService.updatePlayerLifeValue(player.id, nextLifePoints);
       return jsonResponse({ outcome: "incorrect", lifePoints: nextLifePoints }, 422);
