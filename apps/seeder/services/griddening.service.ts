@@ -243,7 +243,7 @@ export class GriddeningService {
       `set:${set.code}`,
     );
     const setCode = set.code;
-    constraint.localFilter = (card) => card.set === setCode;
+    constraint.localFilter = (card) => card.sets.includes(setCode);
     return constraint;
   }
 

@@ -93,7 +93,7 @@ function makeTypeFilter(typeName: string) {
 
 function makeArtistFilter(keyword: string) {
   const lower = keyword.toLowerCase();
-  return (card: { artist: string }) => card.artist.toLowerCase().includes(lower);
+  return (card: { artists: string[] }) => card.artists.some((a) => a.toLowerCase().includes(lower));
 }
 
 function makeOracleFilter(keyword: string) {
@@ -178,7 +178,7 @@ export const rarityConstraints: GameConstraint[] = [
   new GameConstraint("Common", ConstraintType.Rarity, "r:c"),
 ].map((c) => {
   const rarityValue = rarityMap[c.displayName];
-  c.localFilter = (card) => card.rarity === rarityValue;
+  c.localFilter = (card) => card.rarities.includes(rarityValue);
   return c;
 });
 

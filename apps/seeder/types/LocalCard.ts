@@ -4,11 +4,12 @@ export interface LocalCard {
   type_line: string;
   colors: string[];
   cmc: number;
-  rarity: string;
+  rarities: string[];
   oracle_text: string;
   power: string | undefined;
   toughness: string | undefined;
-  artist: string;
+  artists: string[];
+  sets: string[];
   set: string;
   set_name: string;
   set_type: string;
