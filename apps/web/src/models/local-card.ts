@@ -21,6 +21,9 @@ interface ScryfallBulkCard {
   power?: string;
   toughness?: string;
   set?: string;
+  set_name?: string;
+  set_type?: string;
+  released_at?: string;
   image_uris?: { png: string };
   card_faces?: ScryfallBulkFace[];
   games?: string[];
@@ -38,6 +41,10 @@ export interface LocalCard {
   toughness: string | undefined;
   artists: string[];
   sets: string[];
+  set: string;
+  set_name: string;
+  set_type: string;
+  released_at: string | undefined;
   imagePng: string;
 }
 
@@ -107,6 +114,10 @@ export function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
       toughness: canonical.toughness ?? faces[0]?.toughness,
       artists,
       sets,
+      set: canonical.set ?? "",
+      set_name: canonical.set_name ?? "",
+      set_type: canonical.set_type ?? "",
+      released_at: canonical.released_at,
       imagePng,
     };
   });
