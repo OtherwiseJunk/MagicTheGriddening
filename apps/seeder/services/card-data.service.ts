@@ -1,6 +1,8 @@
-import { mkdir, readFile, rename, rm, writeFile } from "fs/promises";
+import { createReadStream } from "node:fs";
+import { mkdir, open, readFile, rename, rm, writeFile } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
+import { streamArray } from "stream-json/streamers/stream-array.js";
 import { LocalCard } from "../types/LocalCard.js";
 import { LocalSet } from "../types/LocalSet.js";
 
@@ -26,6 +28,7 @@ interface ScryfallBulkFace {
 
 interface ScryfallBulkCard {
   name: string;
+  oracle_id?: string;
   type_line?: string;
   colors?: string[];
   color_identity?: string[];
@@ -50,7 +53,7 @@ interface CardIndexFile {
   cards: LocalCard[];
 }
 
-const BULK_DATA_TYPE = "oracle_cards";
+const BULK_DATA_TYPE = "default_cards";
 const SCRYFALL_API_URL = "https://api.scryfall.com/bulk-data";
 const SCRYFALL_USER_AGENT =
   "magic-the-griddening/0.1 (+https://github.com/otherwisejunk/MagicTheGriddening)";
@@ -60,44 +63,71 @@ function getDataDirectory(): string {
 }
 
 function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
-  return rawCards
-    .filter((card) => card.games?.includes("paper") ?? false)
-    .map((card) => {
-      const faces = card.card_faces ?? [];
-      const faceColors =
-        faces.length > 0 ? Array.from(new Set(faces.flatMap((f) => f.colors ?? []))) : undefined;
-      const colors =
-        card.colors !== undefined
-          ? card.colors
-          : faceColors !== undefined && faceColors.length > 0
-            ? faceColors
-            : (card.color_identity ?? []);
-      const oracle_text =
-        card.oracle_text ??
-        faces
-          .map((f) => f.oracle_text ?? "")
-          .filter(Boolean)
-          .join("\n");
-      const imagePng = card.image_uris?.png ?? faces[0]?.image_uris?.png ?? "/card-not-found.png";
+  const groups = new Map<string, ScryfallBulkCard[]>();
 
-      return {
-        name: card.name,
-        faceNames: faces.map((f) => f.name ?? "").filter(Boolean),
-        type_line: card.type_line ?? "",
-        colors,
-        cmc: card.cmc ?? 0,
-        rarity: card.rarity ?? "",
-        oracle_text,
-        power: card.power ?? faces[0]?.power,
-        toughness: card.toughness ?? faces[0]?.toughness,
-        artist: card.artist ?? faces[0]?.artist ?? "",
-        set: card.set ?? "",
-        set_name: card.set_name ?? "",
-        set_type: card.set_type ?? "",
-        released_at: card.released_at,
-        imagePng,
-      };
-    });
+  for (const card of rawCards) {
+    if (!(card.games?.includes("paper") ?? false)) continue;
+    const key = card.oracle_id ?? card.name;
+    const group = groups.get(key);
+    if (group) {
+      group.push(card);
+    } else {
+      groups.set(key, [card]);
+    }
+  }
+
+  return Array.from(groups.values()).map((printings) => {
+    const canonical = printings[0];
+    const faces = canonical.card_faces ?? [];
+
+    const faceColors =
+      faces.length > 0 ? Array.from(new Set(faces.flatMap((f) => f.colors ?? []))) : undefined;
+    const colors =
+      canonical.colors !== undefined
+        ? canonical.colors
+        : faceColors !== undefined && faceColors.length > 0
+          ? faceColors
+          : (canonical.color_identity ?? []);
+    const oracle_text =
+      canonical.oracle_text ??
+      faces
+        .map((f) => f.oracle_text ?? "")
+        .filter(Boolean)
+        .join("\n");
+    const imagePng =
+      canonical.image_uris?.png ?? faces[0]?.image_uris?.png ?? "/card-not-found.png";
+
+    const rarities = Array.from(
+      new Set(printings.map((p) => p.rarity).filter((r): r is string => r !== undefined)),
+    );
+    const sets = Array.from(
+      new Set(printings.map((p) => p.set).filter((s): s is string => s !== undefined)),
+    );
+    const artists = Array.from(
+      new Set(
+        printings.map((p) => p.artist ?? p.card_faces?.[0]?.artist ?? "").filter(Boolean),
+      ),
+    );
+
+    return {
+      name: canonical.name,
+      faceNames: faces.map((f) => f.name ?? "").filter(Boolean),
+      type_line: canonical.type_line ?? "",
+      colors,
+      cmc: canonical.cmc ?? 0,
+      rarities,
+      oracle_text,
+      power: canonical.power ?? faces[0]?.power,
+      toughness: canonical.toughness ?? faces[0]?.toughness,
+      artists,
+      sets,
+      set: canonical.set ?? "",
+      set_name: canonical.set_name ?? "",
+      set_type: canonical.set_type ?? "",
+      released_at: canonical.released_at,
+      imagePng,
+    };
+  });
 }
 
 export class CardDataService {
@@ -150,7 +180,7 @@ export class CardDataService {
 
     try {
       await this.downloadBulkDataFile(bulkDataFile.download_uri, tempBulkPath);
-      const rawCards = JSON.parse(await readFile(tempBulkPath, "utf8")) as ScryfallBulkCard[];
+      const rawCards = await this.parseJsonArrayFromFile(tempBulkPath);
       const cards = buildLocalCards(rawCards);
       const indexFile: CardIndexFile = {
         generatedAt: new Date().toISOString(),
@@ -182,13 +212,30 @@ export class CardDataService {
     return bulkDataFile;
   }
 
+  private async parseJsonArrayFromFile(filePath: string): Promise<ScryfallBulkCard[]> {
+    const cards: ScryfallBulkCard[] = [];
+    const stream = streamArray.withParserAsStream();
+    createReadStream(filePath).pipe(stream);
+    for await (const item of stream) {
+      cards.push((item as { key: number; value: ScryfallBulkCard }).value);
+    }
+    return cards;
+  }
+
   private async downloadBulkDataFile(downloadUri: string, destinationPath: string): Promise<void> {
     const response = await fetch(downloadUri, {
       headers: { Accept: "application/json;q=0.9,*/*;q=0.8", "User-Agent": SCRYFALL_USER_AGENT },
     });
-    if (!response.ok) {
+    if (!response.ok || response.body === null) {
       throw new Error(`Unable to download Scryfall bulk data file (${response.status})`);
     }
-    await writeFile(destinationPath, new Uint8Array(await response.arrayBuffer()));
+    const fh = await open(destinationPath, "w");
+    try {
+      for await (const chunk of response.body as unknown as AsyncIterable<Uint8Array>) {
+        await fh.write(chunk);
+      }
+    } finally {
+      await fh.close();
+    }
   }
 }

@@ -15,7 +15,9 @@
     "e2e:setup": "./e2e/setup.sh",
     "e2e:teardown": "./e2e/teardown.sh",
     "e2e": "npx playwright test",
-    "e2e:ui": "npx playwright test --ui"
+    "e2e:ui": "npx playwright test --ui",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
@@ -25,10 +27,13 @@
     "react": "^18",
     "react-dom": "^18",
     "react-icons": "^4.12.0",
-    "sharp": "0.32.6"
+    "sharp": "0.32.6",
+    "stream-json": "^3.4.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
+    "@storybook/nextjs": "^10.4.4",
+    "@storybook/react": "^10.4.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -38,6 +43,7 @@
     "oxlint": "^1.58.0",
     "postcss": "^8",
     "prisma": "^6.0.0",
+    "storybook": "^10.4.4",
     "tailwindcss": "^3.3.0",
     "typescript": "^5.3.3",
     "vitest": "^3.2.4"
