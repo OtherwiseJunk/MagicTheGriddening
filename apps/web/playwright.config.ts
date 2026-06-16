@@ -1,4 +1,5 @@
 import { defineConfig } from "@playwright/test";
+import path from "path";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -12,7 +13,7 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { channel: "chrome" },
+      use: process.env.CI ? { channel: "chrome" } : {},
     },
   ],
   webServer: {
@@ -22,6 +23,7 @@ export default defineConfig({
     env: {
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5433/griddening_e2e",
       OVERRIDE_DATE: process.env.OVERRIDE_DATE || "20260101",
+      BULK_DATA_DIR: path.join(__dirname, "e2e"),
     },
   },
 });
