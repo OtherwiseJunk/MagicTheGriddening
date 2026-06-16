@@ -6,7 +6,7 @@ import { test, expect, type Page } from "@playwright/test";
 
 // The input dialog is the one with a text input; the rules dialog has no input.
 // Scope autocomplete selectors to the dialog containing the input.
-const inputDialog = (page: Page) => page.locator("dialog:has(input[type='text'])");
+const inputDialog = (page: Page) => page.locator("dialog:has(input[placeholder='Search for a card...'])");
 const autocompleteList = (page: Page) => inputDialog(page).locator("ul");
 const autocompleteItem = (page: Page) => autocompleteList(page).locator("li");
 const exactAutocompleteItem = (page: Page, cardName: string) =>
