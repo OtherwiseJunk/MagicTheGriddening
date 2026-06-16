@@ -49,6 +49,7 @@ vi.mock("@/services/card-validation.service", () => ({
   default: {
     findCard: vi.fn(),
     matchesAllConstraints: vi.fn(),
+    matchesConstraint: vi.fn(),
   },
 }));
 

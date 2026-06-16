@@ -12,6 +12,7 @@ test.describe("Duplicate card rejection", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.removeItem("griddening.userId");
+      localStorage.setItem("griddening.hasSeenRules", "true");
     });
   });
 

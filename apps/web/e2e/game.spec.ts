@@ -17,6 +17,7 @@ test.describe("Game board", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.removeItem("griddening.userId");
+      localStorage.setItem("griddening.hasSeenRules", "true");
     });
   });
 
@@ -126,6 +127,7 @@ test.describe("Game over state", () => {
   test("shows copy results button when life reaches 0", async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.removeItem("griddening.userId");
+      localStorage.setItem("griddening.hasSeenRules", "true");
     });
 
     await page.goto("/");
