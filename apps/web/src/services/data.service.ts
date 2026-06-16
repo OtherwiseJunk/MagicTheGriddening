@@ -113,7 +113,8 @@ export default class DataService {
         const player = await this.prisma.player.create({ data: { uuid: playerId, shortCode } });
         return { shortCode: player.shortCode };
       } catch (err) {
-        if (!(err instanceof Prisma.PrismaClientKnownRequestError) || err.code !== "P2002") throw err;
+        if (!(err instanceof Prisma.PrismaClientKnownRequestError) || err.code !== "P2002")
+          throw err;
       }
     }
     throw new Error("Failed to generate unique short code after 10 attempts");
@@ -132,9 +133,9 @@ export default class DataService {
     });
 
     // Array values represent count of games at each index
-    // with index as the number of correct guesses 
-    // (e.g. [0,1,0,0,0,0,0,0,0,0] means the player has played one game, 
-    // where they got 1 correct guess) 
+    // with index as the number of correct guesses
+    // (e.g. [0,1,0,0,0,0,0,0,0,0] means the player has played one game,
+    // where they got 1 correct guess)
     const scoreDistribution = Array<number>(10).fill(0);
     const gameData = records.map((r) => {
       const count = r.correctGuesses.length;
@@ -180,7 +181,11 @@ export default class DataService {
   static async getGlobalCardPicks(
     gameId: number,
     squareIndex: number,
-  ): Promise<{ available: boolean; totalPlayers?: number; picks?: { card: string; count: number }[] }> {
+  ): Promise<{
+    available: boolean;
+    totalPlayers?: number;
+    picks?: { card: string; count: number }[];
+  }> {
     const totalPlayers = await this.prisma.playerRecord.count({ where: { gameId } });
     if (totalPlayers < 10) return { available: false };
 

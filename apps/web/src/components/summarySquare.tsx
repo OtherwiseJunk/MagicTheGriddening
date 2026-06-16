@@ -110,9 +110,7 @@ export default function SummarySquare(props: SummaryProps): React.JSX.Element {
                   <>
                     <p className="text-text-gold truncate">{picks.picks[0].card}</p>
                     <p>{picks.picks[0].count}×</p>
-                    {pct !== null && (
-                      <p className="text-text-parchment/50">{pct}% picked yours</p>
-                    )}
+                    {pct !== null && <p className="text-text-parchment/50">{pct}% picked yours</p>}
                   </>
                 ) : (
                   <p className="italic opacity-50">—</p>

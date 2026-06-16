@@ -66,7 +66,9 @@ export function matchesConstraint(card: LocalCard, constraint: GameConstraint): 
     case ConstraintType.Toughness:
       return card.toughness !== undefined && card.toughness === scryfallQuery.slice(4);
     case ConstraintType.Artist:
-      return card.artists.some((a) => a.toLowerCase().includes(scryfallQuery.slice(2).toLowerCase()));
+      return card.artists.some((a) =>
+        a.toLowerCase().includes(scryfallQuery.slice(2).toLowerCase()),
+      );
     case ConstraintType.CreatureRulesText:
       return matchesOracleTextQuery(card.oracle_text, scryfallQuery, nameForSubstitution);
     case ConstraintType.Set:

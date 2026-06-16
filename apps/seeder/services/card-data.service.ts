@@ -105,9 +105,7 @@ function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
       new Set(printings.map((p) => p.set).filter((s): s is string => s !== undefined)),
     );
     const artists = Array.from(
-      new Set(
-        printings.map((p) => p.artist ?? p.card_faces?.[0]?.artist ?? "").filter(Boolean),
-      ),
+      new Set(printings.map((p) => p.artist ?? p.card_faces?.[0]?.artist ?? "").filter(Boolean)),
     );
 
     return {

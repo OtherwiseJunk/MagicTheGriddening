@@ -137,7 +137,9 @@ export default function StatsDialog(): React.JSX.Element {
             </div>
           </div>
         ) : shortCodeError ? (
-          <p className="text-red-400 text-xs font-[family-name:var(--font-body)]">{shortCodeError}</p>
+          <p className="text-red-400 text-xs font-[family-name:var(--font-body)]">
+            {shortCodeError}
+          </p>
         ) : null}
 
         <div className="border-t border-gold-leaf/20 pt-4 space-y-2">

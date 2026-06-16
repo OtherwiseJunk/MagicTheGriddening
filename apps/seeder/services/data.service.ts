@@ -18,10 +18,7 @@ export class DataService {
     return this.dateStringToDate(latestGame.dateString);
   }
 
-  async createNewGame(
-    dateString: string,
-    validGameConstraints: GameConstraint[],
-  ): Promise<Game> {
+  async createNewGame(dateString: string, validGameConstraints: GameConstraint[]): Promise<Game> {
     const existing = await this.prisma.game.findUnique({ where: { dateString } });
     if (existing) {
       console.log(`[createNewGame] ${dateString} already exists — skipping`);

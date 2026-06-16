@@ -21,7 +21,12 @@ const withStatsFetch: Decorator = (Story) => {
     }
     return originalRef.current(url as Parameters<typeof fetch>[0]);
   };
-  useEffect(() => () => { globalThis.fetch = originalRef.current; }, []);
+  useEffect(
+    () => () => {
+      globalThis.fetch = originalRef.current;
+    },
+    [],
+  );
   return <Story />;
 };
 
@@ -55,7 +60,8 @@ export const OpenWithError: Story = {
     player: {
       statsOpen: true,
       shortCode: null,
-      shortCodeError: "Profile restored, but couldn't load your player code. Open stats to try again.",
+      shortCodeError:
+        "Profile restored, but couldn't load your player code. Open stats to try again.",
     },
   },
 };

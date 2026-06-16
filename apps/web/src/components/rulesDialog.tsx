@@ -50,7 +50,7 @@ export default function RulesDialog(): React.JSX.Element {
             </li>
             <li>
               You start with <strong className="text-text-gold">9 life points</strong>. Every guess,
-               right or wrong, costs 1 life point.
+              right or wrong, costs 1 life point.
             </li>
             <li>If your guess is correct, the card&apos;s image is revealed in that square.</li>
             <li>

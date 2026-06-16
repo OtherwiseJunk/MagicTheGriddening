@@ -62,8 +62,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }): Rea
   }
 
   useEffect(() => {
-    const uuid =
-      readUserIdFromCookie() ?? localStorage.getItem(COOKIE_KEY) ?? crypto.randomUUID();
+    const uuid = readUserIdFromCookie() ?? localStorage.getItem(COOKIE_KEY) ?? crypto.randomUUID();
     void initPlayer(uuid, "init");
   }, []);
 

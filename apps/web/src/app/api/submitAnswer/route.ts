@@ -53,7 +53,14 @@ export async function POST(request: Request): Promise<Response> {
         if (!CardValidationService.matchesConstraint(card, c)) {
           console.warn(
             `[submitAnswer] "${card.name}" failed constraint "${c.displayName}" (type=${c.constraintType} query=${c.scryfallQuery})`,
-            { rarities: card.rarities, artists: card.artists, sets: card.sets, colors: card.colors, cmc: card.cmc, type_line: card.type_line },
+            {
+              rarities: card.rarities,
+              artists: card.artists,
+              sets: card.sets,
+              colors: card.colors,
+              cmc: card.cmc,
+              type_line: card.type_line,
+            },
           );
         }
       }

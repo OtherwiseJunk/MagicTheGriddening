@@ -12,8 +12,9 @@ const someGuesses = [
   new CorrectGuess("Giant Growth", PLACEHOLDER_IMAGE, 6),
 ];
 
-const allGuesses = Array.from({ length: 9 }, (_, i) =>
-  new CorrectGuess("Lightning Bolt", PLACEHOLDER_IMAGE, i),
+const allGuesses = Array.from(
+  { length: 9 },
+  (_, i) => new CorrectGuess("Lightning Bolt", PLACEHOLDER_IMAGE, i),
 );
 
 const mockAnalytics = Array.from({ length: 9 }, () => ({
@@ -38,7 +39,12 @@ const withAnalyticsFetch: Decorator = (Story) => {
     }
     return originalRef.current(url as Parameters<typeof fetch>[0]);
   };
-  useEffect(() => () => { globalThis.fetch = originalRef.current; }, []);
+  useEffect(
+    () => () => {
+      globalThis.fetch = originalRef.current;
+    },
+    [],
+  );
   return <Story />;
 };
 

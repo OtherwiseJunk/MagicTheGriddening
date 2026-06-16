@@ -182,7 +182,12 @@ describe("CardDataService", () => {
         sourceUpdatedAt: "2024-01-01",
         cards: [makeCard()],
         sets: [
-          { code: "ktk", name: "Khans of Tarkir", set_type: "expansion", released_at: "2014-09-26" },
+          {
+            code: "ktk",
+            name: "Khans of Tarkir",
+            set_type: "expansion",
+            released_at: "2014-09-26",
+          },
           { code: "m21", name: "Core Set 2021", set_type: "core", released_at: "2020-07-03" },
         ],
       };
@@ -204,9 +209,24 @@ describe("CardDataService", () => {
         generatedAt: new Date().toISOString(),
         sourceUpdatedAt: "2024-01-01",
         cards: [
-          makeCard({ set: "ktk", set_name: "Khans of Tarkir", set_type: "expansion", released_at: "2014-09-26" }),
-          makeCard({ set: "ktk", set_name: "Khans of Tarkir", set_type: "expansion", released_at: "2014-09-26" }),
-          makeCard({ set: "m21", set_name: "Core Set 2021", set_type: "core", released_at: "2020-07-03" }),
+          makeCard({
+            set: "ktk",
+            set_name: "Khans of Tarkir",
+            set_type: "expansion",
+            released_at: "2014-09-26",
+          }),
+          makeCard({
+            set: "ktk",
+            set_name: "Khans of Tarkir",
+            set_type: "expansion",
+            released_at: "2014-09-26",
+          }),
+          makeCard({
+            set: "m21",
+            set_name: "Core Set 2021",
+            set_type: "core",
+            released_at: "2020-07-03",
+          }),
         ],
       };
       mockReadFile.mockResolvedValue(JSON.stringify(indexFile));
