@@ -131,7 +131,5 @@ jobs:
         run: npx prisma db push
       - name: Seed test data
         run: PGPASSWORD=postgres psql -h localhost -p 5433 -U postgres -d griddening_e2e < e2e/seed.sql
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
       - name: Run e2e tests
         run: npm run e2e
