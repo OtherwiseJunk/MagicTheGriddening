@@ -46,8 +46,6 @@
       "cmc": 1,
       "rarities": ["common"],
       "oracle_text": "As an additional cost to cast this spell, sacrifice a Goblin.\nGoblin Grenade deals 5 damage to any target.",
-      "power": undefined,
-      "toughness": undefined,
       "artists": ["Test Artist"],
       "sets": ["m12"],
       "set": "m12",
