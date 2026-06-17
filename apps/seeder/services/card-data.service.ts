@@ -64,37 +64,30 @@ function getDataDirectory(): string {
 }
 
 interface CardAccumulator {
-  name: string;
-  faceNames: string[];
-  type_line: string;
-  colors: string[];
-  cmc: number;
-  oracle_text: string;
-  power: string | undefined;
-  toughness: string | undefined;
-  set: string;
-  set_name: string;
-  set_type: string;
-  released_at: string | undefined;
-  imagePng: string;
   rarities: Set<string>;
   sets: Set<string>;
   artists: Set<string>;
 }
 
-async function buildCardIndex(filePath: string): Promise<{ cards: LocalCard[]; sets: LocalSet[] }> {
-  const groups = new Map<string, CardAccumulator>();
-  const setMap = new Map<string, LocalSet>();
-
+async function streamCards(filePath: string, fn: (card: ScryfallBulkCard) => void): Promise<void> {
   const stream = streamArray.withParserAsStream();
   const rs = createReadStream(filePath);
   rs.on("error", (e) => stream.destroy(e));
   rs.pipe(stream);
-
   for await (const item of stream) {
     const card = (item as { key: number; value: ScryfallBulkCard }).value;
-    if (!(card.games?.includes("paper") ?? false)) continue;
+    if (card.games?.includes("paper") ?? false) fn(card);
+  }
+}
 
+async function buildCardIndex(filePath: string): Promise<{ cards: LocalCard[]; sets: LocalSet[] }> {
+  // Pass 1: accumulate only the tiny mutable parts (artist/set/rarity Sets) per oracle_id.
+  // Keeping only these Sets instead of the full card object limits peak memory to ~50MB
+  // regardless of how many printings exist in all_cards (~800k+ entries).
+  const accumulated = new Map<string, CardAccumulator>();
+  const setMap = new Map<string, LocalSet>();
+
+  await streamCards(filePath, (card) => {
     if (card.set && !setMap.has(card.set)) {
       setMap.set(card.set, {
         code: card.set,
@@ -103,62 +96,72 @@ async function buildCardIndex(filePath: string): Promise<{ cards: LocalCard[]; s
         released_at: card.released_at,
       });
     }
-
     const key = card.oracle_id ?? card.name;
-    const existing = groups.get(key);
+    const existing = accumulated.get(key);
     if (existing) {
       if (card.rarity) existing.rarities.add(card.rarity);
       if (card.set) existing.sets.add(card.set);
       const artist = card.artist ?? card.card_faces?.[0]?.artist;
       if (artist) existing.artists.add(artist);
     } else {
-      // Compute all derived fields eagerly so the raw card object can be GC'd
-      const faces = card.card_faces ?? [];
-      const faceColors =
-        faces.length > 0 ? Array.from(new Set(faces.flatMap((f) => f.colors ?? []))) : undefined;
-      const colors =
-        card.colors !== undefined
-          ? card.colors
-          : faceColors !== undefined && faceColors.length > 0
-            ? faceColors
-            : (card.color_identity ?? []);
-      const oracle_text =
-        card.oracle_text ??
-        faces
-          .map((f) => f.oracle_text ?? "")
-          .filter(Boolean)
-          .join("\n");
-      const imagePng =
-        card.image_uris?.png ?? faces[0]?.image_uris?.png ?? "/card-not-found.png";
-      const artist = card.artist ?? faces[0]?.artist;
-
-      groups.set(key, {
-        name: card.name,
-        faceNames: faces.map((f) => f.name ?? "").filter(Boolean),
-        type_line: card.type_line ?? "",
-        colors,
-        cmc: card.cmc ?? 0,
-        oracle_text,
-        power: card.power ?? faces[0]?.power,
-        toughness: card.toughness ?? faces[0]?.toughness,
-        set: card.set ?? "",
-        set_name: card.set_name ?? "",
-        set_type: card.set_type ?? "",
-        released_at: card.released_at,
-        imagePng,
+      const artist = card.artist ?? card.card_faces?.[0]?.artist;
+      accumulated.set(key, {
         rarities: new Set(card.rarity ? [card.rarity] : []),
         sets: new Set(card.set ? [card.set] : []),
         artists: new Set(artist ? [artist] : []),
       });
     }
-  }
+  });
 
-  const cards = Array.from(groups.values()).map(({ rarities, sets, artists, ...fixed }) => ({
-    ...fixed,
-    rarities: Array.from(rarities),
-    sets: Array.from(sets),
-    artists: Array.from(artists),
-  }));
+  // Pass 2: stream the file again; for the first occurrence of each oracle_id build the
+  // full LocalCard by merging fixed fields from the card object with the accumulated Sets.
+  // We delete each entry from accumulated as we process it to free memory incrementally.
+  const cards: LocalCard[] = [];
+  const processed = new Set<string>();
+
+  await streamCards(filePath, (card) => {
+    const key = card.oracle_id ?? card.name;
+    if (processed.has(key)) return;
+    processed.add(key);
+
+    const acc = accumulated.get(key)!;
+    accumulated.delete(key);
+
+    const faces = card.card_faces ?? [];
+    const faceColors =
+      faces.length > 0 ? Array.from(new Set(faces.flatMap((f) => f.colors ?? []))) : undefined;
+    const colors =
+      card.colors !== undefined
+        ? card.colors
+        : faceColors !== undefined && faceColors.length > 0
+          ? faceColors
+          : (card.color_identity ?? []);
+    const oracle_text =
+      card.oracle_text ??
+      faces
+        .map((f) => f.oracle_text ?? "")
+        .filter(Boolean)
+        .join("\n");
+    const imagePng = card.image_uris?.png ?? faces[0]?.image_uris?.png ?? "/card-not-found.png";
+
+    cards.push({
+      name: card.name,
+      faceNames: faces.map((f) => f.name ?? "").filter(Boolean),
+      type_line: card.type_line ?? "",
+      colors,
+      cmc: card.cmc ?? 0,
+      oracle_text,
+      power: card.power ?? faces[0]?.power,
+      toughness: card.toughness ?? faces[0]?.toughness,
+      artists: Array.from(acc.artists),
+      sets: Array.from(acc.sets),
+      set: card.set ?? "",
+      set_name: card.set_name ?? "",
+      set_type: card.set_type ?? "",
+      released_at: card.released_at,
+      imagePng,
+    });
+  });
 
   return { cards, sets: Array.from(setMap.values()) };
 }
