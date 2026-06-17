@@ -123,6 +123,9 @@ async function buildCardIndex(filePath: string): Promise<{ cards: LocalCard[]; s
     if (pass1Count % 100_000 === 0) logMemory(`pass1 ${pass1Count} cards seen`);
   });
   logMemory(`pass1 done (${accumulated.size} unique oracle ids, ${setMap.size} sets)`);
+  // Release ~2GB of dead card objects from stream-json before starting the second pass.
+  (globalThis as { gc?: () => void }).gc?.();
+  logMemory("post-gc");
 
   // Pass 2: stream the file again; for the first occurrence of each oracle_id build the
   // full LocalCard by merging fixed fields from the card object with the accumulated Sets.
@@ -161,6 +164,7 @@ async function buildCardIndex(filePath: string): Promise<{ cards: LocalCard[]; s
       type_line: card.type_line ?? "",
       colors,
       cmc: card.cmc ?? 0,
+      rarities: Array.from(acc.rarities),
       oracle_text,
       power: card.power ?? faces[0]?.power,
       toughness: card.toughness ?? faces[0]?.toughness,

@@ -64,7 +64,7 @@ services:
       TZ: ${TZ:-America/New_York}
       CRON_SCHEDULE: ${CRON_SCHEDULE:-30 00 * * *}
       BULK_DATA_DIR: /app/data
-      NODE_OPTIONS: "--max-old-space-size=4096"
+      NODE_OPTIONS: "--max-old-space-size=4096 --expose-gc"
     volumes:
       - card-data:/app/data
     depends_on:
