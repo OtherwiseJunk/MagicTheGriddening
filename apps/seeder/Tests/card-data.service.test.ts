@@ -109,7 +109,7 @@ describe("CardDataService", () => {
         json: vi.fn().mockResolvedValue({
           data: [
             {
-              type: "default_cards",
+              type: "all_cards",
               updated_at: "2024-01-01",
               download_uri: "https://example.com/cards.json",
             },

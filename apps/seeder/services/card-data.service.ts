@@ -63,6 +63,12 @@ function getDataDirectory(): string {
   return process.env.BULK_DATA_DIR ?? path.join(process.cwd(), "data");
 }
 
+function logMemory(label: string): void {
+  const { heapUsed, heapTotal, rss } = process.memoryUsage();
+  const mb = (n: number) => `${Math.round(n / 1024 / 1024)}MB`;
+  console.log(`[mem] ${label}: heap ${mb(heapUsed)}/${mb(heapTotal)}, rss ${mb(rss)}`);
+}
+
 interface CardAccumulator {
   rarities: Set<string>;
   sets: Set<string>;
@@ -87,6 +93,8 @@ async function buildCardIndex(filePath: string): Promise<{ cards: LocalCard[]; s
   const accumulated = new Map<string, CardAccumulator>();
   const setMap = new Map<string, LocalSet>();
 
+  logMemory("pass1 start");
+  let pass1Count = 0;
   await streamCards(filePath, (card) => {
     if (card.set && !setMap.has(card.set)) {
       setMap.set(card.set, {
@@ -111,7 +119,10 @@ async function buildCardIndex(filePath: string): Promise<{ cards: LocalCard[]; s
         artists: new Set(artist ? [artist] : []),
       });
     }
+    pass1Count++;
+    if (pass1Count % 100_000 === 0) logMemory(`pass1 ${pass1Count} cards seen`);
   });
+  logMemory(`pass1 done (${accumulated.size} unique oracle ids, ${setMap.size} sets)`);
 
   // Pass 2: stream the file again; for the first occurrence of each oracle_id build the
   // full LocalCard by merging fixed fields from the card object with the accumulated Sets.
@@ -161,7 +172,9 @@ async function buildCardIndex(filePath: string): Promise<{ cards: LocalCard[]; s
       released_at: card.released_at,
       imagePng,
     });
+    if (cards.length % 10_000 === 0) logMemory(`pass2 ${cards.length} cards built`);
   });
+  logMemory(`pass2 done (${cards.length} cards)`);
 
   return { cards, sets: Array.from(setMap.values()) };
 }
@@ -225,15 +238,21 @@ export class CardDataService {
     const tempIndexPath = path.join(dataDir, `index-${randomUUID()}.json`);
 
     try {
+      logMemory("pre-download");
       await this.downloadBulkDataFile(bulkDataFile.download_uri, tempBulkPath);
+      logMemory("post-download");
       const { cards, sets } = await buildCardIndex(tempBulkPath);
+      logMemory("post-buildCardIndex");
       const indexFile: CardIndexFile = {
         generatedAt: new Date().toISOString(),
         sourceUpdatedAt: bulkDataFile.updated_at,
         cards,
         sets,
       };
-      await writeFile(tempIndexPath, JSON.stringify(indexFile), "utf8");
+      logMemory("pre-stringify");
+      const json = JSON.stringify(indexFile);
+      logMemory(`post-stringify (${Math.round(json.length / 1024 / 1024)}MB json)`);
+      await writeFile(tempIndexPath, json, "utf8");
       await rename(tempIndexPath, indexPath);
       console.log(`Downloaded and saved ${cards.length} cards to ${indexPath}`);
       return { cards, sets };
