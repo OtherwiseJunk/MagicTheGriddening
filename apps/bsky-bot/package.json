@@ -10,8 +10,8 @@
     "fmt:check": "oxfmt -c ../../.oxfmtrc.json --check ."
   },
   "dependencies": {
-    "@griddening/shared": "*",
     "@atproto/api": "^0.6.20",
+    "@griddening/shared": "*",
     "cron": "^3.1.0",
     "dotenv": "^16.3.1",
     "png-js": "^1.0.0",
