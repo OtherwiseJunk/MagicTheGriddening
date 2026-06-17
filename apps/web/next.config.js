@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ["@griddening/shared"],
   eslint: {
     ignoreDuringBuilds: true,
   },

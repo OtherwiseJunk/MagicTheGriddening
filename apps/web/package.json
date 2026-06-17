@@ -20,6 +20,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@griddening/shared": "*",
     "@prisma/client": "^6.0.0",
     "@uidotdev/usehooks": "^2.4.1",
     "axios": "^1.6.2",
