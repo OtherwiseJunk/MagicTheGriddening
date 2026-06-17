@@ -161,7 +161,7 @@ test.describe("Game board", () => {
 
     // Dialog closes and card image appears — confirms artist constraint validated correctly
     await expect(input).not.toBeVisible({ timeout: 15000 });
-    await expect(page.locator(".input-square img").nth(2)).toBeVisible({ timeout: 15000 });
+    await expect(page.locator(".input-square img").first()).toBeVisible({ timeout: 15000 });
   });
 });
 

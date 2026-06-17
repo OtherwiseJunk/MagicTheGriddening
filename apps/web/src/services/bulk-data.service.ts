@@ -48,7 +48,19 @@ interface ScryfallBulkCard {
 }
 
 interface CardAccumulator {
-  canonical: ScryfallBulkCard;
+  name: string;
+  faceNames: string[];
+  type_line: string;
+  colors: string[];
+  cmc: number;
+  oracle_text: string;
+  power: string | undefined;
+  toughness: string | undefined;
+  set: string;
+  set_name: string;
+  set_type: string;
+  released_at: string | undefined;
+  imagePng: string;
   rarities: Set<string>;
   sets: Set<string>;
   artists: Set<string>;
@@ -188,57 +200,53 @@ class BulkDataService {
         const artist = card.artist ?? card.card_faces?.[0]?.artist;
         if (artist) existing.artists.add(artist);
       } else {
+        // Compute all derived fields eagerly so the raw card object can be GC'd
+        const faces = card.card_faces ?? [];
+        const faceColors =
+          faces.length > 0 ? Array.from(new Set(faces.flatMap((f) => f.colors ?? []))) : undefined;
+        const colors =
+          card.colors !== undefined
+            ? card.colors
+            : faceColors !== undefined && faceColors.length > 0
+              ? faceColors
+              : (card.color_identity ?? []);
+        const oracle_text =
+          card.oracle_text ??
+          faces
+            .map((f) => f.oracle_text ?? "")
+            .filter(Boolean)
+            .join("\n");
+        const imagePng =
+          card.image_uris?.png ?? faces[0]?.image_uris?.png ?? "/card-not-found.png";
+        const artist = card.artist ?? faces[0]?.artist;
+
         groups.set(key, {
-          canonical: card,
+          name: card.name,
+          faceNames: faces.map((f) => f.name ?? "").filter(Boolean),
+          type_line: card.type_line ?? "",
+          colors,
+          cmc: card.cmc ?? 0,
+          oracle_text,
+          power: card.power ?? faces[0]?.power,
+          toughness: card.toughness ?? faces[0]?.toughness,
+          set: card.set ?? "",
+          set_name: card.set_name ?? "",
+          set_type: card.set_type ?? "",
+          released_at: card.released_at,
+          imagePng,
           rarities: new Set(card.rarity ? [card.rarity] : []),
           sets: new Set(card.set ? [card.set] : []),
-          artists: new Set(
-            (card.artist ?? card.card_faces?.[0]?.artist)
-              ? [card.artist ?? card.card_faces?.[0]?.artist ?? ""]
-              : [],
-          ),
+          artists: new Set(artist ? [artist] : []),
         });
       }
     }
 
-    return Array.from(groups.values()).map(({ canonical, rarities, sets, artists }) => {
-      const faces = canonical.card_faces ?? [];
-      const faceColors =
-        faces.length > 0 ? Array.from(new Set(faces.flatMap((f) => f.colors ?? []))) : undefined;
-      const colors =
-        canonical.colors !== undefined
-          ? canonical.colors
-          : faceColors !== undefined && faceColors.length > 0
-            ? faceColors
-            : (canonical.color_identity ?? []);
-      const oracle_text =
-        canonical.oracle_text ??
-        faces
-          .map((f) => f.oracle_text ?? "")
-          .filter(Boolean)
-          .join("\n");
-      const imagePng =
-        canonical.image_uris?.png ?? faces[0]?.image_uris?.png ?? "/card-not-found.png";
-
-      return {
-        name: canonical.name,
-        faceNames: faces.map((f) => f.name ?? "").filter(Boolean),
-        type_line: canonical.type_line ?? "",
-        colors,
-        cmc: canonical.cmc ?? 0,
-        rarities: Array.from(rarities),
-        oracle_text,
-        power: canonical.power ?? faces[0]?.power,
-        toughness: canonical.toughness ?? faces[0]?.toughness,
-        artists: Array.from(artists),
-        sets: Array.from(sets),
-        set: canonical.set ?? "",
-        set_name: canonical.set_name ?? "",
-        set_type: canonical.set_type ?? "",
-        released_at: canonical.released_at,
-        imagePng,
-      };
-    });
+    return Array.from(groups.values()).map(({ rarities, sets, artists, ...fixed }) => ({
+      ...fixed,
+      rarities: Array.from(rarities),
+      sets: Array.from(sets),
+      artists: Array.from(artists),
+    }));
   }
 
   private setIndex(index: CardIndexFile): void {
