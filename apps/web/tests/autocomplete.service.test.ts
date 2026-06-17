@@ -15,7 +15,12 @@ function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
     power: undefined,
     toughness: undefined,
     artists: ["John Avon"],
+    localizedNames: [],
     sets: ["m20"],
+    set: "m20",
+    set_name: "Core Set 2020",
+    set_type: "core",
+    released_at: "2019-07-12",
     imagePng: "/forest.png",
     ...overrides,
   };

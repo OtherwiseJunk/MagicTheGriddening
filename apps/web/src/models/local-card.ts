@@ -1,66 +1,23 @@
-interface ScryfallBulkFace {
-  name?: string;
-  colors?: string[];
-  oracle_text?: string;
-  artist?: string;
-  power?: string;
-  toughness?: string;
-  image_uris?: { png: string };
-}
+import { type ScryfallBulkCard, type ScryfallBulkFace, type LocalCard } from "@griddening/shared";
 
-interface ScryfallBulkCard {
-  name: string;
-  oracle_id?: string;
-  type_line?: string;
-  colors?: string[];
-  color_identity?: string[];
-  cmc?: number;
-  rarity?: string;
-  oracle_text?: string;
-  artist?: string;
-  power?: string;
-  toughness?: string;
-  set?: string;
-  set_name?: string;
-  set_type?: string;
-  released_at?: string;
-  image_uris?: { png: string };
-  card_faces?: ScryfallBulkFace[];
-  games?: string[];
-}
-
-export interface LocalCard {
-  name: string;
-  faceNames: string[];
-  type_line: string;
-  colors: string[];
-  cmc: number;
-  rarities: string[];
-  oracle_text: string;
-  power: string | undefined;
-  toughness: string | undefined;
-  artists: string[];
-  sets: string[];
-  set: string;
-  set_name: string;
-  set_type: string;
-  released_at: string | undefined;
-  imagePng: string;
-}
-
-export interface CardIndexFile {
-  generatedAt: string;
-  sourceUpdatedAt: string;
-  cards: LocalCard[];
-}
+export type { LocalCard, CardIndexFile } from "@griddening/shared";
 
 export function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
   const groups = new Map<string, ScryfallBulkCard[]>();
   const nameToOracleId = new Map<string, string>();
   const deferred: ScryfallBulkCard[] = [];
+  const localizedNamesMap = new Map<string, Set<string>>();
 
   for (const card of rawCards) {
     if (!(card.games?.includes("paper") ?? false)) continue;
+    if ((card.lang ?? "en") !== "en") {
+      if (card.oracle_id) {
+        const existing = localizedNamesMap.get(card.oracle_id);
+        if (existing) existing.add(card.name);
+        else localizedNamesMap.set(card.oracle_id, new Set([card.name]));
+      }
+      continue;
+    }
     if (card.oracle_id) {
       if (!nameToOracleId.has(card.name)) nameToOracleId.set(card.name, card.oracle_id);
       const group = groups.get(card.oracle_id);
@@ -80,9 +37,9 @@ export function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
     groups.get(oracleId)!.push(card);
   }
 
-  return Array.from(groups.values()).map((printings) => {
+  return Array.from(groups.entries()).map(([oracleId, printings]) => {
     const canonical = printings[0];
-    const faces = canonical.card_faces ?? [];
+    const faces: ScryfallBulkFace[] = canonical.card_faces ?? [];
 
     const faceColors =
       faces.length > 0 ? Array.from(new Set(faces.flatMap((f) => f.colors ?? []))) : undefined;
@@ -110,6 +67,7 @@ export function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
     const artists = Array.from(
       new Set(printings.map((p) => p.artist ?? p.card_faces?.[0]?.artist ?? "").filter(Boolean)),
     );
+    const localizedNames = Array.from(localizedNamesMap.get(oracleId) ?? []);
 
     return {
       name: canonical.name,
@@ -122,6 +80,7 @@ export function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
       power: canonical.power ?? faces[0]?.power,
       toughness: canonical.toughness ?? faces[0]?.toughness,
       artists,
+      localizedNames,
       sets,
       set: canonical.set ?? "",
       set_name: canonical.set_name ?? "",

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
 import path from "path";
 import { matchesConstraint } from "@/services/card-validation.service";
-import { GameConstraint, ConstraintType } from "@/models/UI/gameConstraint";
+import { GameConstraint, ConstraintType } from "@griddening/shared";
 import { type LocalCard, type CardIndexFile } from "@/models/local-card";
 
 function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
@@ -17,7 +17,12 @@ function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
     power: "2",
     toughness: "2",
     artists: ["Rebecca Guay"],
+    localizedNames: [],
     sets: ["m20"],
+    set: "m20",
+    set_name: "Core Set 2020",
+    set_type: "core",
+    released_at: "2019-07-12",
     imagePng: "/card.png",
     ...overrides,
   };

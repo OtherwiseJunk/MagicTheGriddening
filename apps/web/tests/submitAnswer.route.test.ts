@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "@/app/api/submitAnswer/route";
 import { Game } from "@/models/database/game";
-import { ConstraintType } from "@/models/UI/gameConstraint";
+import { ConstraintType } from "@griddening/shared";
 import { type LocalCard } from "@/models/local-card";
 
 const mockConstraints = JSON.stringify([
@@ -29,7 +29,12 @@ function makeMockCard(overrides: Partial<LocalCard> = {}): LocalCard {
     power: undefined,
     toughness: undefined,
     artists: ["Christopher Moeller"],
+    localizedNames: [],
     sets: ["lea"],
+    set: "lea",
+    set_name: "Limited Edition Alpha",
+    set_type: "core",
+    released_at: "1993-08-05",
     imagePng: "http://example.com/bolt.png",
     ...overrides,
   };
