@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { LocalCard } from "../types/LocalCard.js";
+import { type LocalCard } from "@griddening/shared";
 
 const mockReadFile = vi.fn();
 const mockWriteFile = vi.fn();
@@ -42,6 +42,7 @@ function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
     power: "2",
     toughness: "2",
     artists: ["Test Artist"],
+    localizedNames: [],
     sets: ["m21"],
     set: "m21",
     set_name: "Core Set 2021",
@@ -236,6 +237,23 @@ describe("CardDataService", () => {
       expect(result[0].artists).toContain("Mark Poole");
       expect(result[0].artists).toContain("Okubo");
       expect(result[0].sets).toContain("sld");
+    });
+
+    it("collects non-English card names into localizedNames", async () => {
+      const bopBase = { name: "Birds of Paradise", oracle_id: "bop-oracle", type_line: "Creature — Bird", colors: ["G"], cmc: 1, rarity: "rare", set_name: "Limited Edition Alpha", set_type: "core", image_uris: { png: "https://c/bop.png" }, games: ["paper"] };
+      await setupDownloadMocks([
+        { ...bopBase, artist: "Mark Poole", set: "lea", released_at: "1993-08-05" },
+        { ...bopBase, name: "楽園の鳥", lang: "ja", artist: "Mark Poole", set: "lea", released_at: "1993-08-05" },
+        { ...bopBase, name: "Oiseau du Paradis", lang: "fr", artist: "Mark Poole", set: "lea", released_at: "1993-08-05" },
+      ]);
+
+      const { CardDataService } = await import("../services/card-data.service.js");
+      const result = await new CardDataService().getCards();
+
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe("Birds of Paradise");
+      expect(result[0].localizedNames).toContain("楽園の鳥");
+      expect(result[0].localizedNames).toContain("Oiseau du Paradis");
     });
 
     it("correctly populates rarities (not undefined)", async () => {
