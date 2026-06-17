@@ -1,6 +1,4 @@
-import { ConstraintType, GameConstraint } from "../types/GameConstraint.js";
-import { LocalCard } from "../types/LocalCard.js";
-import { LocalSet } from "../types/LocalSet.js";
+import { ConstraintType, GameConstraint, type LocalCard, type LocalSet } from "@griddening/shared";
 import { Puzzle, PuzzleType } from "../types/Puzzle.js";
 import { shuffleArray } from "../Utilities/map.helper.js";
 import {

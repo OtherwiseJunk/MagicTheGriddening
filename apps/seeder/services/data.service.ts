@@ -1,5 +1,5 @@
 import { Game, PrismaClient } from "@prisma/client";
-import { GameConstraint } from "../types/GameConstraint.js";
+import { GameConstraint } from "@griddening/shared";
 
 export class DataService {
   constructor(private prisma: PrismaClient) {}

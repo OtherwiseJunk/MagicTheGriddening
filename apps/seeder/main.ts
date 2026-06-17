@@ -2,7 +2,7 @@ import { cloneMapOfDecks, shuffleArray } from "./Utilities/map.helper.js";
 import { GriddeningService } from "./services/griddening.service.js";
 import { CardDataService } from "./services/card-data.service.js";
 import { Puzzle, PuzzleType } from "./types/Puzzle.js";
-import { ConstraintType, GameConstraint } from "./types/GameConstraint.js";
+import { ConstraintType, GameConstraint } from "@griddening/shared";
 import { DataService } from "./services/data.service.js";
 import { PrismaClient } from "@prisma/client";
 import schedule from "node-schedule";

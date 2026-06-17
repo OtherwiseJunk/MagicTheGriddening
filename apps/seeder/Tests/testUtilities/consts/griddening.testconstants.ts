@@ -1,5 +1,4 @@
-import { GameConstraint, ConstraintType } from "../../../types/GameConstraint.js";
-import { LocalSet } from "../../../types/LocalSet.js";
+import { GameConstraint, ConstraintType, type LocalSet } from "@griddening/shared";
 
 function makeLocalSet(
   released_at: string | undefined,

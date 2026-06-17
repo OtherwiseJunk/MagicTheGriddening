@@ -1,4 +1,4 @@
-import { GameConstraint } from "./GameConstraint";
+import { GameConstraint } from "@griddening/shared";
 
 export enum PuzzleType {
   CreatureFocused,

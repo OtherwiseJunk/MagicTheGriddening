@@ -1,8 +1,6 @@
 import { expect, test, describe, beforeEach } from "vitest";
 import { GriddeningService } from "../services/griddening.service.js";
-import { ConstraintType, GameConstraint } from "../types/GameConstraint.js";
-import { LocalCard } from "../types/LocalCard.js";
-import { LocalSet } from "../types/LocalSet.js";
+import { ConstraintType, GameConstraint, type LocalCard, type LocalSet } from "@griddening/shared";
 import {
   pioneerSet,
   standardSet,

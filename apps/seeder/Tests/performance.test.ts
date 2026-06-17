@@ -1,6 +1,6 @@
 import { expect, test, describe, beforeEach } from "vitest";
 import { GriddeningService } from "../services/griddening.service.js";
-import { ConstraintType, GameConstraint } from "../types/GameConstraint.js";
+import { ConstraintType, GameConstraint } from "@griddening/shared";
 import { cloneMapOfDecks } from "../Utilities/map.helper.js";
 import { PuzzleType } from "../types/Puzzle.js";
 import { pioneerSet, standardSet } from "./testUtilities/consts/griddening.testconstants.js";

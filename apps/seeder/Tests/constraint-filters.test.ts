@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { LocalCard } from "../types/LocalCard.js";
+import { type LocalCard } from "@griddening/shared";
 import {
   colorConstraints,
   rarityConstraints,
