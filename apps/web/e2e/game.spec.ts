@@ -1,8 +1,9 @@
 import { test, expect, type Page } from "@playwright/test";
 
 // These tests run against puzzle 1 (dateString 20260101):
-// Top constraints: Red, Power 2, Common
+// Top constraints: Red, Power 2, Test Artist
 // Side constraints: Goblin, Mana Value 2, Toughness 2
+// squareIndex 0 = Red + Goblin, squareIndex 2 = Test Artist + Goblin
 
 // The input dialog is the one with a text input; the rules dialog has no input.
 // Scope autocomplete selectors to the dialog containing the input.
@@ -30,7 +31,7 @@ test.describe("Game board", () => {
     // Constraint headers from puzzle 1
     await expect(page.locator("text=Red")).toBeVisible();
     await expect(page.locator("text=Power 2")).toBeVisible();
-    await expect(page.locator("text=Common")).toBeVisible();
+    await expect(page.locator("text=Test Artist")).toBeVisible();
     await expect(page.locator("text=Goblin")).toBeVisible();
     await expect(page.locator("text=Mana Value 2")).toBeVisible();
     await expect(page.locator("text=Toughness 2")).toBeVisible();
@@ -120,6 +121,28 @@ test.describe("Game board", () => {
 
     // A card image should now be visible in the grid
     await expect(page.locator(".input-square img").first()).toBeVisible({ timeout: 15000 });
+  });
+
+  test("artist constraint correctly accepts a valid card", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("text=Life Points: 9")).toBeVisible();
+
+    // squareIndex 2 = Test Artist (top) + Goblin (side)
+    // Battle Cry Goblin has artists: ["Test Artist"] and type_line contains Goblin
+    await page.locator(".input-square.live-input").nth(2).click();
+    const input = inputDialog(page).locator("input[type='text']");
+
+    await input.fill(duplicateTestCardName);
+    await expect(exactAutocompleteItem(page, duplicateTestCardName)).toBeVisible({
+      timeout: 15000,
+    });
+    await exactAutocompleteItem(page, duplicateTestCardName).click();
+
+    await inputDialog(page).locator("button", { hasText: "Submit" }).click();
+
+    // Dialog closes and card image appears — confirms artist constraint validated correctly
+    await expect(input).not.toBeVisible({ timeout: 15000 });
+    await expect(page.locator(".input-square img").nth(2)).toBeVisible({ timeout: 15000 });
   });
 });
 

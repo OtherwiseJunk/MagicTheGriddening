@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "fs";
+import path from "path";
 import { matchesConstraint } from "@/services/card-validation.service";
 import { GameConstraint, ConstraintType } from "@/models/UI/gameConstraint";
-import { type LocalCard } from "@/models/local-card";
+import { type LocalCard, type CardIndexFile } from "@/models/local-card";
 
 function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
   return {
@@ -335,27 +337,69 @@ describe("matchesConstraint", () => {
       ).toBe(false);
     });
   });
+});
 
-  describe("Set", () => {
-    it("matches card from the correct set using set: prefix", () => {
-      const card = makeCard({ sets: ["lrw"] });
-      expect(
-        matchesConstraint(card, new GameConstraint("Lorwyn", ConstraintType.Set, "set:lrw")),
-      ).toBe(true);
-    });
+// Integration tests: validate against the actual e2e card-index.json to catch data-format regressions.
+// These fail if card-index.json uses the old singular "artist"/"rarity" shape instead of arrays.
+describe("validation against real card-index.json data", () => {
+  const { cards } = JSON.parse(
+    readFileSync(path.resolve(__dirname, "../e2e/card-index.json"), "utf8"),
+  ) as CardIndexFile;
 
-    it("does not match card from a different set", () => {
-      const card = makeCard({ sets: ["m20"] });
-      expect(
-        matchesConstraint(card, new GameConstraint("Lorwyn", ConstraintType.Set, "set:lrw")),
-      ).toBe(false);
-    });
+  it("all cards have artists as a non-empty array", () => {
+    for (const card of cards) {
+      expect(Array.isArray(card.artists), `${card.name}: artists must be an array`).toBe(true);
+      expect(card.artists.length, `${card.name}: artists must not be empty`).toBeGreaterThan(0);
+    }
+  });
 
-    it("matches when any printing set satisfies constraint", () => {
-      const card = makeCard({ sets: ["m20", "lrw"] });
-      expect(
-        matchesConstraint(card, new GameConstraint("Lorwyn", ConstraintType.Set, "set:lrw")),
-      ).toBe(true);
-    });
+  it("all cards have rarities as an array", () => {
+    for (const card of cards) {
+      expect(Array.isArray(card.rarities), `${card.name}: rarities must be an array`).toBe(true);
+    }
+  });
+
+  it("all cards have sets as an array", () => {
+    for (const card of cards) {
+      expect(Array.isArray(card.sets), `${card.name}: sets must be an array`).toBe(true);
+    }
+  });
+
+  it("artist constraint matches a card from card-index.json", () => {
+    const card = cards.find((c) => c.name === "Battle Cry Goblin")!;
+    expect(card).toBeDefined();
+    expect(
+      matchesConstraint(card, new GameConstraint("Test Artist", ConstraintType.Artist, "a:Test")),
+    ).toBe(true);
+  });
+
+  it("artist constraint rejects card when no artist matches", () => {
+    const card = cards.find((c) => c.name === "Battle Cry Goblin")!;
+    expect(
+      matchesConstraint(card, new GameConstraint("Mark Poole", ConstraintType.Artist, "a:Poole")),
+    ).toBe(false);
+  });
+});
+
+describe("Set constraint", () => {
+  it("matches card from the correct set using set: prefix", () => {
+    const card = makeCard({ sets: ["lrw"] });
+    expect(
+      matchesConstraint(card, new GameConstraint("Lorwyn", ConstraintType.Set, "set:lrw")),
+    ).toBe(true);
+  });
+
+  it("does not match card from a different set", () => {
+    const card = makeCard({ sets: ["m20"] });
+    expect(
+      matchesConstraint(card, new GameConstraint("Lorwyn", ConstraintType.Set, "set:lrw")),
+    ).toBe(false);
+  });
+
+  it("matches when any printing set satisfies constraint", () => {
+    const card = makeCard({ sets: ["m20", "lrw"] });
+    expect(
+      matchesConstraint(card, new GameConstraint("Lorwyn", ConstraintType.Set, "set:lrw")),
+    ).toBe(true);
   });
 });

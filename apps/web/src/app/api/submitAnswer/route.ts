@@ -38,6 +38,23 @@ export async function POST(request: Request): Promise<Response> {
     );
 
     const card = await CardValidationService.findCard(args.guess);
+
+    if (process.env.LOG_LEVEL === "debug") {
+      if (card === undefined) {
+        console.debug(`[submitAnswer] "${args.guess}" not found in card index`);
+      } else {
+        const c1 = CardValidationService.matchesConstraint(card, constraintOne);
+        const c2 = CardValidationService.matchesConstraint(card, constraintTwo);
+        console.debug(
+          `[submitAnswer] "${args.guess}" sq=${args.squareIndex}`,
+          `artists=${JSON.stringify(card.artists)}`,
+          `colors=${JSON.stringify(card.colors)}`,
+          `[${constraintOne.scryfallQuery}]=${c1}`,
+          `[${constraintTwo.scryfallQuery}]=${c2}`,
+        );
+      }
+    }
+
     const player: PlayerRecord = await DataService.getPlayerRecord(args.playerId, game.id);
 
     if (

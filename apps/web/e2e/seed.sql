@@ -1,14 +1,15 @@
 -- E2E test seed data
 -- Covers all 12 ConstraintType variants across 3 puzzles
 
--- Puzzle 1: Color, Power, Rarity (top) x Type, ManaValue, Toughness (side)
+-- Puzzle 1: Color, Power, Artist (top) x Type, ManaValue, Toughness (side)
 -- dateString 20260101 (using 0-indexed months, this represents February 1st)
+-- All e2e test cards are by "Test Artist", so squareIndex 2 = Artist + Goblin = valid for Battle Cry Goblin
 INSERT INTO "Game" ("dateString", "constraintsJSON") VALUES (
   '20260101',
   '[
     {"displayName":"Red","constraintType":3,"scryfallQuery":"c:R","imageSrc":"/mountain.png","imageAltText":"A red mana symbol"},
     {"displayName":"Power 2","constraintType":5,"scryfallQuery":"pow:2","imageSrc":"","imageAltText":""},
-    {"displayName":"Common","constraintType":0,"scryfallQuery":"r:c","imageSrc":"","imageAltText":""},
+    {"displayName":"Test Artist","constraintType":7,"scryfallQuery":"a:Test","imageSrc":"","imageAltText":""},
     {"displayName":"Goblin","constraintType":1,"scryfallQuery":"t:Goblin","imageSrc":"","imageAltText":""},
     {"displayName":"Mana Value 2","constraintType":2,"scryfallQuery":"cmc:2","imageSrc":"","imageAltText":""},
     {"displayName":"Toughness 2","constraintType":6,"scryfallQuery":"tou:2","imageSrc":"","imageAltText":""}
