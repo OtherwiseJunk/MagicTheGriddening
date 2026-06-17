@@ -131,4 +131,17 @@ describe("buildLocalCards", () => {
     expect(card.sets).toEqual(expect.arrayContaining(["lea", "m11"]));
     expect(card.artists).toEqual(expect.arrayContaining(["Christopher Moeller", "Jason Chan"]));
   });
+
+  it("merges null-oracle_id printings into the canonical entry by name", () => {
+    // One Secret Lair BOP has oracle_id=null. Rather than being dropped or creating a
+    // colliding second entry, its artists/sets/rarities are folded into the canonical BOP
+    // (looked up by name). This preserves Secret Lair artist-series credits.
+    const canonicalMarkPoole  = { ...singleFaced, artist: "Mark Poole",      oracle_id: "bop-real", set: "lea" };
+    const nullOracleSLD       = { ...singleFaced, artist: "Okubo",           oracle_id: undefined,  set: "sld" };
+    const cards = buildLocalCards([canonicalMarkPoole, nullOracleSLD]);
+    expect(cards).toHaveLength(1);
+    expect(cards[0].artists).toContain("Mark Poole");
+    expect(cards[0].artists).toContain("Okubo");
+    expect(cards[0].sets).toContain("sld");
+  });
 });

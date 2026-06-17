@@ -56,16 +56,28 @@ export interface CardIndexFile {
 
 export function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
   const groups = new Map<string, ScryfallBulkCard[]>();
+  const nameToOracleId = new Map<string, string>();
+  const deferred: ScryfallBulkCard[] = [];
 
   for (const card of rawCards) {
     if (!(card.games?.includes("paper") ?? false)) continue;
-    const key = card.oracle_id ?? card.name;
-    const group = groups.get(key);
-    if (group) {
-      group.push(card);
+    if (card.oracle_id) {
+      if (!nameToOracleId.has(card.name)) nameToOracleId.set(card.name, card.oracle_id);
+      const group = groups.get(card.oracle_id);
+      if (group) {
+        group.push(card);
+      } else {
+        groups.set(card.oracle_id, [card]);
+      }
     } else {
-      groups.set(key, [card]);
+      deferred.push(card);
     }
+  }
+
+  for (const card of deferred) {
+    const oracleId = nameToOracleId.get(card.name);
+    if (!oracleId) continue;
+    groups.get(oracleId)!.push(card);
   }
 
   return Array.from(groups.values()).map((printings) => {

@@ -156,6 +156,106 @@ describe("CardDataService", () => {
     });
   });
 
+  describe("multi-printing accumulation", () => {
+    async function setupDownloadMocks(cards: object[]) {
+      const { createReadStream } = await import("node:fs");
+      const { streamArray } = await import("stream-json/streamers/stream-array.js");
+
+      mockReadFile.mockRejectedValueOnce(new Error("ENOENT: no such file"));
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: vi.fn().mockResolvedValue({
+            data: [{ type: "all_cards", updated_at: "2024-01-01", download_uri: "https://x.com/c.json" }],
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          body: { [Symbol.asyncIterator]: async function* () { yield new Uint8Array([]); } },
+        });
+      mockOpen.mockResolvedValue({ write: vi.fn().mockResolvedValue({ bytesWritten: 0 }), close: vi.fn().mockResolvedValue(undefined) });
+
+      vi.mocked(streamArray.withParserAsStream).mockReturnValue({
+        on: vi.fn().mockReturnThis(),
+        pipe: vi.fn(),
+        destroy: vi.fn(),
+        [Symbol.asyncIterator]: async function* () {
+          for (let i = 0; i < cards.length; i++) yield { key: i, value: cards[i] };
+        },
+      } as never);
+      vi.mocked(createReadStream as ReturnType<typeof vi.fn>).mockReturnValue({ on: vi.fn().mockReturnThis(), pipe: vi.fn() } as never);
+    }
+
+    it("merges artists, sets, and rarities from all printings of the same card", async () => {
+      const bopBase = {
+        name: "Birds of Paradise",
+        oracle_id: "bop-oracle-id",
+        type_line: "Creature — Bird",
+        colors: ["G"],
+        cmc: 1,
+        oracle_text: "Flying\n{T}: Add one mana of any color.",
+        power: "0",
+        toughness: "1",
+        games: ["paper"],
+      };
+      await setupDownloadMocks([
+        { ...bopBase, rarity: "rare", artist: "Mark Poole", set: "lea", set_name: "Limited Edition Alpha", set_type: "core", released_at: "1993-08-05", image_uris: { png: "https://c/alpha.png" } },
+        { ...bopBase, rarity: "rare", artist: "Mark Poole", set: "2ed", set_name: "Unlimited Edition", set_type: "core", released_at: "1993-12-01", image_uris: { png: "https://c/2ed.png" } },
+        { ...bopBase, rarity: "rare", artist: "Stephen Andrade", set: "m10", set_name: "Magic 2010", set_type: "core", released_at: "2009-07-17", image_uris: { png: "https://c/m10.png" } },
+      ]);
+
+      const { CardDataService } = await import("../services/card-data.service.js");
+      const result = await new CardDataService().getCards();
+
+      expect(result).toHaveLength(1);
+      const bop = result[0];
+      expect(bop.name).toBe("Birds of Paradise");
+      expect(bop.artists).toContain("Mark Poole");
+      expect(bop.artists).toContain("Stephen Andrade");
+      expect(bop.artists).toHaveLength(2); // deduped
+      expect(bop.sets).toContain("lea");
+      expect(bop.sets).toContain("2ed");
+      expect(bop.sets).toContain("m10");
+      expect(bop.rarities).toContain("rare");
+      expect(bop.rarities).toHaveLength(1); // all rare, no duplicates
+    });
+
+    it("merges null-oracle_id printings into the canonical entry by name", async () => {
+      // One Secret Lair BOP has oracle_id=null. Rather than being dropped or creating a
+      // colliding second entry, its artists/sets/rarities are folded into the canonical BOP.
+      // This preserves Secret Lair artist-series credits (e.g. Okubo, Villeneuve series).
+      const bopBase = { name: "Birds of Paradise", type_line: "Creature — Bird", colors: ["G"], cmc: 1, rarity: "rare", set_name: "Test", set_type: "core", image_uris: { png: "https://c/bop.png" }, games: ["paper"] };
+      const alphaBop    = { ...bopBase, oracle_id: "bop-real", artist: "Mark Poole", set: "lea", released_at: "1993-08-05" };
+      const sldBopNewer = { ...bopBase, oracle_id: undefined,  artist: "Okubo",      set: "sld", released_at: "2024-01-01" };
+      await setupDownloadMocks([alphaBop, sldBopNewer]);
+
+      const { CardDataService } = await import("../services/card-data.service.js");
+      const result = await new CardDataService().getCards();
+
+      expect(result).toHaveLength(1);
+      expect(result[0].artists).toContain("Mark Poole");
+      expect(result[0].artists).toContain("Okubo");
+      expect(result[0].sets).toContain("sld");
+    });
+
+    it("correctly populates rarities (not undefined)", async () => {
+      await setupDownloadMocks([{
+        name: "Lightning Bolt", oracle_id: "lb-oracle",
+        type_line: "Instant", colors: [], cmc: 1, rarity: "common",
+        oracle_text: "Lightning Bolt deals 3 damage to any target.",
+        artist: "Some Artist", set: "lea", set_name: "Limited Edition Alpha", set_type: "core",
+        released_at: "1993-08-05", image_uris: { png: "https://c/bolt.png" }, games: ["paper"],
+      }]);
+
+      const { CardDataService } = await import("../services/card-data.service.js");
+      const bolt = (await new CardDataService().getCards())[0];
+
+      expect(bolt.rarities).toBeDefined();
+      expect(Array.isArray(bolt.rarities)).toBe(true);
+      expect(bolt.rarities).toContain("common");
+    });
+  });
+
   describe("getCards", () => {
     it("returns the same cards on repeated calls without re-fetching", async () => {
       const cards: LocalCard[] = [makeCard({ name: "Counterspell" })];

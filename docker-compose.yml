@@ -37,6 +37,7 @@ services:
       NODE_ENV: production
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/griddening
       BULK_DATA_DIR: /app/data
+      NODE_OPTIONS: "--max-old-space-size=4096"
     ports:
       - "3001:3000"
     volumes:

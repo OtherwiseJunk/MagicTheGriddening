@@ -183,24 +183,50 @@ class BulkDataService {
     // Keeping only these Sets instead of the full card object limits peak memory to ~50MB
     // regardless of how many printings exist in all_cards (~800k+ entries).
     const accumulated = new Map<string, CardAccumulator>();
+    const nameToOracleId = new Map<string, string>();
+    const deferredByName = new Map<string, CardAccumulator>();
 
     await this.streamCards(filePath, (card) => {
-      const key = card.oracle_id ?? card.name;
-      const existing = accumulated.get(key);
-      if (existing) {
-        if (card.rarity) existing.rarities.add(card.rarity);
-        if (card.set) existing.sets.add(card.set);
-        const artist = card.artist ?? card.card_faces?.[0]?.artist;
-        if (artist) existing.artists.add(artist);
+      const artist = card.artist ?? card.card_faces?.[0]?.artist;
+      if (card.oracle_id) {
+        if (!nameToOracleId.has(card.name)) nameToOracleId.set(card.name, card.oracle_id);
+        const existing = accumulated.get(card.oracle_id);
+        if (existing) {
+          if (card.rarity) existing.rarities.add(card.rarity);
+          if (card.set) existing.sets.add(card.set);
+          if (artist) existing.artists.add(artist);
+        } else {
+          accumulated.set(card.oracle_id, {
+            rarities: new Set(card.rarity ? [card.rarity] : []),
+            sets: new Set(card.set ? [card.set] : []),
+            artists: new Set(artist ? [artist] : []),
+          });
+        }
       } else {
-        const artist = card.artist ?? card.card_faces?.[0]?.artist;
-        accumulated.set(key, {
-          rarities: new Set(card.rarity ? [card.rarity] : []),
-          sets: new Set(card.set ? [card.set] : []),
-          artists: new Set(artist ? [artist] : []),
-        });
+        const existing = deferredByName.get(card.name);
+        if (existing) {
+          if (card.rarity) existing.rarities.add(card.rarity);
+          if (card.set) existing.sets.add(card.set);
+          if (artist) existing.artists.add(artist);
+        } else {
+          deferredByName.set(card.name, {
+            rarities: new Set(card.rarity ? [card.rarity] : []),
+            sets: new Set(card.set ? [card.set] : []),
+            artists: new Set(artist ? [artist] : []),
+          });
+        }
       }
     });
+
+    for (const [name, deferred] of deferredByName) {
+      const oracleId = nameToOracleId.get(name);
+      if (!oracleId) continue;
+      const canonical = accumulated.get(oracleId);
+      if (!canonical) continue;
+      for (const artist of deferred.artists) canonical.artists.add(artist);
+      for (const set of deferred.sets) canonical.sets.add(set);
+      for (const rarity of deferred.rarities) canonical.rarities.add(rarity);
+    }
 
     // Pass 2: stream the file again; for the first occurrence of each oracle_id build the
     // full LocalCard by merging fixed fields from the card object with the accumulated Sets.
@@ -209,7 +235,8 @@ class BulkDataService {
     const processed = new Set<string>();
 
     await this.streamCards(filePath, (card) => {
-      const key = card.oracle_id ?? card.name;
+      if (!card.oracle_id) return;
+      const key = card.oracle_id;
       if (processed.has(key)) return;
       processed.add(key);
 
