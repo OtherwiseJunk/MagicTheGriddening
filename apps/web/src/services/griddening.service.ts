@@ -1,6 +1,6 @@
 import { colorPairs } from "@/constants/constraintConstants";
 import type { Color } from "@/constants/constraintConstants";
-import { ConstraintType, type GameConstraint } from "@/models/UI/gameConstraint";
+import { ConstraintType, type GameConstraint } from "@griddening/shared";
 
 export default class GriddeningService {
   static getGameConstraintsForIndex(

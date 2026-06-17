@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { Game } from "@/models/database/game";
-import { ConstraintType } from "@/models/UI/gameConstraint";
+import { ConstraintType } from "@griddening/shared";
 
 describe("Game model", () => {
   const constraints = JSON.stringify([

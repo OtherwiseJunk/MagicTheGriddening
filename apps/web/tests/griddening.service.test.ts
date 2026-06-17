@@ -3,7 +3,7 @@ import { expect, describe, it } from "vitest";
 import {
   type GameConstraint,
   ConstraintType,
-} from "../src/models/UI/gameConstraint";
+} from "@griddening/shared";
 import GriddeningService from "../src/services/griddening.service";
 import { Color } from "@/constants/constraintConstants";
 

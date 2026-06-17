@@ -1,4 +1,4 @@
-import { type GameConstraint } from "@/models/UI/gameConstraint";
+import { type GameConstraint } from "@griddening/shared";
 import DataService from "@/services/data.service";
 import GriddeningService from "@/services/griddening.service";
 import CardValidationService from "@/services/card-validation.service";
