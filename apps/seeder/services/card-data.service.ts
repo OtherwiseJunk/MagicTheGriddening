@@ -63,24 +63,58 @@ function getDataDirectory(): string {
   return process.env.BULK_DATA_DIR ?? path.join(process.cwd(), "data");
 }
 
-function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
-  const groups = new Map<string, ScryfallBulkCard[]>();
+interface CardAccumulator {
+  canonical: ScryfallBulkCard;
+  rarities: Set<string>;
+  sets: Set<string>;
+  artists: Set<string>;
+}
 
-  for (const card of rawCards) {
+async function buildCardIndex(filePath: string): Promise<{ cards: LocalCard[]; sets: LocalSet[] }> {
+  const groups = new Map<string, CardAccumulator>();
+  const setMap = new Map<string, LocalSet>();
+
+  const stream = streamArray.withParserAsStream();
+  const rs = createReadStream(filePath);
+  rs.on("error", (e) => stream.destroy(e));
+  rs.pipe(stream);
+
+  for await (const item of stream) {
+    const card = (item as { key: number; value: ScryfallBulkCard }).value;
     if (!(card.games?.includes("paper") ?? false)) continue;
+
+    if (card.set && !setMap.has(card.set)) {
+      setMap.set(card.set, {
+        code: card.set,
+        name: card.set_name ?? "",
+        set_type: card.set_type ?? "",
+        released_at: card.released_at,
+      });
+    }
+
     const key = card.oracle_id ?? card.name;
-    const group = groups.get(key);
-    if (group) {
-      group.push(card);
+    const existing = groups.get(key);
+    if (existing) {
+      if (card.rarity) existing.rarities.add(card.rarity);
+      if (card.set) existing.sets.add(card.set);
+      const artist = card.artist ?? card.card_faces?.[0]?.artist;
+      if (artist) existing.artists.add(artist);
     } else {
-      groups.set(key, [card]);
+      groups.set(key, {
+        canonical: card,
+        rarities: new Set(card.rarity ? [card.rarity] : []),
+        sets: new Set(card.set ? [card.set] : []),
+        artists: new Set(
+          (card.artist ?? card.card_faces?.[0]?.artist)
+            ? [card.artist ?? card.card_faces?.[0]?.artist ?? ""]
+            : [],
+        ),
+      });
     }
   }
 
-  return Array.from(groups.values()).map((printings) => {
-    const canonical = printings[0];
+  const cards = Array.from(groups.values()).map(({ canonical, rarities, sets, artists }) => {
     const faces = canonical.card_faces ?? [];
-
     const faceColors =
       faces.length > 0 ? Array.from(new Set(faces.flatMap((f) => f.colors ?? []))) : undefined;
     const colors =
@@ -98,28 +132,18 @@ function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
     const imagePng =
       canonical.image_uris?.png ?? faces[0]?.image_uris?.png ?? "/card-not-found.png";
 
-    const rarities = Array.from(
-      new Set(printings.map((p) => p.rarity).filter((r): r is string => r !== undefined)),
-    );
-    const sets = Array.from(
-      new Set(printings.map((p) => p.set).filter((s): s is string => s !== undefined)),
-    );
-    const artists = Array.from(
-      new Set(printings.map((p) => p.artist ?? p.card_faces?.[0]?.artist ?? "").filter(Boolean)),
-    );
-
     return {
       name: canonical.name,
       faceNames: faces.map((f) => f.name ?? "").filter(Boolean),
       type_line: canonical.type_line ?? "",
       colors,
       cmc: canonical.cmc ?? 0,
-      rarities,
+      rarities: Array.from(rarities),
       oracle_text,
       power: canonical.power ?? faces[0]?.power,
       toughness: canonical.toughness ?? faces[0]?.toughness,
-      artists,
-      sets,
+      artists: Array.from(artists),
+      sets: Array.from(sets),
       set: canonical.set ?? "",
       set_name: canonical.set_name ?? "",
       set_type: canonical.set_type ?? "",
@@ -127,22 +151,8 @@ function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
       imagePng,
     };
   });
-}
 
-function buildLocalSets(rawCards: ScryfallBulkCard[]): LocalSet[] {
-  const setMap = new Map<string, LocalSet>();
-  for (const card of rawCards) {
-    if (!(card.games?.includes("paper") ?? false)) continue;
-    if (card.set && !setMap.has(card.set)) {
-      setMap.set(card.set, {
-        code: card.set,
-        name: card.set_name ?? "",
-        set_type: card.set_type ?? "",
-        released_at: card.released_at,
-      });
-    }
-  }
-  return Array.from(setMap.values());
+  return { cards, sets: Array.from(setMap.values()) };
 }
 
 type CardDataCache = { cards: LocalCard[]; sets: LocalSet[] };
@@ -205,9 +215,7 @@ export class CardDataService {
 
     try {
       await this.downloadBulkDataFile(bulkDataFile.download_uri, tempBulkPath);
-      const rawCards = await this.parseJsonArrayFromFile(tempBulkPath);
-      const cards = buildLocalCards(rawCards);
-      const sets = buildLocalSets(rawCards);
+      const { cards, sets } = await buildCardIndex(tempBulkPath);
       const indexFile: CardIndexFile = {
         generatedAt: new Date().toISOString(),
         sourceUpdatedAt: bulkDataFile.updated_at,
@@ -237,18 +245,6 @@ export class CardDataService {
       throw new Error(`Unable to find ${BULK_DATA_TYPE} in the Scryfall bulk data manifest`);
     }
     return bulkDataFile;
-  }
-
-  private async parseJsonArrayFromFile(filePath: string): Promise<ScryfallBulkCard[]> {
-    const cards: ScryfallBulkCard[] = [];
-    const stream = streamArray.withParserAsStream();
-    const rs = createReadStream(filePath);
-    rs.on("error", (e) => stream.destroy(e));
-    rs.pipe(stream);
-    for await (const item of stream) {
-      cards.push((item as { key: number; value: ScryfallBulkCard }).value);
-    }
-    return cards;
   }
 
   private async downloadBulkDataFile(downloadUri: string, destinationPath: string): Promise<void> {
