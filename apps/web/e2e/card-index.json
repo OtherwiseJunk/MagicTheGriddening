@@ -1,0 +1,120 @@
+{
+  "generatedAt": "2026-01-01T00:00:00.000Z",
+  "sourceUpdatedAt": "2026-01-01",
+  "cards": [
+    {
+      "name": "Battle Cry Goblin",
+      "faceNames": [],
+      "type_line": "Creature — Goblin Warrior",
+      "colors": ["R"],
+      "cmc": 2,
+      "rarities": ["common"],
+      "oracle_text": "When Battle Cry Goblin enters the battlefield, other creatures you control get +1/+0 until end of turn.",
+      "power": "2",
+      "toughness": "2",
+      "artists": ["Test Artist"],
+      "sets": ["mh2"],
+      "set": "mh2",
+      "set_name": "Modern Horizons 2",
+      "set_type": "draft_innovation",
+      "released_at": "2021-06-18",
+      "imagePng": "https://cards.scryfall.io/png/front/b/a/ba45f62d-5bc6-4375-9e55-97f5d9534ca8.png"
+    },
+    {
+      "name": "Goblin Guide",
+      "faceNames": [],
+      "type_line": "Creature — Goblin Scout",
+      "colors": ["R"],
+      "cmc": 1,
+      "rarities": ["rare"],
+      "oracle_text": "Haste\nWhenever Goblin Guide attacks, defending player reveals the top card of their library. If it's a land card, that player puts it into their hand.",
+      "power": "2",
+      "toughness": "2",
+      "artists": ["Test Artist"],
+      "sets": ["zen"],
+      "set": "zen",
+      "set_name": "Zendikar",
+      "set_type": "expansion",
+      "released_at": "2009-10-02",
+      "imagePng": ""
+    },
+    {
+      "name": "Goblin Grenade",
+      "faceNames": [],
+      "type_line": "Sorcery",
+      "colors": ["R"],
+      "cmc": 1,
+      "rarities": ["common"],
+      "oracle_text": "As an additional cost to cast this spell, sacrifice a Goblin.\nGoblin Grenade deals 5 damage to any target.",
+      "artists": ["Test Artist"],
+      "sets": ["m12"],
+      "set": "m12",
+      "set_name": "Magic 2012",
+      "set_type": "core",
+      "released_at": "2011-07-15",
+      "imagePng": ""
+    },
+    {
+      "name": "Goblin Lackey",
+      "faceNames": [],
+      "type_line": "Creature — Goblin",
+      "colors": ["R"],
+      "cmc": 1,
+      "rarities": ["uncommon"],
+      "oracle_text": "Whenever Goblin Lackey deals damage to a player, you may put a Goblin permanent card from your hand onto the battlefield.",
+      "power": "1",
+      "toughness": "1",
+      "artists": ["Test Artist"],
+      "sets": ["usg"],
+      "set": "usg",
+      "set_name": "Urza's Saga",
+      "set_type": "expansion",
+      "released_at": "1998-10-12",
+      "imagePng": ""
+    },
+    {
+      "name": "Goblin Matron",
+      "faceNames": [],
+      "type_line": "Creature — Goblin",
+      "colors": ["R"],
+      "cmc": 3,
+      "rarities": ["uncommon"],
+      "oracle_text": "When Goblin Matron enters the battlefield, you may search your library for a Goblin card, reveal that card, put it into your hand, then shuffle.",
+      "power": "1",
+      "toughness": "1",
+      "artists": ["Test Artist"],
+      "sets": ["usg"],
+      "set": "usg",
+      "set_name": "Urza's Saga",
+      "set_type": "expansion",
+      "released_at": "1998-10-12",
+      "imagePng": ""
+    }
+  ],
+  "sets": [
+    {
+      "code": "mh2",
+      "name": "Modern Horizons 2",
+      "set_type": "draft_innovation",
+      "released_at": "2021-06-18"
+    },
+    {
+      "code": "zen",
+      "name": "Zendikar",
+      "set_type": "expansion",
+      "released_at": "2009-10-02"
+    },
+    {
+      "code": "m12",
+      "name": "Magic 2012",
+      "set_type": "core",
+      "released_at": "2011-07-15"
+    },
+    {
+      "code": "usg",
+      "name": "Urza's Saga",
+      "set_type": "expansion",
+      "released_at": "1998-10-12"
+    }
+  ]
+}

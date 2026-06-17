@@ -3,6 +3,7 @@ import { buildLocalCards } from "@/models/local-card";
 
 const singleFaced = {
   name: "Lightning Bolt",
+  oracle_id: "aaaaaaaa-0000-0000-0000-000000000001",
   type_line: "Instant",
   colors: ["R"],
   color_identity: ["R"],
@@ -17,6 +18,7 @@ const singleFaced = {
 
 const doubleFaced = {
   name: "Delver of Secrets // Insectile Aberration",
+  oracle_id: "aaaaaaaa-0000-0000-0000-000000000002",
   type_line: "Creature — Human Wizard // Creature — Human Insect",
   color_identity: ["U"],
   cmc: 1,
@@ -48,6 +50,7 @@ const doubleFaced = {
 
 const digitalOnly = {
   name: "Digital Card",
+  oracle_id: "aaaaaaaa-0000-0000-0000-000000000003",
   type_line: "Creature",
   colors: [],
   color_identity: [],
@@ -73,10 +76,10 @@ describe("buildLocalCards", () => {
     expect(card.type_line).toBe("Instant");
     expect(card.colors).toEqual(["R"]);
     expect(card.cmc).toBe(1);
-    expect(card.rarity).toBe("common");
+    expect(card.rarities).toEqual(["common"]);
     expect(card.oracle_text).toBe("Lightning Bolt deals 3 damage to any target.");
-    expect(card.artist).toBe("Christopher Moeller");
-    expect(card.set).toBe("lea");
+    expect(card.artists).toEqual(["Christopher Moeller"]);
+    expect(card.sets).toEqual(["lea"]);
     expect(card.imagePng).toBe("https://cards.scryfall.io/png/front/e/9/e9d5aee0.png");
     expect(card.power).toBeUndefined();
     expect(card.toughness).toBeUndefined();
@@ -104,7 +107,7 @@ describe("buildLocalCards", () => {
   it("falls back to artist from card_faces[0] when top-level artist absent", () => {
     const noTopLevelArtist = { ...doubleFaced, artist: undefined };
     const [card] = buildLocalCards([noTopLevelArtist]);
-    expect(card.artist).toBe("Nils Hamm");
+    expect(card.artists).toEqual(["Nils Hamm"]);
   });
 
   it("falls back to color_identity when no colors on card or faces", () => {
@@ -114,5 +117,18 @@ describe("buildLocalCards", () => {
     };
     const [card] = buildLocalCards([noColors]);
     expect(card.colors).toEqual(["U"]);
+  });
+
+  it("deduplicates printings by oracle_id, collecting all rarities, sets, and artists", () => {
+    const reprint = {
+      ...singleFaced,
+      rarity: "uncommon",
+      set: "m11",
+      artist: "Jason Chan",
+    };
+    const [card] = buildLocalCards([singleFaced, reprint]);
+    expect(card.rarities).toEqual(expect.arrayContaining(["common", "uncommon"]));
+    expect(card.sets).toEqual(expect.arrayContaining(["lea", "m11"]));
+    expect(card.artists).toEqual(expect.arrayContaining(["Christopher Moeller", "Jason Chan"]));
   });
 });

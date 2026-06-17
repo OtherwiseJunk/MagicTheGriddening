@@ -1,10 +1,17 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { IoDocumentTextOutline } from "react-icons/io5";
 
 export default function RulesDialog(): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    if (!localStorage.getItem("griddening.hasSeenRules")) {
+      localStorage.setItem("griddening.hasSeenRules", "true");
+      dialogRef.current?.showModal();
+    }
+  }, []);
 
   return (
     <>
@@ -42,12 +49,12 @@ export default function RulesDialog(): React.JSX.Element {
               auto-complete, then select a card.
             </li>
             <li>
-              You start with <strong className="text-text-gold">9 life points</strong>. Every guess
-              — right or wrong — costs 1 life point.
+              You start with <strong className="text-text-gold">9 life points</strong>. Every guess,
+              right or wrong, costs 1 life point.
             </li>
             <li>If your guess is correct, the card&apos;s image is revealed in that square.</li>
             <li>
-              Each card can only be used <strong className="text-text-gold">once</strong> per grid —
+              Each card can only be used <strong className="text-text-gold">once</strong> per grid,
               no duplicates.
             </li>
             <li>

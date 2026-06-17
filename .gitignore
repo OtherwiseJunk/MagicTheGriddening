@@ -35,3 +35,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# storybook
+storybook-static
+
+# local card data (downloaded at runtime, can be large)
+apps/web/data/

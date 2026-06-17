@@ -6,26 +6,18 @@ import GameBoard from "./gameBoard";
 import HeaderSquare from "./headerSquare";
 import SummarySquare from "./summarySquare";
 import { type GameConstraint } from "@/models/UI/gameConstraint";
+import { usePlayer } from "@/contexts/playerContext";
 
 export default function Game(): React.JSX.Element {
+  const { userId } = usePlayer();
   const [gameState, setGameState] = useState<GameState>(new GameState([], -1, []));
-  const [userId, setUserId] = useState<string>("");
-  async function getGameState(userId: string): Promise<void> {
-    const res = await fetch(`/api/gameState/${userId}`, { cache: "no-store" });
+
+  async function getGameState(id: string): Promise<void> {
+    const res = await fetch(`/api/gameState/${id}`, { cache: "no-store" });
     if (!res.ok) return;
     const data: GameState = await res.json();
     setGameState(new GameState(data.gameConstraints, data.lifePoints, data.correctGuesses));
   }
-
-  useEffect(() => {
-    let storedUserId: string | null = localStorage.getItem("griddening.userId");
-    if (storedUserId == null) {
-      storedUserId = crypto.randomUUID();
-      localStorage.setItem("griddening.userId", storedUserId);
-    }
-
-    setUserId(storedUserId);
-  }, []);
 
   useEffect(() => {
     if (userId !== "") {
@@ -57,6 +49,7 @@ export default function Game(): React.JSX.Element {
           <SummarySquare
             hidden={summaryHidden}
             correctGuesses={gameState.correctGuesses}
+            gameId={gameState.gameId}
           ></SummarySquare>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 
 // Tests the duplicate card rejection feature against puzzle 1 (dateString 20260101)
 
-const inputDialog = (page: Page) => page.locator("dialog:has(input[type='text'])");
+const inputDialog = (page: Page) => page.locator("dialog:has(input[placeholder='Search for a card...'])");
 const autocompleteItem = (page: Page) => inputDialog(page).locator("ul li");
 const exactAutocompleteItem = (page: Page, cardName: string) =>
   autocompleteItem(page).filter({ hasText: cardName });
@@ -12,6 +12,7 @@ test.describe("Duplicate card rejection", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.removeItem("griddening.userId");
+      localStorage.setItem("griddening.hasSeenRules", "true");
     });
   });
 

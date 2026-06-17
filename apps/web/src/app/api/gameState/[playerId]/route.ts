@@ -40,7 +40,7 @@ export async function GET(
 async function buildGameStateForUser(playerId: string): Promise<GameState> {
   const [gameConstraints, gameId] = await getGameData();
   const [lifePoints, correctGuesses] = await getUserDataForGame(playerId, gameId);
-  const gameState = new GameState(gameConstraints, lifePoints, correctGuesses);
+  const gameState = new GameState(gameConstraints, lifePoints, correctGuesses, gameId);
   return gameState;
 }
 

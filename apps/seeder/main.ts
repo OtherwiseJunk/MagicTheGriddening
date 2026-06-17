@@ -36,7 +36,7 @@ async function start() {
 
   if (offset < 0) {
     console.log("No puzzle for today — generating today + buffer.");
-    await generatePuzzles(puzzleBuffer, 0);
+    await generatePuzzles(puzzleBuffer, -1);
     return;
   }
 

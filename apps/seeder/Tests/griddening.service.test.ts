@@ -30,12 +30,16 @@ function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
     type_line: "Creature — Human Warrior",
     colors: ["W"],
     cmc: 2,
-    rarity: "common",
+    rarities: ["common"],
     oracle_text: "",
     power: "2",
     toughness: "2",
-    artist: "Test Artist",
+    artists: ["Test Artist"],
+    sets: ["m21"],
     set: "m21",
+    set_name: "",
+    set_type: "",
+    released_at: undefined,
     imagePng: "",
     ...overrides,
   };
@@ -121,8 +125,8 @@ describe("Griddening Service", () => {
         released_at: "2014-09-26",
       };
       const constraint = griddeningService.buildSetConstraintFromLocalSet(set);
-      expect(constraint.localFilter!(makeCard({ set: "ktk" }))).toBe(true);
-      expect(constraint.localFilter!(makeCard({ set: "m21" }))).toBe(false);
+      expect(constraint.localFilter!(makeCard({ sets: ["ktk"] }))).toBe(true);
+      expect(constraint.localFilter!(makeCard({ sets: ["m21"] }))).toBe(false);
     });
   });
 
@@ -140,7 +144,7 @@ describe("Griddening Service", () => {
 
     test("returns true when at least 10 local cards match both constraints", () => {
       const cards: LocalCard[] = Array.from({ length: 10 }, (_, i) =>
-        makeCard({ colors: ["B"], rarity: "mythic", name: `Card ${i}` }),
+        makeCard({ colors: ["B"], rarities: ["mythic"], name: `Card ${i}` }),
       );
       const service = new GriddeningService(cards, []);
       expect(service.intersectionHasMinimumHits(black, mythic)).toBe(true);
@@ -148,7 +152,7 @@ describe("Griddening Service", () => {
 
     test("returns false when fewer than 10 local cards match both constraints", () => {
       const cards: LocalCard[] = Array.from({ length: 9 }, (_, i) =>
-        makeCard({ colors: ["B"], rarity: "mythic", name: `Card ${i}` }),
+        makeCard({ colors: ["B"], rarities: ["mythic"], name: `Card ${i}` }),
       );
       const service = new GriddeningService(cards, []);
       expect(service.intersectionHasMinimumHits(black, mythic)).toBe(false);
@@ -164,7 +168,7 @@ describe("Griddening Service", () => {
 
     test("respects MINIMUM_HITS environment variable", () => {
       const cards: LocalCard[] = Array.from({ length: 7 }, (_, i) =>
-        makeCard({ colors: ["B"], rarity: "mythic", name: `Card ${i}` }),
+        makeCard({ colors: ["B"], rarities: ["mythic"], name: `Card ${i}` }),
       );
       process.env.MINIMUM_HITS = "7";
       const service = new GriddeningService(cards, []);
@@ -174,7 +178,7 @@ describe("Griddening Service", () => {
 
     test("returns false when MINIMUM_HITS not reached", () => {
       const cards: LocalCard[] = Array.from({ length: 6 }, (_, i) =>
-        makeCard({ colors: ["B"], rarity: "mythic", name: `Card ${i}` }),
+        makeCard({ colors: ["B"], rarities: ["mythic"], name: `Card ${i}` }),
       );
       process.env.MINIMUM_HITS = "7";
       const service = new GriddeningService(cards, []);

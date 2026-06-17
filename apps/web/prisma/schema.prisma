@@ -13,7 +13,7 @@ datasource db {
 
 model Game {
  id Int @id @default(autoincrement())
- dateString String
+ dateString String @unique
  constraintsJSON String
  playerRecords PlayerRecord[]
  correctGuesses CorrectGuesses[]
@@ -37,4 +37,11 @@ model CorrectGuesses{
   correctGuess String
   squareIndex Int
   imageSource String
+  createdAt DateTime @default(now())
+}
+
+model Player {
+  uuid      String   @id
+  shortCode String   @unique
+  createdAt DateTime @default(now())
 }

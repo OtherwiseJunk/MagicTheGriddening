@@ -10,12 +10,12 @@ function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
     type_line: "Creature — Human Wizard",
     colors: ["R"],
     cmc: 3,
-    rarity: "rare",
+    rarities: ["rare"],
     oracle_text: "Flying\nHaste",
     power: "2",
     toughness: "2",
-    artist: "Rebecca Guay",
-    set: "m20",
+    artists: ["Rebecca Guay"],
+    sets: ["m20"],
     imagePng: "/card.png",
     ...overrides,
   };
@@ -61,38 +61,45 @@ describe("matchesConstraint", () => {
 
   describe("Rarity", () => {
     it("matches mythic with r:m", () => {
-      const card = makeCard({ rarity: "mythic" });
+      const card = makeCard({ rarities: ["mythic"] });
       expect(
         matchesConstraint(card, new GameConstraint("Mythic", ConstraintType.Rarity, "r:m")),
       ).toBe(true);
     });
 
     it("matches rare with r:r", () => {
-      const card = makeCard({ rarity: "rare" });
+      const card = makeCard({ rarities: ["rare"] });
       expect(
         matchesConstraint(card, new GameConstraint("Rare", ConstraintType.Rarity, "r:r")),
       ).toBe(true);
     });
 
     it("matches uncommon with r:u", () => {
-      const card = makeCard({ rarity: "uncommon" });
+      const card = makeCard({ rarities: ["uncommon"] });
       expect(
         matchesConstraint(card, new GameConstraint("Uncommon", ConstraintType.Rarity, "r:u")),
       ).toBe(true);
     });
 
     it("matches common with r:c", () => {
-      const card = makeCard({ rarity: "common" });
+      const card = makeCard({ rarities: ["common"] });
       expect(
         matchesConstraint(card, new GameConstraint("Common", ConstraintType.Rarity, "r:c")),
       ).toBe(true);
     });
 
     it("does not match wrong rarity", () => {
-      const card = makeCard({ rarity: "uncommon" });
+      const card = makeCard({ rarities: ["uncommon"] });
       expect(
         matchesConstraint(card, new GameConstraint("Rare", ConstraintType.Rarity, "r:r")),
       ).toBe(false);
+    });
+
+    it("matches when any printing rarity satisfies constraint", () => {
+      const card = makeCard({ rarities: ["uncommon", "common"] });
+      expect(
+        matchesConstraint(card, new GameConstraint("Common", ConstraintType.Rarity, "r:c")),
+      ).toBe(true);
     });
   });
 
@@ -217,17 +224,24 @@ describe("matchesConstraint", () => {
 
   describe("Artist", () => {
     it("matches partial surname (case-insensitive)", () => {
-      const card = makeCard({ artist: "Rebecca Guay" });
+      const card = makeCard({ artists: ["Rebecca Guay"] });
       expect(
         matchesConstraint(card, new GameConstraint("Rebecca Guay", ConstraintType.Artist, "a:Guay")),
       ).toBe(true);
     });
 
     it("does not match unrelated artist", () => {
-      const card = makeCard({ artist: "John Avon" });
+      const card = makeCard({ artists: ["John Avon"] });
       expect(
         matchesConstraint(card, new GameConstraint("Rebecca Guay", ConstraintType.Artist, "a:Guay")),
       ).toBe(false);
+    });
+
+    it("matches when any printing artist satisfies constraint", () => {
+      const card = makeCard({ artists: ["John Avon", "Rebecca Guay"] });
+      expect(
+        matchesConstraint(card, new GameConstraint("Rebecca Guay", ConstraintType.Artist, "a:Guay")),
+      ).toBe(true);
     });
   });
 
@@ -324,17 +338,24 @@ describe("matchesConstraint", () => {
 
   describe("Set", () => {
     it("matches card from the correct set using set: prefix", () => {
-      const card = makeCard({ set: "lrw" });
+      const card = makeCard({ sets: ["lrw"] });
       expect(
         matchesConstraint(card, new GameConstraint("Lorwyn", ConstraintType.Set, "set:lrw")),
       ).toBe(true);
     });
 
     it("does not match card from a different set", () => {
-      const card = makeCard({ set: "m20" });
+      const card = makeCard({ sets: ["m20"] });
       expect(
         matchesConstraint(card, new GameConstraint("Lorwyn", ConstraintType.Set, "set:lrw")),
       ).toBe(false);
+    });
+
+    it("matches when any printing set satisfies constraint", () => {
+      const card = makeCard({ sets: ["m20", "lrw"] });
+      expect(
+        matchesConstraint(card, new GameConstraint("Lorwyn", ConstraintType.Set, "set:lrw")),
+      ).toBe(true);
     });
   });
 });

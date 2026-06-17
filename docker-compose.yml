@@ -8,6 +8,8 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: griddening
+    ports:
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -19,7 +21,7 @@ services:
     build:
       context: ./apps/seeder
       dockerfile: dockerfile
-    entrypoint: ["npx", "prisma", "db", "push"]
+    entrypoint: ["npx", "tsx", "migrate.ts"]
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/griddening
     depends_on:
@@ -70,23 +72,7 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  bsky-bot:
-    container_name: mtg-bsky-bot
-    build:
-      context: ./apps/bsky-bot
-      dockerfile: Dockerfile
-    environment:
-      NODE_ENV: production
-      BLUESKY_USERNAME: ${BLUESKY_USERNAME}
-      BLUESKY_PASSWORD: ${BLUESKY_PASSWORD}
-      TZ: ${TZ:-America/New_York}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
-      web:
-        condition: service_healthy
+#
 
 volumes:
   postgres-volume:

@@ -1,7 +1,9 @@
 // src/services/bulk-data.service.ts
-import { mkdir, readFile, rename, rm, writeFile } from "fs/promises";
+import { createReadStream } from "node:fs";
+import { mkdir, open, readFile, rename, rm, writeFile } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
+import { streamArray } from "stream-json/streamers/stream-array.js";
 import { type CardIndexFile, type LocalCard, buildLocalCards } from "@/models/local-card";
 
 interface ScryfallBulkDataManifest {
@@ -14,7 +16,7 @@ interface ScryfallBulkDataFile {
   download_uri: string;
 }
 
-const BULK_DATA_TYPE = "oracle_cards";
+const BULK_DATA_TYPE = "default_cards";
 const DEFAULT_REFRESH_INTERVAL_HOURS = 24;
 const SCRYFALL_API_URL = "https://api.scryfall.com/bulk-data";
 const SCRYFALL_USER_AGENT =
@@ -23,7 +25,7 @@ const DATA_DIRECTORY =
   process.env.BULK_DATA_DIR ??
   process.env.AUTOCOMPLETE_DATA_DIR ??
   path.join(process.cwd(), "data");
-const RAW_BULK_FILE_PATH = path.join(DATA_DIRECTORY, "scryfall-oracle-cards.json");
+const RAW_BULK_FILE_PATH = path.join(DATA_DIRECTORY, "scryfall-default-cards.json");
 const INDEX_FILE_PATH = path.join(DATA_DIRECTORY, "card-index.json");
 const REFRESH_INTERVAL_MS =
   Number(
@@ -113,7 +115,7 @@ class BulkDataService {
     const tempIndexFilePath = path.join(DATA_DIRECTORY, `index-${randomUUID()}.json`);
     try {
       await this.downloadBulkDataFile(bulkDataFile.download_uri, tempBulkFilePath);
-      const rawCards = JSON.parse(await readFile(tempBulkFilePath, "utf8")) as unknown[];
+      const rawCards = await this.parseJsonArrayFromFile(tempBulkFilePath);
       const nextIndex: CardIndexFile = {
         generatedAt: new Date().toISOString(),
         sourceUpdatedAt: bulkDataFile.updated_at,
@@ -157,6 +159,18 @@ class BulkDataService {
     return bulkDataFile;
   }
 
+  private async parseJsonArrayFromFile(filePath: string): Promise<unknown[]> {
+    const items: unknown[] = [];
+    const stream = streamArray.withParserAsStream();
+    const rs = createReadStream(filePath);
+    rs.on("error", (e) => stream.destroy(e));
+    rs.pipe(stream);
+    for await (const item of stream) {
+      items.push((item as { key: number; value: unknown }).value);
+    }
+    return items;
+  }
+
   private async downloadBulkDataFile(downloadUri: string, destinationPath: string): Promise<void> {
     const response = await fetch(downloadUri, {
       headers: { Accept: "application/json;q=0.9,*/*;q=0.8", "User-Agent": SCRYFALL_USER_AGENT },
@@ -165,7 +179,14 @@ class BulkDataService {
     if (!response.ok || response.body === null) {
       throw new Error(`Unable to download Scryfall bulk data file (${response.status})`);
     }
-    await writeFile(destinationPath, new Uint8Array(await response.arrayBuffer()));
+    const fh = await open(destinationPath, "w");
+    try {
+      for await (const chunk of response.body as unknown as AsyncIterable<Uint8Array>) {
+        await fh.write(chunk);
+      }
+    } finally {
+      await fh.close();
+    }
   }
 }
 

@@ -3,10 +3,13 @@
 import React from "react";
 import Image from "next/image";
 import { PiButterfly } from "react-icons/pi";
+import { IoStatsChartOutline } from "react-icons/io5";
 import { IconContext } from "react-icons";
 import RulesDialog from "./rulesDialog";
+import { usePlayer } from "@/contexts/playerContext";
 
 function Header(): React.JSX.Element {
+  const { openStats } = usePlayer();
   return (
     <nav className="paper-texture bg-parchment-brown border-b-2 border-gold-leaf shadow-header-bar mb-10 px-4 py-3">
       <div className="max-w-7xl mx-auto flex items-center">
@@ -18,6 +21,14 @@ function Header(): React.JSX.Element {
           Magic: The Griddening
         </h1>
         <RulesDialog />
+        <button
+          onClick={openStats}
+          className="flex flex-col items-center text-text-parchment/80 hover:text-gold-leaf transition-colors mr-4"
+          title="Stats"
+        >
+          <IoStatsChartOutline size="2em" />
+          <p className="text-sm font-[family-name:var(--font-body)]">Stats</p>
+        </button>
         <div
           className="flex flex-col items-center text-text-parchment/80 hover:text-gold-leaf transition-colors"
           title="Follow us on Bluesky!"

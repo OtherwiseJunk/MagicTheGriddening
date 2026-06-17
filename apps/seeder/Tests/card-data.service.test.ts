@@ -6,6 +6,7 @@ const mockWriteFile = vi.fn();
 const mockMkdir = vi.fn();
 const mockRename = vi.fn();
 const mockRm = vi.fn();
+const mockOpen = vi.fn();
 
 vi.mock("fs/promises", () => ({
   readFile: (...args: unknown[]) => mockReadFile(...args),
@@ -13,6 +14,17 @@ vi.mock("fs/promises", () => ({
   mkdir: (...args: unknown[]) => mockMkdir(...args),
   rename: (...args: unknown[]) => mockRename(...args),
   rm: (...args: unknown[]) => mockRm(...args),
+  open: (...args: unknown[]) => mockOpen(...args),
+}));
+
+vi.mock("node:fs", () => ({
+  createReadStream: vi.fn(),
+}));
+
+vi.mock("stream-json/streamers/stream-array.js", () => ({
+  streamArray: {
+    withParserAsStream: vi.fn(),
+  },
 }));
 
 const mockFetch = vi.fn();
@@ -25,12 +37,16 @@ function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
     type_line: "Creature — Human",
     colors: ["W"],
     cmc: 2,
-    rarity: "common",
+    rarities: ["common"],
     oracle_text: "",
     power: "2",
     toughness: "2",
-    artist: "Test Artist",
+    artists: ["Test Artist"],
+    sets: ["m21"],
     set: "m21",
+    set_name: "Core Set 2021",
+    set_type: "core",
+    released_at: "2020-07-03",
     imagePng: "",
     ...overrides,
   };
@@ -64,8 +80,12 @@ describe("CardDataService", () => {
     });
 
     it("downloads and saves cards when card-index.json does not exist", async () => {
+      const { createReadStream } = await import("node:fs");
+      const { streamArray } = await import("stream-json/streamers/stream-array.js");
+
       const bulkCard = {
         name: "Llanowar Elves",
+        oracle_id: "abc123",
         type_line: "Creature — Elf Druid",
         colors: ["G"],
         cmc: 1,
@@ -75,21 +95,21 @@ describe("CardDataService", () => {
         toughness: "1",
         artist: "Some Artist",
         set: "m21",
+        set_name: "Core Set 2021",
+        set_type: "core",
+        released_at: "2020-07-03",
         image_uris: { png: "https://example.com/llanowar.png" },
         games: ["paper"],
       };
 
-      // First readFile call (index file) fails; second (temp bulk file) returns raw cards
-      mockReadFile
-        .mockRejectedValueOnce(new Error("ENOENT: no such file"))
-        .mockResolvedValueOnce(JSON.stringify([bulkCard]));
+      mockReadFile.mockRejectedValueOnce(new Error("ENOENT: no such file"));
 
       const manifestResponse = {
         ok: true,
         json: vi.fn().mockResolvedValue({
           data: [
             {
-              type: "oracle_cards",
+              type: "default_cards",
               updated_at: "2024-01-01",
               download_uri: "https://example.com/cards.json",
             },
@@ -98,9 +118,33 @@ describe("CardDataService", () => {
       };
       const bulkResponse = {
         ok: true,
-        arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
+        body: {
+          [Symbol.asyncIterator]: async function* () {
+            yield new Uint8Array([]);
+          },
+        },
       };
       mockFetch.mockResolvedValueOnce(manifestResponse).mockResolvedValueOnce(bulkResponse);
+
+      const mockFileHandle = {
+        write: vi.fn().mockResolvedValue({ bytesWritten: 0 }),
+        close: vi.fn().mockResolvedValue(undefined),
+      };
+      mockOpen.mockResolvedValue(mockFileHandle);
+
+      const mockStream = {
+        on: vi.fn().mockReturnThis(),
+        pipe: vi.fn(),
+        destroy: vi.fn(),
+        [Symbol.asyncIterator]: async function* () {
+          yield { key: 0, value: bulkCard };
+        },
+      };
+      vi.mocked(streamArray.withParserAsStream).mockReturnValue(mockStream as never);
+      vi.mocked(createReadStream as ReturnType<typeof vi.fn>).mockReturnValue({
+        on: vi.fn().mockReturnThis(),
+        pipe: vi.fn(),
+      } as never);
 
       const { CardDataService } = await import("../services/card-data.service.js");
       const service = new CardDataService();
@@ -132,7 +176,35 @@ describe("CardDataService", () => {
   });
 
   describe("getSets", () => {
-    it("returns unique sets extracted from the card index", async () => {
+    it("returns sets stored in the index file when present", async () => {
+      const indexFile = {
+        generatedAt: new Date().toISOString(),
+        sourceUpdatedAt: "2024-01-01",
+        cards: [makeCard()],
+        sets: [
+          {
+            code: "ktk",
+            name: "Khans of Tarkir",
+            set_type: "expansion",
+            released_at: "2014-09-26",
+          },
+          { code: "m21", name: "Core Set 2021", set_type: "core", released_at: "2020-07-03" },
+        ],
+      };
+      mockReadFile.mockResolvedValue(JSON.stringify(indexFile));
+
+      const { CardDataService } = await import("../services/card-data.service.js");
+      const service = new CardDataService();
+      const sets = await service.getSets();
+
+      expect(sets).toHaveLength(2);
+      expect(sets.find((s) => s.code === "ktk")).toMatchObject({
+        code: "ktk",
+        name: "Khans of Tarkir",
+      });
+    });
+
+    it("falls back to building sets from card.set when index has no sets field", async () => {
       const indexFile = {
         generatedAt: new Date().toISOString(),
         sourceUpdatedAt: "2024-01-01",

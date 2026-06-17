@@ -18,15 +18,14 @@ export class DataService {
     return this.dateStringToDate(latestGame.dateString);
   }
 
-  async createNewGame(
-    dateString: string,
-    validGameConstraints: GameConstraint[],
-  ): Promise<Game | undefined> {
+  async createNewGame(dateString: string, validGameConstraints: GameConstraint[]): Promise<Game> {
+    const existing = await this.prisma.game.findUnique({ where: { dateString } });
+    if (existing) {
+      console.log(`[createNewGame] ${dateString} already exists — skipping`);
+      return existing;
+    }
     return await this.prisma.game.create({
-      data: {
-        dateString,
-        constraintsJSON: JSON.stringify(validGameConstraints),
-      },
+      data: { dateString, constraintsJSON: JSON.stringify(validGameConstraints) },
     });
   }
 

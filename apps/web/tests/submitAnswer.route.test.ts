@@ -24,12 +24,12 @@ function makeMockCard(overrides: Partial<LocalCard> = {}): LocalCard {
     type_line: "Instant",
     colors: ["R"],
     cmc: 1,
-    rarity: "common",
+    rarities: ["common"],
     oracle_text: "Lightning Bolt deals 3 damage to any target.",
     power: undefined,
     toughness: undefined,
-    artist: "Christopher Moeller",
-    set: "lea",
+    artists: ["Christopher Moeller"],
+    sets: ["lea"],
     imagePng: "http://example.com/bolt.png",
     ...overrides,
   };
@@ -49,6 +49,7 @@ vi.mock("@/services/card-validation.service", () => ({
   default: {
     findCard: vi.fn(),
     matchesAllConstraints: vi.fn(),
+    matchesConstraint: vi.fn(),
   },
 }));
 
