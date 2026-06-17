@@ -54,7 +54,7 @@ interface CardIndexFile {
   sets?: LocalSet[];
 }
 
-const BULK_DATA_TYPE = "default_cards";
+const BULK_DATA_TYPE = "all_cards";
 const SCRYFALL_API_URL = "https://api.scryfall.com/bulk-data";
 const SCRYFALL_USER_AGENT =
   "magic-the-griddening/0.1 (+https://github.com/otherwisejunk/MagicTheGriddening)";

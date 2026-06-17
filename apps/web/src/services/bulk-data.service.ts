@@ -4,7 +4,7 @@ import { mkdir, open, readFile, rename, rm, writeFile } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 import { streamArray } from "stream-json/streamers/stream-array.js";
-import { type CardIndexFile, type LocalCard, buildLocalCards } from "@/models/local-card";
+import { type CardIndexFile, type LocalCard } from "@/models/local-card";
 
 interface ScryfallBulkDataManifest {
   data: ScryfallBulkDataFile[];
@@ -16,7 +16,45 @@ interface ScryfallBulkDataFile {
   download_uri: string;
 }
 
-const BULK_DATA_TYPE = "default_cards";
+interface ScryfallBulkFace {
+  name?: string;
+  colors?: string[];
+  oracle_text?: string;
+  artist?: string;
+  power?: string;
+  toughness?: string;
+  image_uris?: { png: string };
+}
+
+interface ScryfallBulkCard {
+  name: string;
+  oracle_id?: string;
+  type_line?: string;
+  colors?: string[];
+  color_identity?: string[];
+  cmc?: number;
+  rarity?: string;
+  oracle_text?: string;
+  artist?: string;
+  power?: string;
+  toughness?: string;
+  set?: string;
+  set_name?: string;
+  set_type?: string;
+  released_at?: string;
+  image_uris?: { png: string };
+  card_faces?: ScryfallBulkFace[];
+  games?: string[];
+}
+
+interface CardAccumulator {
+  canonical: ScryfallBulkCard;
+  rarities: Set<string>;
+  sets: Set<string>;
+  artists: Set<string>;
+}
+
+const BULK_DATA_TYPE = "all_cards";
 const DEFAULT_REFRESH_INTERVAL_HOURS = 24;
 const SCRYFALL_API_URL = "https://api.scryfall.com/bulk-data";
 const SCRYFALL_USER_AGENT =
@@ -25,7 +63,6 @@ const DATA_DIRECTORY =
   process.env.BULK_DATA_DIR ??
   process.env.AUTOCOMPLETE_DATA_DIR ??
   path.join(process.cwd(), "data");
-const RAW_BULK_FILE_PATH = path.join(DATA_DIRECTORY, "scryfall-default-cards.json");
 const INDEX_FILE_PATH = path.join(DATA_DIRECTORY, "card-index.json");
 const REFRESH_INTERVAL_MS =
   Number(
@@ -115,20 +152,93 @@ class BulkDataService {
     const tempIndexFilePath = path.join(DATA_DIRECTORY, `index-${randomUUID()}.json`);
     try {
       await this.downloadBulkDataFile(bulkDataFile.download_uri, tempBulkFilePath);
-      const rawCards = await this.parseJsonArrayFromFile(tempBulkFilePath);
+      const cards = await this.buildCardIndex(tempBulkFilePath);
       const nextIndex: CardIndexFile = {
         generatedAt: new Date().toISOString(),
         sourceUpdatedAt: bulkDataFile.updated_at,
-        cards: buildLocalCards(rawCards as Parameters<typeof buildLocalCards>[0]),
+        cards,
       };
       await writeFile(tempIndexFilePath, JSON.stringify(nextIndex), "utf8");
-      await rename(tempBulkFilePath, RAW_BULK_FILE_PATH);
       await rename(tempIndexFilePath, INDEX_FILE_PATH);
       this.setIndex(nextIndex);
+      console.log(`Refreshed card index: ${cards.length} cards`);
     } finally {
       await rm(tempBulkFilePath, { force: true }).catch(() => undefined);
       await rm(tempIndexFilePath, { force: true }).catch(() => undefined);
     }
+  }
+
+  private async buildCardIndex(filePath: string): Promise<LocalCard[]> {
+    const groups = new Map<string, CardAccumulator>();
+
+    const stream = streamArray.withParserAsStream();
+    const rs = createReadStream(filePath);
+    rs.on("error", (e) => stream.destroy(e));
+    rs.pipe(stream);
+
+    for await (const item of stream) {
+      const card = (item as { key: number; value: ScryfallBulkCard }).value;
+      if (!(card.games?.includes("paper") ?? false)) continue;
+
+      const key = card.oracle_id ?? card.name;
+      const existing = groups.get(key);
+      if (existing) {
+        if (card.rarity) existing.rarities.add(card.rarity);
+        if (card.set) existing.sets.add(card.set);
+        const artist = card.artist ?? card.card_faces?.[0]?.artist;
+        if (artist) existing.artists.add(artist);
+      } else {
+        groups.set(key, {
+          canonical: card,
+          rarities: new Set(card.rarity ? [card.rarity] : []),
+          sets: new Set(card.set ? [card.set] : []),
+          artists: new Set(
+            (card.artist ?? card.card_faces?.[0]?.artist)
+              ? [card.artist ?? card.card_faces?.[0]?.artist ?? ""]
+              : [],
+          ),
+        });
+      }
+    }
+
+    return Array.from(groups.values()).map(({ canonical, rarities, sets, artists }) => {
+      const faces = canonical.card_faces ?? [];
+      const faceColors =
+        faces.length > 0 ? Array.from(new Set(faces.flatMap((f) => f.colors ?? []))) : undefined;
+      const colors =
+        canonical.colors !== undefined
+          ? canonical.colors
+          : faceColors !== undefined && faceColors.length > 0
+            ? faceColors
+            : (canonical.color_identity ?? []);
+      const oracle_text =
+        canonical.oracle_text ??
+        faces
+          .map((f) => f.oracle_text ?? "")
+          .filter(Boolean)
+          .join("\n");
+      const imagePng =
+        canonical.image_uris?.png ?? faces[0]?.image_uris?.png ?? "/card-not-found.png";
+
+      return {
+        name: canonical.name,
+        faceNames: faces.map((f) => f.name ?? "").filter(Boolean),
+        type_line: canonical.type_line ?? "",
+        colors,
+        cmc: canonical.cmc ?? 0,
+        rarities: Array.from(rarities),
+        oracle_text,
+        power: canonical.power ?? faces[0]?.power,
+        toughness: canonical.toughness ?? faces[0]?.toughness,
+        artists: Array.from(artists),
+        sets: Array.from(sets),
+        set: canonical.set ?? "",
+        set_name: canonical.set_name ?? "",
+        set_type: canonical.set_type ?? "",
+        released_at: canonical.released_at,
+        imagePng,
+      };
+    });
   }
 
   private setIndex(index: CardIndexFile): void {
@@ -157,18 +267,6 @@ class BulkDataService {
       throw new Error(`Unable to find ${BULK_DATA_TYPE} in the Scryfall bulk data manifest`);
     }
     return bulkDataFile;
-  }
-
-  private async parseJsonArrayFromFile(filePath: string): Promise<unknown[]> {
-    const items: unknown[] = [];
-    const stream = streamArray.withParserAsStream();
-    const rs = createReadStream(filePath);
-    rs.on("error", (e) => stream.destroy(e));
-    rs.pipe(stream);
-    for await (const item of stream) {
-      items.push((item as { key: number; value: unknown }).value);
-    }
-    return items;
   }
 
   private async downloadBulkDataFile(downloadUri: string, destinationPath: string): Promise<void> {

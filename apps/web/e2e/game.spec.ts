@@ -123,6 +123,25 @@ test.describe("Game board", () => {
     await expect(page.locator(".input-square img").first()).toBeVisible({ timeout: 15000 });
   });
 
+  test("artist constraint correctly rejects a card with a non-matching artist", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("text=Life Points: 9")).toBeVisible();
+
+    // squareIndex 2 = Test Artist (top) + Goblin (side)
+    // Goblin Ringleader is a Goblin (passes type) but by "Other Artist" (fails artist constraint)
+    await page.locator(".input-square.live-input").nth(2).click();
+    const input = inputDialog(page).locator("input[type='text']");
+
+    await input.fill("Goblin Ringleader");
+    await expect(exactAutocompleteItem(page, "Goblin Ringleader")).toBeVisible({ timeout: 15000 });
+    await exactAutocompleteItem(page, "Goblin Ringleader").click();
+
+    await inputDialog(page).locator("button", { hasText: "Submit" }).click();
+
+    await expect(input).not.toBeVisible({ timeout: 15000 });
+    await expect(page.locator("text=Life Points: 8")).toBeVisible({ timeout: 15000 });
+  });
+
   test("artist constraint correctly accepts a valid card", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("text=Life Points: 9")).toBeVisible();
