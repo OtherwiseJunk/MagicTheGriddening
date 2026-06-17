@@ -1,27 +1,13 @@
 import puppeteer from "puppeteer";
 import { BskyAgent } from "@atproto/api";
+import { ConstraintType } from "@griddening/shared/types";
+
+export { ConstraintType };
 
 const url = "https://magicthegridden.ing";
 const gameStateUrl = "https://magicthegridden.ing/api/gameState/screenshotPoster";
 
 export const BOT_LABEL = "!automated";
-
-export enum ConstraintType {
-  Rarity,
-  Type,
-  ManaValue,
-  Color,
-  Set,
-  Power,
-  Toughness,
-  Artist,
-  CreatureRulesText,
-  CreatureRaceTypes,
-  CreatureJobTypes,
-  ArtifactSubtypes,
-  EnchantmentSubtypes,
-  __LENGTH,
-}
 
 export function getPuppeteerOptionsByEnv() {
   return process.env.NODE_ENV !== "production"
@@ -37,6 +23,9 @@ export async function getDailyPuzzleScreenshot(): Promise<Uint8Array> {
   const browser = await puppeteer.launch(getPuppeteerOptionsByEnv());
   try {
     const page = await browser.newPage();
+    await page.evaluateOnNewDocument(() => {
+      localStorage.setItem("griddening.hasSeenRules", "true");
+    });
     await page.goto(url, { waitUntil: "networkidle0" });
     await page.setViewport({ width: 800, height: 1000 });
     await page.addStyleTag({ content: "body { color: white; }" });

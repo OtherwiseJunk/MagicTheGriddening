@@ -21,6 +21,7 @@ jest.mock("puppeteer", () => ({
 import puppeteer from "puppeteer";
 
 const mockPage = {
+  evaluateOnNewDocument: jest.fn().mockResolvedValue(undefined),
   goto: jest.fn().mockResolvedValue(undefined),
   setViewport: jest.fn().mockResolvedValue(undefined),
   addStyleTag: jest.fn().mockResolvedValue(undefined),
