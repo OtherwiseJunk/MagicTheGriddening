@@ -18,8 +18,8 @@ services:
   migrate:
     container_name: mtg-migrate
     build:
-      context: ./apps/seeder
-      dockerfile: dockerfile
+      context: .
+      dockerfile: apps/seeder/dockerfile
     entrypoint: ["npx", "tsx", "migrate.ts"]
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/griddening
@@ -31,8 +31,8 @@ services:
   web:
     container_name: mtg-web
     build:
-      context: ./apps/web
-      dockerfile: dockerfile
+      context: .
+      dockerfile: apps/web/dockerfile
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/griddening
@@ -58,8 +58,8 @@ services:
   seeder:
     container_name: mtg-seeder
     build:
-      context: ./apps/seeder
-      dockerfile: dockerfile
+      context: .
+      dockerfile: apps/seeder/dockerfile
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/griddening
       TZ: ${TZ:-America/New_York}
@@ -78,8 +78,8 @@ services:
   bsky-bot:
     container_name: mtg-bsky-bot
     build:
-      context: ./apps/bsky-bot
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/bsky-bot/Dockerfile
     environment:
       NODE_ENV: production
       BLUESKY_USERNAME: ${BLUESKY_USERNAME}
