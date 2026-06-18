@@ -34,7 +34,7 @@ export function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
   for (const card of deferred) {
     const oracleId = nameToOracleId.get(card.name);
     if (!oracleId) continue;
-    groups.get(oracleId)!.push(card);
+    groups.get(oracleId)?.push(card);
   }
 
   return Array.from(groups.entries()).map(([oracleId, printings]) => {
