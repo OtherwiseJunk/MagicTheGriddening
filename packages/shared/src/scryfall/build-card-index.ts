@@ -16,7 +16,14 @@ export async function buildCardIndex(
   // localizedNames) per oracle_id. English entries build the canonical accumulator; non-English
   // entries contribute only their name to localizedNames. Null-oracle_id entries are deferred
   // by card name and merged into their canonical counterpart after the stream completes.
+  let pass1Count = 0;
+  console.log("[buildCardIndex] Starting pass 1...");
   await streamCards(filePath, (card) => {
+    if (++pass1Count % 100_000 === 0) {
+      const { heapUsed, heapTotal } = process.memoryUsage();
+      const mb = (n: number) => `${Math.round(n / 1024 / 1024)}MB`;
+      console.log(`[buildCardIndex] pass1: ${pass1Count} cards, heap ${mb(heapUsed)}/${mb(heapTotal)}, oracle_ids: ${accumulated.size}`);
+    }
     const isEnglish = (card.lang ?? "en") === "en";
 
     if (!isEnglish) {
@@ -89,18 +96,27 @@ export async function buildCardIndex(
     names.forEach((n) => canonical.localizedNames.add(n));
   });
 
+  console.log(`[buildCardIndex] Pass 1 complete: ${pass1Count} cards, ${accumulated.size} oracle IDs, ${deferredLocalizedNames.size} deferred localized`);
+
   // Between passes: release Maps that are no longer needed so GC can reclaim them.
   deferredByName.clear();
   deferredLocalizedNames.clear();
   nameToOracleId.clear();
   (globalThis as { gc?: () => void }).gc?.();
+  console.log("[buildCardIndex] Starting pass 2...");
 
   // Pass 2: stream again, using the first English occurrence of each oracle_id to build
   // the full LocalCard. Drain accumulated as we go to free memory incrementally.
   const cards: LocalCard[] = [];
   const processed = new Set<string>();
+  let pass2Count = 0;
 
   await streamCards(filePath, (card) => {
+    if (++pass2Count % 100_000 === 0) {
+      const { heapUsed, heapTotal } = process.memoryUsage();
+      const mb = (n: number) => `${Math.round(n / 1024 / 1024)}MB`;
+      console.log(`[buildCardIndex] pass2: ${pass2Count} cards, heap ${mb(heapUsed)}/${mb(heapTotal)}, built: ${cards.length}`);
+    }
     if (!card.oracle_id || (card.lang ?? "en") !== "en") return;
     if (processed.has(card.oracle_id)) return;
     processed.add(card.oracle_id);
@@ -146,5 +162,6 @@ export async function buildCardIndex(
     });
   });
 
+  console.log(`[buildCardIndex] Pass 2 complete: ${cards.length} unique cards built`);
   return { cards, sets: Array.from(setMap.values()) };
 }
