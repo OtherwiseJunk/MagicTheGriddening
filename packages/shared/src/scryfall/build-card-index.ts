@@ -89,8 +89,10 @@ export async function buildCardIndex(
     names.forEach((n) => canonical.localizedNames.add(n));
   });
 
-  // Between passes: attempt to free stream-json's internal buffer if GC is exposed
-  // (e.g. when the process is started with --expose-gc). Safe no-op otherwise.
+  // Between passes: release Maps that are no longer needed so GC can reclaim them.
+  deferredByName.clear();
+  deferredLocalizedNames.clear();
+  nameToOracleId.clear();
   (globalThis as { gc?: () => void }).gc?.();
 
   // Pass 2: stream again, using the first English occurrence of each oracle_id to build
