@@ -20,7 +20,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.23.9",
-    "tsx": "^4.19.4",
     "@babel/preset-env": "^7.23.9",
     "@babel/preset-typescript": "^7.23.3",
     "@types/jest": "^29.5.12",
@@ -29,6 +28,7 @@
     "oxfmt": "^0.44.0",
     "oxlint": "^1.59.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
     "typescript": "^5.3.3"
   }
 }
