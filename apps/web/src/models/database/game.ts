@@ -1,4 +1,4 @@
-import { type GameConstraint } from "../UI/gameConstraint";
+import { type GameConstraint } from "@griddening/shared/types";
 
 export class Game {
   constructor(

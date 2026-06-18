@@ -1,5 +1,5 @@
 import { type CorrectGuess } from "./correctGuess";
-import { type GameConstraint } from "./gameConstraint";
+import { type GameConstraint } from "@griddening/shared/types";
 
 export class GameState {
   constructor(

@@ -31,5 +31,5 @@
     "e2e/**/*.ts",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", ".next", "test-results", "griddening-bsky-bot"]
+  "exclude": ["node_modules", ".next", "test-results", "griddening-bsky-bot", "**/*.stories.ts", "**/*.stories.tsx"]
 }
