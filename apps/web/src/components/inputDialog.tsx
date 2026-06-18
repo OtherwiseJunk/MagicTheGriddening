@@ -1,4 +1,4 @@
-import { type GameConstraint } from "@griddening/shared";
+import { type GameConstraint } from "@griddening/shared/types";
 import { type CorrectGuess } from "@/models/UI/correctGuess";
 import { GameState } from "@/models/UI/gameState";
 import GriddeningService from "@/services/griddening.service";

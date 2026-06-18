@@ -1,5 +1,5 @@
 import { type LocalCard } from "@/models/local-card";
-import { type GameConstraint, ConstraintType } from "@griddening/shared";
+import { type GameConstraint, ConstraintType } from "@griddening/shared/types";
 import BulkDataService from "@/services/bulk-data.service";
 
 const RARITY_MAP: Record<string, string> = {

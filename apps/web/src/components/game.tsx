@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import GameBoard from "./gameBoard";
 import HeaderSquare from "./headerSquare";
 import SummarySquare from "./summarySquare";
-import { type GameConstraint } from "@griddening/shared";
+import { type GameConstraint } from "@griddening/shared/types";
 import { usePlayer } from "@/contexts/playerContext";
 
 export default function Game(): React.JSX.Element {

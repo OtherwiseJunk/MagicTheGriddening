@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
 import path from "path";
 import { matchesConstraint } from "@/services/card-validation.service";
-import { GameConstraint, ConstraintType } from "@griddening/shared";
+import { GameConstraint, ConstraintType } from "@griddening/shared/types";
 import { type LocalCard, type CardIndexFile } from "@/models/local-card";
 
 function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {

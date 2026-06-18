@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "@/app/api/gameState/[playerId]/route";
 import { Game } from "@/models/database/game";
-import { ConstraintType } from "@griddening/shared";
+import { ConstraintType } from "@griddening/shared/types";
 import { CorrectGuess } from "@/models/UI/correctGuess";
 
 const mockConstraints = JSON.stringify([

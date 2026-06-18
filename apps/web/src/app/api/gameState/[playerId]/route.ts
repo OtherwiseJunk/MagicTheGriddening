@@ -1,5 +1,5 @@
 import { GameState } from "@/models/UI/gameState";
-import { type GameConstraint } from "@griddening/shared";
+import { type GameConstraint } from "@griddening/shared/types";
 import DataService from "@/services/data.service";
 import { type CorrectGuess } from "@/models/UI/correctGuess";
 

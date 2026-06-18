@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "@/app/api/submitAnswer/route";
 import { Game } from "@/models/database/game";
-import { ConstraintType } from "@griddening/shared";
+import { ConstraintType } from "@griddening/shared/types";
 import { type LocalCard } from "@/models/local-card";
 
 const mockConstraints = JSON.stringify([

@@ -1,4 +1,4 @@
-import { GameConstraint, ConstraintType } from "@griddening/shared";
+import { GameConstraint, ConstraintType } from "@griddening/shared/types";
 
 const cardTypes = [
   // Card Types

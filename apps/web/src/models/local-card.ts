@@ -1,6 +1,6 @@
 import { type ScryfallBulkCard, type ScryfallBulkFace, type LocalCard } from "@griddening/shared";
 
-export type { LocalCard, CardIndexFile } from "@griddening/shared";
+export type { LocalCard, CardIndexFile } from "@griddening/shared/types";
 
 export function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
   const groups = new Map<string, ScryfallBulkCard[]>();
