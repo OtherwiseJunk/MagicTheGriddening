@@ -48,9 +48,9 @@ jobs:
         with:
           node-version: 24.x
           cache: npm
-          cache-dependency-path: apps/seeder/package-lock.json
+          cache-dependency-path: package-lock.json
       - name: Install Deps
-        run: npm ci
+        run: npm install --workspace=apps/seeder
       - name: Lint
         run: npm run lint
       - name: Format Check
@@ -63,7 +63,8 @@ jobs:
         id: build
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4 # v6
         with:
-          context: apps/seeder
+          context: .
+          file: apps/seeder/dockerfile
           push: false
           tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
           load: true

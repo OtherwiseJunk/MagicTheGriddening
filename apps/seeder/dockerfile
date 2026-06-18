@@ -1,13 +1,21 @@
 FROM node:24-slim
 
-# Copy local code to the container image
 WORKDIR /usr/src/app
-COPY . .
 
-# Install dependencies
+# Copy workspace manifests so npm understands the workspace structure
+COPY package.json package-lock.json ./
+COPY packages/shared/package.json ./packages/shared/
+COPY apps/seeder/package.json ./apps/seeder/
+COPY apps/web/package.json ./apps/web/
+COPY apps/bsky-bot/package.json ./apps/bsky-bot/
+
 RUN apt-get update && apt-get install -y openssl
-RUN npm i
+RUN npm install --workspace=apps/seeder
+
+COPY packages/shared ./packages/shared
+COPY apps/seeder ./apps/seeder
+
+WORKDIR /usr/src/app/apps/seeder
 RUN npx prisma generate
 
-# Run the app on entry
-ENTRYPOINT [ "npx", "tsx", "main.ts" ]
+ENTRYPOINT ["npx", "tsx", "main.ts"]

@@ -1,18 +1,15 @@
-FROM node:24-slim AS builder
+FROM node:24-slim
 
 WORKDIR /home/app
 
-COPY package*.json ./
-RUN npm ci
+# Copy workspace manifests so npm understands the workspace structure
+COPY package.json package-lock.json ./
+COPY packages/shared/package.json ./packages/shared/
+COPY apps/bsky-bot/package.json ./apps/bsky-bot/
+COPY apps/seeder/package.json ./apps/seeder/
+COPY apps/web/package.json ./apps/web/
 
-COPY ./ ./
-RUN npm run build
-
-FROM node:24-slim AS runner
-
-ENV NODE_ENV=production
-
-WORKDIR /home/app
+RUN npm install --workspace=apps/bsky-bot
 
 RUN apt-get update \
     && apt-get install -y wget gnupg \
@@ -27,14 +24,14 @@ RUN apt-get update \
        --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-COPY package*.json ./
-RUN npm ci --omit=dev
-
-COPY --from=builder /home/app/dist ./dist
+COPY packages/shared ./packages/shared
+COPY apps/bsky-bot ./apps/bsky-bot
 
 RUN groupadd -r app && useradd -rm -g app -G audio,video app \
     && chown -R app:app /home/app
 
 USER app
 
-ENTRYPOINT ["node", "dist/index.js"]
+WORKDIR /home/app/apps/bsky-bot
+
+ENTRYPOINT ["npx", "tsx", "index.ts"]

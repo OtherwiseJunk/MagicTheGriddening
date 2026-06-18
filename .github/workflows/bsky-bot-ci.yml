@@ -5,10 +5,12 @@ on:
     branches: ["main"]
     paths:
       - "apps/bsky-bot/**"
+      - "packages/**"
   pull_request:
     branches: ["main"]
     paths:
       - "apps/bsky-bot/**"
+      - "packages/**"
 
 defaults:
   run:
@@ -24,9 +26,10 @@ jobs:
         with:
           node-version: 24.x
           cache: npm
-          cache-dependency-path: apps/bsky-bot/package-lock.json
+          cache-dependency-path: package-lock.json
       - name: Install dependencies
-        run: npm ci
+        run: npm install --workspace=apps/bsky-bot
+        working-directory: .
       - name: Lint
         run: npm run lint
       - name: Format check
@@ -34,7 +37,8 @@ jobs:
       - name: Test
         run: npm test
       - name: Build Docker image
-        run: docker build -t bsky-bot-test .
+        run: docker build -t bsky-bot-test -f apps/bsky-bot/Dockerfile .
+        working-directory: .
       - name: Docker startup smoke test
         run: |
           docker run -d --name bsky-smoke \
@@ -48,3 +52,4 @@ jobs:
             echo "Container exited with code 127 (command not found - likely missing runtime dependency)"
             exit 1
           fi
+        working-directory: .
