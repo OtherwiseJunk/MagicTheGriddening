@@ -3,6 +3,16 @@ import { type LocalSet } from "../types/local-set";
 import { type CardAccumulator } from "./types";
 import { streamCards } from "./stream-cards";
 
+// stream-json emits every JSON string value as a V8 SlicedString over the multi-KB parse
+// buffer it was decoded from (`s += buffer.slice(...)` in its parser). Retaining one such
+// slice pins the entire backing buffer, so holding tens of thousands of names / oracle_ids /
+// oracle_text across the stream leaks gigabytes even though their logical content is a few MB.
+// A Buffer round-trip forces a standalone, flat copy. V8 only slices strings >= 13 chars, so
+// short codes (set, rarity, colors, dates) are already standalone and left untouched.
+function flat(s: string): string {
+  return s.length < 13 ? s : Buffer.from(s, "utf8").toString("utf8");
+}
+
 export async function buildCardIndex(
   filePath: string,
 ): Promise<{ cards: LocalCard[]; sets: LocalSet[] }> {
@@ -28,9 +38,10 @@ export async function buildCardIndex(
 
     if (!isEnglish) {
       if (card.oracle_id) {
+        const localizedName = flat(card.name);
         const existing = deferredLocalizedNames.get(card.oracle_id);
-        if (existing) existing.add(card.name);
-        else deferredLocalizedNames.set(card.oracle_id, new Set([card.name]));
+        if (existing) existing.add(localizedName);
+        else deferredLocalizedNames.set(flat(card.oracle_id), new Set([localizedName]));
       }
       return;
     }
@@ -38,23 +49,25 @@ export async function buildCardIndex(
     if (card.set && !setMap.has(card.set)) {
       setMap.set(card.set, {
         code: card.set,
-        name: card.set_name ?? "",
-        set_type: card.set_type ?? "",
+        name: flat(card.set_name ?? ""),
+        set_type: flat(card.set_type ?? ""),
         released_at: card.released_at,
       });
     }
 
-    const artist = card.artist ?? card.card_faces?.[0]?.artist;
+    const rawArtist = card.artist ?? card.card_faces?.[0]?.artist;
+    const artist = rawArtist ? flat(rawArtist) : rawArtist;
 
     if (card.oracle_id) {
-      if (!nameToOracleId.has(card.name)) nameToOracleId.set(card.name, card.oracle_id);
+      const name = flat(card.name);
+      if (!nameToOracleId.has(name)) nameToOracleId.set(name, flat(card.oracle_id));
       const existing = accumulated.get(card.oracle_id);
       if (existing) {
         if (card.rarity) existing.rarities.add(card.rarity);
         if (card.set) existing.sets.add(card.set);
         if (artist) existing.artists.add(artist);
       } else {
-        accumulated.set(card.oracle_id, {
+        accumulated.set(flat(card.oracle_id), {
           rarities: new Set(card.rarity ? [card.rarity] : []),
           sets: new Set(card.set ? [card.set] : []),
           artists: new Set(artist ? [artist] : []),
@@ -62,13 +75,14 @@ export async function buildCardIndex(
         });
       }
     } else {
-      const existing = deferredByName.get(card.name);
+      const name = flat(card.name);
+      const existing = deferredByName.get(name);
       if (existing) {
         if (card.rarity) existing.rarities.add(card.rarity);
         if (card.set) existing.sets.add(card.set);
         if (artist) existing.artists.add(artist);
       } else {
-        deferredByName.set(card.name, {
+        deferredByName.set(name, {
           rarities: new Set(card.rarity ? [card.rarity] : []),
           sets: new Set(card.set ? [card.set] : []),
           artists: new Set(artist ? [artist] : []),
@@ -119,7 +133,7 @@ export async function buildCardIndex(
     }
     if (!card.oracle_id || (card.lang ?? "en") !== "en") return;
     if (processed.has(card.oracle_id)) return;
-    processed.add(card.oracle_id);
+    processed.add(flat(card.oracle_id));
 
     const acc = accumulated.get(card.oracle_id)!;
     accumulated.delete(card.oracle_id);
@@ -141,24 +155,27 @@ export async function buildCardIndex(
         .join("\n");
     const imagePng = card.image_uris?.png ?? faces[0]?.image_uris?.png ?? "/card-not-found.png";
 
+    // These strings are retained for the lifetime of the returned array, so flatten the long
+    // ones to drop their backing parse buffers (see flat() above). acc.* sets and short codes
+    // (set, colors, dates) are already flat / standalone.
     cards.push({
-      name: card.name,
-      faceNames: faces.map((f) => f.name ?? "").filter(Boolean),
-      type_line: card.type_line ?? "",
+      name: flat(card.name),
+      faceNames: faces.map((f) => flat(f.name ?? "")).filter(Boolean),
+      type_line: flat(card.type_line ?? ""),
       colors,
       cmc: card.cmc ?? 0,
       rarities: Array.from(acc.rarities),
-      oracle_text,
+      oracle_text: flat(oracle_text),
       power: card.power ?? faces[0]?.power,
       toughness: card.toughness ?? faces[0]?.toughness,
       artists: Array.from(acc.artists),
       localizedNames: Array.from(acc.localizedNames),
       sets: Array.from(acc.sets),
       set: card.set ?? "",
-      set_name: card.set_name ?? "",
-      set_type: card.set_type ?? "",
+      set_name: flat(card.set_name ?? ""),
+      set_type: flat(card.set_type ?? ""),
       released_at: card.released_at,
-      imagePng,
+      imagePng: flat(imagePng),
     });
   });
 
