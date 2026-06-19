@@ -2,6 +2,23 @@ import { type ScryfallBulkCard, type ScryfallBulkFace, type LocalCard } from "@g
 
 export type { LocalCard, CardIndexFile } from "@griddening/shared/types";
 
+// Build the name -> card lookup. Real card names are mapped first so a standalone card always
+// wins; face names only fill keys that aren't already a real card name. This prevents a card
+// whose face name collides with a real card (e.g. a leftover art/placeholder printing, or a
+// split half) from clobbering the real card on guess lookup.
+export function buildNameIndex(cards: LocalCard[]): Map<string, LocalCard> {
+  const map = new Map<string, LocalCard>();
+  for (const card of cards) {
+    if (!map.has(card.name)) map.set(card.name, card);
+  }
+  for (const card of cards) {
+    for (const faceName of card.faceNames) {
+      if (!map.has(faceName)) map.set(faceName, card);
+    }
+  }
+  return map;
+}
+
 export function buildLocalCards(rawCards: ScryfallBulkCard[]): LocalCard[] {
   const groups = new Map<string, ScryfallBulkCard[]>();
   const nameToOracleId = new Map<string, string>();

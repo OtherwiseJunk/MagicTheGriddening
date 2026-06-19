@@ -9,6 +9,7 @@ import {
   downloadBulkDataFile,
   BULK_DATA_TYPE,
 } from "@griddening/shared";
+import { buildNameIndex } from "@/models/local-card";
 
 const DEFAULT_REFRESH_INTERVAL_HOURS = 24;
 const DATA_DIRECTORY =
@@ -124,13 +125,7 @@ class BulkDataService {
   private setIndex(index: CardIndexFile): void {
     this.sourceUpdatedAt = index.sourceUpdatedAt;
     this.cards = index.cards;
-    this.cardMap = new Map();
-    for (const card of index.cards) {
-      this.cardMap.set(card.name, card);
-      for (const faceName of card.faceNames) {
-        this.cardMap.set(faceName, card);
-      }
-    }
+    this.cardMap = buildNameIndex(index.cards);
   }
 }
 

@@ -12,6 +12,7 @@ export interface ScryfallBulkCard {
   name: string;
   oracle_id?: string;
   lang?: string;
+  layout?: string;
   type_line?: string;
   colors?: string[];
   color_identity?: string[];

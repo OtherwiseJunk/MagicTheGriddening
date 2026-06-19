@@ -154,6 +154,32 @@ describe("buildCardIndex behavior matrix", () => {
     expect(cards[0].colors).toEqual(["G"]);
   });
 
+  it("excludes non-gameplay layouts (tokens, art series, emblems, schemes, planes, vanguards, dfts)", async () => {
+    const { cards } = await indexOf([
+      card({ oracle_id: "real", name: "Real Card", layout: "normal" }),
+      card({ oracle_id: "art", name: "Real Card // Real Card", layout: "art_series", type_line: "Card // Card" }),
+      card({ oracle_id: "tok", name: "Goblin", layout: "token" }),
+      card({ oracle_id: "dft", name: "Zombie // Zombie", layout: "double_faced_token" }),
+      card({ oracle_id: "emb", name: "Chandra Emblem", layout: "emblem" }),
+      card({ oracle_id: "sch", name: "Scheme A", layout: "scheme" }),
+      card({ oracle_id: "pln", name: "Naya", layout: "planar" }),
+      card({ oracle_id: "van", name: "Avatar X", layout: "vanguard" }),
+    ]);
+    expect(cards.map((c) => c.name)).toEqual(["Real Card"]);
+  });
+
+  it("keeps real gameplay layouts (normal, split, transform, reversible_card)", async () => {
+    const { cards } = await indexOf([
+      card({ oracle_id: "n", name: "Normal Card", layout: "normal" }),
+      card({ oracle_id: "s", name: "Bind // Liberate", layout: "split" }),
+      card({ oracle_id: "t", name: "Delver // Aberration", layout: "transform" }),
+      card({ oracle_id: "rv", name: "Rev A // Rev B", layout: "reversible_card" }),
+    ]);
+    expect(cards.map((c) => c.name).sort()).toEqual(
+      ["Bind // Liberate", "Delver // Aberration", "Normal Card", "Rev A // Rev B"].sort(),
+    );
+  });
+
   it("excludes non-paper cards entirely", async () => {
     const { cards } = await indexOf([
       card({ oracle_id: "paper", name: "Paper Card" }),

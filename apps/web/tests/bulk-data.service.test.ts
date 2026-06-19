@@ -1,5 +1,28 @@
 import { describe, it, expect } from "vitest";
-import { buildLocalCards } from "@/models/local-card";
+import { buildLocalCards, buildNameIndex, type LocalCard } from "@/models/local-card";
+
+function makeLocalCard(overrides: Partial<LocalCard> = {}): LocalCard {
+  return {
+    name: "Card",
+    faceNames: [],
+    type_line: "Sorcery",
+    colors: [],
+    cmc: 0,
+    rarities: ["common"],
+    oracle_text: "",
+    power: undefined,
+    toughness: undefined,
+    artists: [],
+    localizedNames: [],
+    sets: [],
+    set: "xxx",
+    set_name: "X",
+    set_type: "expansion",
+    released_at: "2020-01-01",
+    imagePng: "x.png",
+    ...overrides,
+  };
+}
 
 const singleFaced = {
   name: "Lightning Bolt",
@@ -143,5 +166,35 @@ describe("buildLocalCards", () => {
     expect(cards[0].artists).toContain("Mark Poole");
     expect(cards[0].artists).toContain("Okubo");
     expect(cards[0].sets).toContain("sld");
+  });
+});
+
+describe("buildNameIndex", () => {
+  it("resolves a standalone card name to that card, not a colliding faceName", () => {
+    // A real card and an art-series card that happens to share the name via its faces.
+    const real = makeLocalCard({ name: "Morningtide's Light", faceNames: [], colors: ["W"] });
+    const collidingFace = makeLocalCard({
+      name: "Morningtide's Light // Morningtide's Light",
+      faceNames: ["Morningtide's Light", "Morningtide's Light"],
+      colors: [],
+    });
+    // Order where the colliding faceName entry comes last (would clobber under naive mapping).
+    const index = buildNameIndex([real, collidingFace]);
+    expect(index.get("Morningtide's Light")).toBe(real);
+  });
+
+  it("does not let a faceName overwrite a real card name regardless of order", () => {
+    const real = makeLocalCard({ name: "Fire", faceNames: [], colors: ["R"] });
+    const split = makeLocalCard({ name: "Fire // Ice", faceNames: ["Fire", "Ice"] });
+    expect(buildNameIndex([split, real]).get("Fire")).toBe(real);
+    expect(buildNameIndex([real, split]).get("Fire")).toBe(real);
+  });
+
+  it("still resolves face names that don't collide with a standalone card", () => {
+    const split = makeLocalCard({ name: "Bind // Liberate", faceNames: ["Bind", "Liberate"] });
+    const index = buildNameIndex([split]);
+    expect(index.get("Bind")).toBe(split);
+    expect(index.get("Liberate")).toBe(split);
+    expect(index.get("Bind // Liberate")).toBe(split);
   });
 });

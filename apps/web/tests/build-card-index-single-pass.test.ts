@@ -2,9 +2,11 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { writeFile, rm, mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { buildCardIndex } from "@griddening/shared";
 
 // Count createReadStream invocations by wrapping the real node:fs export. buildCardIndex
 // reads the bulk file via streamCards -> createReadStream, so call count == number of passes.
+// vi.mock is hoisted above the imports, so the static buildCardIndex import sees the wrapper.
 const h = vi.hoisted(() => ({ reads: 0 }));
 vi.mock("node:fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:fs")>();
@@ -16,8 +18,6 @@ vi.mock("node:fs", async (importOriginal) => {
     },
   };
 });
-
-const { buildCardIndex } = await import("@griddening/shared");
 
 const tmpFiles: string[] = [];
 afterEach(async () => {

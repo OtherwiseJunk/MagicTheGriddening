@@ -17,6 +17,20 @@ function flat(s: string): string {
   return s.length < 13 ? s : Buffer.from(s, "utf8").toString("utf8");
 }
 
+// Scryfall layouts that aren't real, guessable gameplay cards: tokens, emblems, art cards,
+// Planechase planes, Archenemy schemes, vanguard avatars. They carry games:["paper"] so the
+// paper filter alone lets them through, where they pollute artist/type pools during grid
+// generation and clobber real card names on lookup. Excluded at ingest for both apps.
+const NON_GAMEPLAY_LAYOUTS = new Set([
+  "art_series",
+  "token",
+  "double_faced_token",
+  "emblem",
+  "scheme",
+  "planar",
+  "vanguard",
+]);
+
 // Accumulated per oracle_id: the canonical card (static fields from its first English printing)
 // plus the mutable sets unioned across every printing/language.
 interface CardEntry {
@@ -102,6 +116,8 @@ export async function buildCardIndex(
         `[buildCardIndex] streamed ${count} cards, heap ${mb(heapUsed)}/${mb(heapTotal)}, oracle_ids: ${byOracle.size}`,
       );
     }
+
+    if (card.layout && NON_GAMEPLAY_LAYOUTS.has(card.layout)) return;
 
     if ((card.lang ?? "en") !== "en") {
       if (card.oracle_id) {
