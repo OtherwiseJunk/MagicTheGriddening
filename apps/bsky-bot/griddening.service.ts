@@ -85,9 +85,7 @@ export function getPostText() {
 
 https://magicthegridden.ing
 
-#magicthegriddening
-#mtgsky
-#gridgame`;
+#magicthegriddening #mtg #mtgsky #gridgame`;
 }
 
 export async function repostDailyPuzzle(

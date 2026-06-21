@@ -31,7 +31,8 @@ Score: ${correctGuesses.length}/9
 
 ${resultsGrid}
 
-Play at: https://magicthegridden.ing/`;
+Play at: https://magicthegridden.ing/
+#mtg #mtgsky #magicthegriddening #gridgame`;
 
   return summaryText;
 }
