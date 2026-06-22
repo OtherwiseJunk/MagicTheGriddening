@@ -41,3 +41,4 @@ storybook-static
 
 # local card data (downloaded at runtime, can be large)
 apps/web/data/
+local-data/*
