@@ -6,6 +6,7 @@ on:
     paths:
       - "apps/seeder/**"
       - "packages/**"
+      - ".github/workflows/seeder-docker.yml"
 
 env:
   REGISTRY: ghcr.io
