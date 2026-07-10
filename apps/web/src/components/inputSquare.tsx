@@ -1,4 +1,5 @@
 import { type CorrectGuess } from "@/models/UI/correctGuess";
+import { toDisplayCardImage } from "@/lib/cardImage";
 import Image from "next/image";
 import React from "react";
 
@@ -38,9 +39,10 @@ export default function InputSquare(props: InputSquareProps): React.JSX.Element 
         <Image
           className="h-full card-revealed"
           alt={props.correctGuess.cardName}
-          src={props.correctGuess.imageUrl}
+          src={toDisplayCardImage(props.correctGuess.imageUrl)}
           width={488}
           height={680}
+          unoptimized
         />
       </div>
     );

@@ -71,6 +71,15 @@ export function makeTypeFilter(typeName: string): (card: LocalCard) => boolean {
   return (card) => card.type_line.includes(typeName);
 }
 
+// Basic lands (e.g. Forest, Snow-Covered Island) are excluded from the Land
+// constraint: they'd otherwise be trivial fillers for any Land square. Both the
+// seeder (via localFilter, which underpins the 10-card guarantee) and the web
+// validation (via scryfallQuery `t:Land -t:Basic`) must agree, or a card accepted
+// during grid generation could be rejected at guess time.
+function makeNonBasicLandFilter(): (card: LocalCard) => boolean {
+  return (card) => card.type_line.includes("Land") && !card.type_line.includes("Basic");
+}
+
 export function makeArtistFilter(keyword: string): (card: LocalCard) => boolean {
   const lower = keyword.toLowerCase();
   return (card) => card.artists.some((a) => a.toLowerCase().includes(lower));
@@ -82,6 +91,11 @@ export function makeOracleFilter(keyword: string): (card: LocalCard) => boolean 
 }
 
 export const cardTypeConstraints: GameConstraint[] = cardTypes.map((cardType) => {
+  if (cardType === "Land") {
+    const constraint = new GameConstraint(cardType, ConstraintType.Type, "t:Land -t:Basic");
+    constraint.localFilter = makeNonBasicLandFilter();
+    return constraint;
+  }
   const constraint = new GameConstraint(cardType, ConstraintType.Type, `t:${cardType}`);
   constraint.localFilter = makeTypeFilter(cardType);
   return constraint;

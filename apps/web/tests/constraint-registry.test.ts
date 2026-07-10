@@ -4,6 +4,29 @@ import {
   findConstraintByName,
   ConstraintType,
 } from "@griddening/shared";
+import { type LocalCard } from "@griddening/shared/types";
+
+function landCard(type_line: string): LocalCard {
+  return {
+    name: type_line,
+    faceNames: [],
+    type_line,
+    colors: [],
+    cmc: 0,
+    rarities: ["common"],
+    oracle_text: "",
+    power: undefined,
+    toughness: undefined,
+    artists: ["Test Artist"],
+    localizedNames: [],
+    sets: ["test"],
+    set: "test",
+    set_name: "Test",
+    set_type: "core",
+    released_at: "2020-01-01",
+    imagePng: "/card.png",
+  };
+}
 
 describe("constraint registry", () => {
   it("resolves a known constraint name to its type and query", () => {
@@ -49,5 +72,24 @@ describe("constraint registry", () => {
       if (type === ConstraintType.Set) continue;
       expect(present.has(type)).toBe(true);
     }
+  });
+
+  describe("Land constraint excludes basic lands", () => {
+    const land = findConstraintByName("Land");
+
+    it("uses a query that negates basics so the web validation excludes them", () => {
+      expect(land).toBeDefined();
+      expect(land!.scryfallQuery).toBe("t:Land -t:Basic");
+    });
+
+    it("localFilter (used by the seeder) accepts non-basic lands", () => {
+      expect(land!.localFilter!(landCard("Land"))).toBe(true);
+      expect(land!.localFilter!(landCard("Legendary Land"))).toBe(true);
+    });
+
+    it("localFilter (used by the seeder) rejects basic and snow basic lands", () => {
+      expect(land!.localFilter!(landCard("Basic Land — Forest"))).toBe(false);
+      expect(land!.localFilter!(landCard("Basic Snow Land — Island"))).toBe(false);
+    });
   });
 });

@@ -150,8 +150,11 @@ describe("card type constraint local filters", () => {
     expect(legendary.localFilter!(makeCard({ type_line: "Creature — Dragon" }))).toBe(false);
   });
 
-  it("land matches Land type", () => {
-    expect(land.localFilter!(makeCard({ type_line: "Basic Land — Forest" }))).toBe(true);
+  it("land matches non-basic lands but excludes basics", () => {
+    expect(land.localFilter!(makeCard({ type_line: "Land" }))).toBe(true);
+    expect(land.localFilter!(makeCard({ type_line: "Legendary Land" }))).toBe(true);
+    expect(land.localFilter!(makeCard({ type_line: "Basic Land — Forest" }))).toBe(false);
+    expect(land.localFilter!(makeCard({ type_line: "Basic Snow Land — Island" }))).toBe(false);
     expect(land.localFilter!(makeCard({ type_line: "Creature" }))).toBe(false);
   });
 

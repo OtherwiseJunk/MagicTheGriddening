@@ -65,6 +65,21 @@ export default function RulesDialog(): React.JSX.Element {
               <strong className="text-text-gold">Archmage</strong> with a perfect score.
             </li>
           </ol>
+          <h3 className="text-text-gold text-lg font-semibold mt-4 mb-2">Good to Know</h3>
+          <ul className="list-disc list-inside text-text-parchment/80 font-[family-name:var(--font-body)] text-xs md:text-sm space-y-2">
+            <li>
+              Cards are matched by the creature types{" "}
+              <strong className="text-text-gold">printed</strong> on them.{" "}
+              <strong className="text-text-gold">Changelings</strong> (and other &ldquo;is every
+              creature type&rdquo; effects) are <strong className="text-text-gold">not</strong>{" "}
+              treated as every creature type &mdash; only their printed types count.
+            </li>
+            <li>
+              <strong className="text-text-gold">Basic lands</strong> (Forest, Island, etc.) are{" "}
+              <strong className="text-text-gold">not</strong> accepted as answers for Land
+              constraints.
+            </li>
+          </ul>
           <p className="text-text-parchment/60 font-[family-name:var(--font-body)] text-xs md:text-sm mt-4 italic">
             Every intersection on the grid is guaranteed to have at least 10 valid cards.
           </p>
