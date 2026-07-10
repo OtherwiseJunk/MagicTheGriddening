@@ -17,6 +17,7 @@ services:
 
   migrate:
     container_name: mtg-migrate
+    image: ghcr.io/otherwisejunk/grid-the-seedening:latest
     build:
       context: .
       dockerfile: apps/seeder/dockerfile
@@ -30,6 +31,7 @@ services:
 
   web:
     container_name: mtg-web
+    image: ghcr.io/otherwisejunk/magicthegriddening:latest
     build:
       context: .
       dockerfile: apps/web/dockerfile
@@ -57,6 +59,7 @@ services:
 
   seeder:
     container_name: mtg-seeder
+    image: ghcr.io/otherwisejunk/grid-the-seedening:latest
     build:
       context: .
       dockerfile: apps/seeder/dockerfile
@@ -77,6 +80,7 @@ services:
 
   bsky-bot:
     container_name: mtg-bsky-bot
+    image: ghcr.io/otherwisejunk/griddening-bsky-bot:latest
     build:
       context: .
       dockerfile: apps/bsky-bot/Dockerfile
