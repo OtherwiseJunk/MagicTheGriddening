@@ -51,16 +51,23 @@ const toughnessCompatibleRaceTypes = [
 
 export const powerCompatibleRaceConstraints: GameConstraint[] = powerCompatibleRaceTypes.map(
   (cardType) => {
-    const constraint = new GameConstraint(cardType, ConstraintType.CreatureRaceTypes, `t:${cardType}`);
+    const constraint = new GameConstraint(
+      cardType,
+      ConstraintType.CreatureRaceTypes,
+      `t:${cardType}`,
+    );
     constraint.localFilter = makeTypeFilter(cardType);
     return constraint;
   },
 );
 
-export const toughnessCompatibleRaceConstraints: GameConstraint[] = toughnessCompatibleRaceTypes.map(
-  (cardType) => {
-    const constraint = new GameConstraint(cardType, ConstraintType.CreatureRaceTypes, `t:${cardType}`);
+export const toughnessCompatibleRaceConstraints: GameConstraint[] =
+  toughnessCompatibleRaceTypes.map((cardType) => {
+    const constraint = new GameConstraint(
+      cardType,
+      ConstraintType.CreatureRaceTypes,
+      `t:${cardType}`,
+    );
     constraint.localFilter = makeTypeFilter(cardType);
     return constraint;
-  },
-);
+  });

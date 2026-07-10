@@ -50,6 +50,7 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - name: Install Deps
+        working-directory: ${{ github.workspace }}
         run: npm install --workspace=apps/seeder
       - name: Lint
         run: npm run lint

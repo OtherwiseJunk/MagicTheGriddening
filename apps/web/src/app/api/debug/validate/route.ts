@@ -50,11 +50,7 @@ export async function POST(request: Request): Promise<Response> {
     if (typeof cardName !== "string" || cardName.trim() === "") {
       return jsonResponse({ error: "cardName must be a non-empty string" }, 400);
     }
-    if (
-      !Array.isArray(names) ||
-      names.length !== 2 ||
-      !names.every((n) => typeof n === "string")
-    ) {
+    if (!Array.isArray(names) || names.length !== 2 || !names.every((n) => typeof n === "string")) {
       return jsonResponse(
         { error: "constraints must be an array of exactly two constraint names" },
         400,
