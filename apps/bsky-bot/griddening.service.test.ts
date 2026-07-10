@@ -133,8 +133,7 @@ describe("GriddeningService", () => {
 
 https://magicthegridden.ing
 
-#MagicTheGathering
-#MagicTheGriddening`);
+#magicthegriddening #mtg #mtgsky #gridgame`);
     });
   });
 
