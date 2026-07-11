@@ -1,14 +1,26 @@
 name: Seeder CI
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    tags: ["v*.*.*"]
     paths:
       - "apps/seeder/**"
       - "packages/**"
+      - ".github/workflows/seeder-ci.yml"
+      - "docker-compose*.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "apps/seeder/**"
+      - "packages/**"
+      - ".github/workflows/seeder-ci.yml"
+      - "docker-compose*.yml"
 
-defaults:
-  run:
-    working-directory: apps/seeder
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/otherwisejunk/grid-the-seedening
 
 jobs:
   checks:
@@ -16,6 +28,7 @@ jobs:
 
     permissions:
       contents: read
+      packages: write
       pull-requests: write
 
     services:
@@ -36,6 +49,10 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/griddening?schema=public
 
+    defaults:
+      run:
+        working-directory: apps/seeder
+
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Install Node
@@ -45,16 +62,18 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - name: Install Deps
+        working-directory: ${{ github.workspace }}
         run: npm install --workspace=apps/seeder
-        working-directory: .
+      - name: Generate Prisma Client
+        run: npx prisma generate
       - name: Lint
         run: npm run lint
       - name: Format Check
         run: npm run format:check
       - name: Test
-        run: npx vitest --coverage.enabled true
+        run: npx vitest run --coverage.enabled true
       - name: Report Coverage
-        if: always()
+        if: ${{ always() && github.event_name == 'pull_request' }}
         uses: davelosert/vitest-coverage-report-action@02f3c2e641286b7fa308cd3e430783103ce6103b # v2
         with:
           vite-config-path: apps/seeder/vitest.config.ts
@@ -78,8 +97,15 @@ jobs:
             exit 1
           fi
       - name: Build Docker Image
-        run: docker build -t grid-the-seedening:pr-test -f apps/seeder/dockerfile .
-        working-directory: .
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4 # v6
+        with:
+          context: .
+          file: apps/seeder/dockerfile
+          push: false
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:latest
+          load: true
       - name: Reset Database
         run: psql "${DATABASE_URL%%\?*}" -c "DELETE FROM \"Game\";"
       - name: Docker Integration Test
@@ -89,9 +115,8 @@ jobs:
             -e DATABASE_URL="$DATABASE_URL" \
             -e RUN_ONCE=true \
             -e MINIMUM_HITS=1 \
-            grid-the-seedening:pr-test
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
         timeout-minutes: 5
-        working-directory: .
       - name: Verify Docker Puzzles Created
         run: |
           COUNT=$(psql "${DATABASE_URL%%\?*}" -t -c "SELECT COUNT(*) FROM \"Game\";" | tr -d ' ')
@@ -109,7 +134,7 @@ jobs:
             -e DATABASE_URL="$DATABASE_URL" \
             -e MINIMUM_HITS=1 \
             -e CRON_SCHEDULE="*/15 * * * * *" \
-            grid-the-seedening:pr-test
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
           sleep 50
           docker logs scheduler-test
           FIRINGS=$(docker logs scheduler-test 2>&1 | grep -c "firing job" || true)
@@ -121,4 +146,16 @@ jobs:
             exit 1
           fi
         timeout-minutes: 3
-        working-directory: .
+      - name: Log in to the Container registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1 # v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push Docker image
+        if: github.event_name != 'pull_request'
+        working-directory: ${{ github.workspace }}
+        run: |
+          docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.IMAGE_NAME }}:latest
