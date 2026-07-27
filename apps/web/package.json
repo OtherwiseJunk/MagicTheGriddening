@@ -42,7 +42,7 @@
     "autoprefixer": "^10.0.1",
     "oxfmt": "^0.43.0",
     "oxlint": "^1.58.0",
-    "postcss": "^8",
+    "postcss": "^8.5.18",
     "prisma": "^6.0.0",
     "storybook": "^10.4.4",
     "tailwindcss": "^3.3.0",
