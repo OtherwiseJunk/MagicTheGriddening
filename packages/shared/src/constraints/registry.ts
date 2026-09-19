@@ -90,6 +90,76 @@ export function makeOracleFilter(keyword: string): (card: LocalCard) => boolean 
   return (card) => card.oracle_text.toLowerCase().includes(lower);
 }
 
+// Words that indicate a "can't block" clause is conditional, not the unconditional static ability
+// the "Creature: Can't Block" constraint is meant to capture.
+const CANT_BLOCK_CONDITIONAL_QUALIFIERS = [
+  "unless",
+  "except",
+  "only if",
+  "this turn",
+  "as long as",
+  "until",
+  " if ",
+];
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function sentenceContaining(text: string, index: number): string {
+  const start = text.lastIndexOf(".", index) + 1;
+  const end = text.indexOf(".", index);
+  return text.slice(start, end === -1 ? text.length : end);
+}
+
+const SELF_REFERENCE_NOUNS = [
+  "creature",
+  "permanent",
+  "land",
+  "artifact",
+  "enchantment",
+  "planeswalker",
+  "vehicle",
+  "spell",
+];
+
+export function matchesOracleTextQuery(oracleText: string, query: string, cardName: string): boolean {
+  const match = /^o:"([^"]+)"|^o:(\S+)/.exec(query);
+  if (match === null) return false;
+  const template = (match[1] ?? match[2]).toLowerCase();
+  const lowerOracleText = oracleText.toLowerCase();
+
+  if (!template.includes("~")) {
+    return lowerOracleText.includes(template);
+  }
+
+  const selfReference = `(?:${escapeRegExp(cardName.toLowerCase())}|this (?:${SELF_REFERENCE_NOUNS.join("|")}))`;
+  let patternSource = escapeRegExp(template).replace(/~/g, selfReference);
+  const isCantBlock = template.includes("can't block");
+  if (isCantBlock) {
+    // Unconditional only: nothing but the clause boundary (end of text, ".", ",", or a following
+    // "and"-joined clause) may follow "can't block".
+    patternSource += String.raw`(?=[.,]|\s+and\b|$)`;
+  }
+  const pattern = new RegExp(patternSource);
+  const found = pattern.exec(lowerOracleText);
+  if (found === null) return false;
+
+  if (isCantBlock) {
+    const sentence = sentenceContaining(lowerOracleText, found.index);
+    if (CANT_BLOCK_CONDITIONAL_QUALIFIERS.some((qualifier) => sentence.includes(qualifier))) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function makeAnchoredOracleFilter(scryfallQuery: string): (card: LocalCard) => boolean {
+  return (card) =>
+    matchesOracleTextQuery(card.oracle_text, scryfallQuery, card.faceNames[0] ?? card.name);
+}
+
 export const cardTypeConstraints: GameConstraint[] = cardTypes.map((cardType) => {
   if (cardType === "Land") {
     const constraint = new GameConstraint(cardType, ConstraintType.Type, "t:Land -t:Basic");
@@ -150,38 +220,30 @@ export const rarityConstraints: GameConstraint[] = [
 });
 
 export const creatureRulesTextConstraints: GameConstraint[] = (() => {
-  const entries: [string, string, (card: LocalCard) => boolean][] = [
-    [
-      "Enters the Battlefield Tapped",
-      'o:"~ enters the battlefield tapped"',
-      makeOracleFilter("enters the battlefield tapped"),
-    ],
-    ["Trample", "o:Trample", makeOracleFilter("trample")],
-    ["Flying", "o:Flying", makeOracleFilter("flying")],
-    ["Vigilance", "o:Vigilance", makeOracleFilter("vigilance")],
-    ["Deathtouch", "o:Deathtouch", makeOracleFilter("deathtouch")],
-    ["Haste", "o:Haste", makeOracleFilter("haste")],
-    ["Hexproof", "o:Hexproof", makeOracleFilter("hexproof")],
-    ["Defender", "o:Defender", makeOracleFilter("defender")],
-    ["Double Strike", 'o:"Double Strike"', makeOracleFilter("double strike")],
-    ["First Strike", 'o:"First Strike"', makeOracleFilter("first strike")],
-    ["Flash", "o:Flash", makeOracleFilter("flash")],
-    ["Indestructible", "o:Indestructible", makeOracleFilter("indestructible")],
-    ["Lifelink", "o:Lifelink", makeOracleFilter("lifelink")],
-    ["Menace", "o:Menace", makeOracleFilter("menace")],
-    ["Reach", "o:Reach", makeOracleFilter("reach")],
-    ["Ward", "o:Ward", makeOracleFilter("ward")],
-    ["Can't Block", 'o:"~ can\'t block"', makeOracleFilter("can't block")],
-    [
-      "Attacks Each Combat",
-      'o:"~ attacks each combat if able"',
-      makeOracleFilter("attacks each combat if able"),
-    ],
+  const entries: [string, string][] = [
+    ["Enters the Battlefield Tapped", 'o:"~ enters the battlefield tapped"'],
+    ["Trample", "o:Trample"],
+    ["Flying", "o:Flying"],
+    ["Vigilance", "o:Vigilance"],
+    ["Deathtouch", "o:Deathtouch"],
+    ["Haste", "o:Haste"],
+    ["Hexproof", "o:Hexproof"],
+    ["Defender", "o:Defender"],
+    ["Double Strike", 'o:"Double Strike"'],
+    ["First Strike", 'o:"First Strike"'],
+    ["Flash", "o:Flash"],
+    ["Indestructible", "o:Indestructible"],
+    ["Lifelink", "o:Lifelink"],
+    ["Menace", "o:Menace"],
+    ["Reach", "o:Reach"],
+    ["Ward", "o:Ward"],
+    ["Creature: Can't Block", 'o:"~ can\'t block"'],
+    ["Attacks Each Combat", 'o:"~ attacks each combat if able"'],
   ];
 
-  return entries.map(([displayName, scryfallQuery, localFilter]) => {
+  return entries.map(([displayName, scryfallQuery]) => {
     const constraint = new GameConstraint(displayName, ConstraintType.CreatureRulesText, scryfallQuery);
-    constraint.localFilter = localFilter;
+    constraint.localFilter = makeAnchoredOracleFilter(scryfallQuery);
     return constraint;
   });
 })();

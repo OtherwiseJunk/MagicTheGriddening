@@ -1,5 +1,6 @@
 import { type LocalCard } from "@/models/local-card";
 import { type GameConstraint, ConstraintType } from "@griddening/shared/types";
+import { matchesOracleTextQuery } from "@griddening/shared";
 import BulkDataService from "@/services/bulk-data.service";
 
 const RARITY_MAP: Record<string, string> = {
@@ -35,13 +36,6 @@ function matchesColorQuery(colors: string[], query: string): boolean {
     }
   }
   return true;
-}
-
-function matchesOracleTextQuery(oracleText: string, query: string, cardName: string): boolean {
-  const match = /^o:"([^"]+)"|^o:(\S+)/.exec(query);
-  if (match === null) return false;
-  const searchText = (match[1] ?? match[2]).replace(/~/g, cardName).toLowerCase();
-  return oracleText.toLowerCase().includes(searchText);
 }
 
 export function matchesConstraint(card: LocalCard, constraint: GameConstraint): boolean {

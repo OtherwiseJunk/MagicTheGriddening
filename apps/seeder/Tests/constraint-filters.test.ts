@@ -272,7 +272,9 @@ describe("creature rules text constraint local filters", () => {
   const etbTapped = creatureRulesTextConstraints.find(
     (c) => c.displayName === "Enters the Battlefield Tapped",
   )!;
-  const cantBlock = creatureRulesTextConstraints.find((c) => c.displayName === "Can't Block")!;
+  const cantBlock = creatureRulesTextConstraints.find(
+    (c) => c.displayName === "Creature: Can't Block",
+  )!;
   const attacksEachCombat = creatureRulesTextConstraints.find(
     (c) => c.displayName === "Attacks Each Combat",
   )!;
@@ -309,26 +311,73 @@ describe("creature rules text constraint local filters", () => {
     expect(firstStrike.localFilter!(makeCard({ oracle_text: "Double Strike" }))).toBe(false);
   });
 
-  it("enters the battlefield tapped matches cards with that text in oracle text", () => {
+  it("enters the battlefield tapped matches cards naming themselves in oracle text", () => {
     expect(
       etbTapped.localFilter!(
-        makeCard({ oracle_text: "Goblin Guide enters the battlefield tapped." }),
+        makeCard({ name: "Goblin Guide", oracle_text: "Goblin Guide enters the battlefield tapped." }),
       ),
     ).toBe(true);
     expect(etbTapped.localFilter!(makeCard({ oracle_text: "Flying" }))).toBe(false);
   });
 
-  it("can't block matches cards with that text in oracle text", () => {
-    expect(cantBlock.localFilter!(makeCard({ oracle_text: "This creature can't block." }))).toBe(
-      true,
-    );
+  it("can't block matches cards naming themselves in oracle text", () => {
+    expect(
+      cantBlock.localFilter!(
+        makeCard({ name: "Test Card", oracle_text: "Test Card can't block." }),
+      ),
+    ).toBe(true);
     expect(cantBlock.localFilter!(makeCard({ oracle_text: "Flying" }))).toBe(false);
   });
 
-  it("attacks each combat matches cards with that text in oracle text", () => {
+  it("can't block does NOT match generic can't-block text that doesn't name the card", () => {
+    expect(
+      cantBlock.localFilter!(
+        makeCard({ name: "Icy Blast", oracle_text: "Target creature can't block this turn." }),
+      ),
+    ).toBe(false);
+    expect(
+      cantBlock.localFilter!(
+        makeCard({ name: "Faltering Aim", oracle_text: "Equipped creature can't block." }),
+      ),
+    ).toBe(false);
+  });
+
+  it("can't block matches 'this creature' self-reference (real Inkfathom Infiltrator text)", () => {
+    expect(
+      cantBlock.localFilter!(
+        makeCard({
+          name: "Inkfathom Infiltrator",
+          oracle_text: "This creature can't block and can't be blocked.",
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("can't block does NOT match conditional can't-block text", () => {
+    expect(
+      cantBlock.localFilter!(
+        makeCard({ name: "Test Card", oracle_text: "Test Card can't block unless it's untapped." }),
+      ),
+    ).toBe(false);
+    expect(
+      cantBlock.localFilter!(
+        makeCard({ name: "Test Card", oracle_text: "This creature can't block this turn." }),
+      ),
+    ).toBe(false);
+    expect(
+      cantBlock.localFilter!(
+        makeCard({
+          name: "Test Card",
+          oracle_text: "As long as you control a Swamp, this creature can't block.",
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("attacks each combat matches cards naming themselves in oracle text", () => {
     expect(
       attacksEachCombat.localFilter!(
-        makeCard({ oracle_text: "This creature attacks each combat if able." }),
+        makeCard({ name: "Test Card", oracle_text: "Test Card attacks each combat if able." }),
       ),
     ).toBe(true);
     expect(attacksEachCombat.localFilter!(makeCard({ oracle_text: "Flying" }))).toBe(false);

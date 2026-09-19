@@ -27,4 +27,5 @@ export {
   makeTypeFilter,
   makeArtistFilter,
   makeOracleFilter,
+  matchesOracleTextQuery,
 } from "./constraints/registry";

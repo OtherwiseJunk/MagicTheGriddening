@@ -335,9 +335,142 @@ describe("matchesConstraint", () => {
       expect(
         matchesConstraint(
           card,
-          new GameConstraint("Can't Block", ConstraintType.CreatureRulesText, 'o:"~ can\'t block"'),
+          new GameConstraint("Creature: Can't Block", ConstraintType.CreatureRulesText, 'o:"~ can\'t block"'),
         ),
       ).toBe(true);
+    });
+
+    it("matches 'this creature' self-reference, not just the card's own name", () => {
+      // Real Scryfall oracle text for Inkfathom Infiltrator
+      const card = makeCard({
+        name: "Inkfathom Infiltrator",
+        oracle_text: "This creature can't block and can't be blocked.",
+      });
+      expect(
+        matchesConstraint(
+          card,
+          new GameConstraint("Creature: Can't Block", ConstraintType.CreatureRulesText, 'o:"~ can\'t block"'),
+        ),
+      ).toBe(true);
+    });
+
+    it("does not match a granted can't-block effect naming a different creature", () => {
+      const targetGranted = makeCard({
+        name: "Icy Blast",
+        oracle_text: "Tap target creature. That creature can't block this turn.",
+      });
+      const equipmentGranted = makeCard({
+        name: "Faltering Aim",
+        oracle_text: "Equipped creature can't block.",
+        type_line: "Artifact — Equipment",
+      });
+      const constraint = new GameConstraint(
+        "Creature: Can't Block",
+        ConstraintType.CreatureRulesText,
+        'o:"~ can\'t block"',
+      );
+      expect(matchesConstraint(targetGranted, constraint)).toBe(false);
+      expect(matchesConstraint(equipmentGranted, constraint)).toBe(false);
+    });
+
+    it("does not match conditional can't-block text (unless/this turn/as long as/etc.)", () => {
+      const constraint = new GameConstraint(
+        "Creature: Can't Block",
+        ConstraintType.CreatureRulesText,
+        'o:"~ can\'t block"',
+      );
+      expect(
+        matchesConstraint(
+          makeCard({ name: "Test Card", oracle_text: "Test Card can't block unless it's untapped." }),
+          constraint,
+        ),
+      ).toBe(false);
+      expect(
+        matchesConstraint(
+          makeCard({ name: "Test Card", oracle_text: "This creature can't block this turn." }),
+          constraint,
+        ),
+      ).toBe(false);
+      expect(
+        matchesConstraint(
+          makeCard({
+            name: "Test Card",
+            oracle_text: "As long as you control a Swamp, this creature can't block.",
+          }),
+          constraint,
+        ),
+      ).toBe(false);
+    });
+
+    it("does not match restricted can't-block (can block SOME things, not unconditional)", () => {
+      const constraint = new GameConstraint(
+        "Creature: Can't Block",
+        ConstraintType.CreatureRulesText,
+        'o:"~ can\'t block"',
+      );
+      // "can't block alone"
+      expect(
+        matchesConstraint(
+          makeCard({ name: "Craven Hulk", oracle_text: "This creature can't block alone." }),
+          constraint,
+        ),
+      ).toBe(false);
+      // "can't block <creature type>"
+      expect(
+        matchesConstraint(
+          makeCard({ name: "Gibbering Hyenas", oracle_text: "This creature can't block black creatures." }),
+          constraint,
+        ),
+      ).toBe(false);
+      // "can't block <power threshold>"
+      expect(
+        matchesConstraint(
+          makeCard({
+            name: "Ironclaw Buzzardiers",
+            oracle_text: "This creature can't block creatures with power 2 or greater.",
+          }),
+          constraint,
+        ),
+      ).toBe(false);
+      expect(
+        matchesConstraint(
+          makeCard({
+            name: "Sneaky Homunculus",
+            oracle_text: "This creature can't block or be blocked by creatures with power 2 or greater.",
+          }),
+          constraint,
+        ),
+      ).toBe(false);
+    });
+
+    it("still matches the unconditional double-ability phrasing (can't block AND can't be blocked)", () => {
+      const constraint = new GameConstraint(
+        "Creature: Can't Block",
+        ConstraintType.CreatureRulesText,
+        'o:"~ can\'t block"',
+      );
+      expect(
+        matchesConstraint(
+          makeCard({
+            name: "Inkfathom Infiltrator",
+            oracle_text: "This creature can't block and can't be blocked.",
+          }),
+          constraint,
+        ),
+      ).toBe(true);
+    });
+
+    it("does not match a card that only grants can't-block to a token it creates", () => {
+      const card = makeCard({
+        name: "Anax, Hardened in the Forge",
+        oracle_text: 'Whenever Anax or another creature you control dies, create a 1/1 red Satyr creature token with "This token can\'t block."',
+      });
+      expect(
+        matchesConstraint(
+          card,
+          new GameConstraint("Creature: Can't Block", ConstraintType.CreatureRulesText, 'o:"~ can\'t block"'),
+        ),
+      ).toBe(false);
     });
 
     it("does not match when keyword absent from oracle_text", () => {
