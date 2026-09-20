@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { writeFile, rm, mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { gzipSync } from "node:zlib";
 import { buildCardIndex } from "@griddening/shared";
 
 // Count createReadStream invocations by wrapping the real node:fs export. buildCardIndex
@@ -27,16 +28,15 @@ afterEach(async () => {
 describe("buildCardIndex streaming", () => {
   it("reads the bulk file exactly once (single streaming pass)", async () => {
     const dir = await mkdtemp(path.join(tmpdir(), "bci-pass-"));
-    const file = path.join(dir, "bulk.json");
+    const file = path.join(dir, "bulk.jsonl.gz");
     tmpFiles.push(file);
-    await writeFile(
-      file,
-      JSON.stringify([
-        { name: "Card A", oracle_id: "a", lang: "en", games: ["paper"], colors: [], cmc: 0 },
-        { name: "Card B", oracle_id: "b", lang: "en", games: ["paper"], colors: [], cmc: 0 },
-      ]),
-      "utf8",
-    );
+    const jsonl = [
+      { name: "Card A", oracle_id: "a", lang: "en", games: ["paper"], colors: [], cmc: 0 },
+      { name: "Card B", oracle_id: "b", lang: "en", games: ["paper"], colors: [], cmc: 0 },
+    ]
+      .map((c) => JSON.stringify(c))
+      .join("\n");
+    await writeFile(file, gzipSync(jsonl));
 
     h.reads = 0;
     const { cards } = await buildCardIndex(file);

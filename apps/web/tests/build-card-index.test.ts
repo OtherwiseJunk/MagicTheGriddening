@@ -2,10 +2,9 @@ import { describe, it, expect, afterEach } from "vitest";
 import { writeFile, rm, mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { gzipSync } from "node:zlib";
 import { buildCardIndex } from "@griddening/shared";
 
-// These tests run the REAL buildCardIndex against REAL temp files, so they exercise the
-// actual stream-json parse path (including SlicedString behavior). No mocks.
 
 const tmpFiles: string[] = [];
 
@@ -15,9 +14,10 @@ afterEach(async () => {
 
 async function indexOf(cards: Record<string, unknown>[]) {
   const dir = await mkdtemp(path.join(tmpdir(), "bci-"));
-  const file = path.join(dir, "bulk.json");
+  const file = path.join(dir, "bulk.jsonl.gz");
   tmpFiles.push(file);
-  await writeFile(file, JSON.stringify(cards), "utf8");
+  const jsonl = cards.map((c) => JSON.stringify(c)).join("\n");
+  await writeFile(file, gzipSync(jsonl));
   return buildCardIndex(file);
 }
 

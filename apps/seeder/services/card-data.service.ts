@@ -76,12 +76,12 @@ export class CardDataService {
 
   private async downloadAndSave(dataDir: string, indexPath: string): Promise<CardDataCache> {
     const bulkDataFile = await fetchBulkDataFile(BULK_DATA_TYPE);
-    const tempBulkPath = path.join(dataDir, `bulk-${randomUUID()}.json`);
+    const tempBulkPath = path.join(dataDir, `bulk-${randomUUID()}.jsonl.gz`);
     const tempIndexPath = path.join(dataDir, `index-${randomUUID()}.json`);
 
     try {
       logMemory("pre-download");
-      await downloadBulkDataFile(bulkDataFile.download_uri, tempBulkPath);
+      await downloadBulkDataFile(bulkDataFile.jsonl_download_uri, tempBulkPath);
       logMemory("post-download");
       const { cards, sets } = await buildCardIndex(tempBulkPath);
       logMemory("post-buildCardIndex");

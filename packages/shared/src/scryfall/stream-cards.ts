@@ -1,17 +1,19 @@
 import { createReadStream } from "node:fs";
-import { streamArray } from "stream-json/streamers/stream-array.js";
+import { createGunzip } from "node:zlib";
+import { createInterface } from "node:readline";
 import { type ScryfallBulkCard } from "./types";
 
 export async function streamCards(
   filePath: string,
   fn: (card: ScryfallBulkCard) => void,
 ): Promise<void> {
-  const stream = streamArray.withParserAsStream();
-  const rs = createReadStream(filePath);
-  rs.on("error", (e) => stream.destroy(e));
-  rs.pipe(stream);
-  for await (const item of stream) {
-    const card = (item as { key: number; value: ScryfallBulkCard }).value;
+  const lines = createInterface({
+    input: createReadStream(filePath).pipe(createGunzip()),
+    crlfDelay: Infinity,
+  });
+  for await (const line of lines) {
+    if (!line.trim()) continue;
+    const card = JSON.parse(line) as ScryfallBulkCard;
     if (card.games?.includes("paper") ?? false) fn(card);
   }
 }

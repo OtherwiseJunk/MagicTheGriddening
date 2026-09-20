@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { type LocalCard } from "@griddening/shared";
+import { gzipSync } from "node:zlib";
+import { Readable } from "node:stream";
 
 const mockReadFile = vi.fn();
 const mockWriteFile = vi.fn();
@@ -17,14 +19,9 @@ vi.mock("fs/promises", () => ({
   open: (...args: unknown[]) => mockOpen(...args),
 }));
 
+let writtenChunks: Buffer[] = [];
 vi.mock("node:fs", () => ({
-  createReadStream: vi.fn(),
-}));
-
-vi.mock("stream-json/streamers/stream-array.js", () => ({
-  streamArray: {
-    withParserAsStream: vi.fn(),
-  },
+  createReadStream: () => Readable.from(Buffer.concat(writtenChunks)),
 }));
 
 const mockFetch = vi.fn();
@@ -55,11 +52,47 @@ function makeCard(overrides: Partial<LocalCard> = {}): LocalCard {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  writtenChunks = [];
   mockMkdir.mockResolvedValue(undefined);
   mockWriteFile.mockResolvedValue(undefined);
   mockRename.mockResolvedValue(undefined);
   mockRm.mockResolvedValue(undefined);
 });
+
+function setupDownloadMocks(cards: object[]): void {
+  mockReadFile.mockRejectedValueOnce(new Error("ENOENT: no such file"));
+  const gzipped = gzipSync(cards.map((c) => JSON.stringify(c)).join("\n"));
+
+  mockFetch
+    .mockResolvedValueOnce({
+      ok: true,
+      json: vi.fn().mockResolvedValue({
+        data: [
+          {
+            type: "all_cards",
+            updated_at: "2024-01-01",
+            jsonl_download_uri: "https://data.scryfall.io/all-cards/c.jsonl.gz",
+          },
+        ],
+      }),
+    })
+    .mockResolvedValueOnce({
+      ok: true,
+      body: {
+        [Symbol.asyncIterator]: async function* () {
+          yield new Uint8Array(gzipped);
+        },
+      },
+    });
+
+  mockOpen.mockResolvedValue({
+    write: vi.fn().mockImplementation((chunk: Uint8Array) => {
+      writtenChunks.push(Buffer.from(chunk));
+      return Promise.resolve({ bytesWritten: chunk.length });
+    }),
+    close: vi.fn().mockResolvedValue(undefined),
+  });
+}
 
 describe("CardDataService", () => {
   describe("loading from disk", () => {
@@ -81,12 +114,10 @@ describe("CardDataService", () => {
     });
 
     it("downloads and saves cards when card-index.json does not exist", async () => {
-      const { createReadStream } = await import("node:fs");
-      const { streamArray } = await import("stream-json/streamers/stream-array.js");
-
       const bulkCard = {
         name: "Llanowar Elves",
         oracle_id: "abc123",
+        lang: "en",
         type_line: "Creature — Elf Druid",
         colors: ["G"],
         cmc: 1,
@@ -102,50 +133,7 @@ describe("CardDataService", () => {
         image_uris: { png: "https://example.com/llanowar.png" },
         games: ["paper"],
       };
-
-      mockReadFile.mockRejectedValueOnce(new Error("ENOENT: no such file"));
-
-      const manifestResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({
-          data: [
-            {
-              type: "all_cards",
-              updated_at: "2024-01-01",
-              download_uri: "https://example.com/cards.json",
-            },
-          ],
-        }),
-      };
-      const bulkResponse = {
-        ok: true,
-        body: {
-          [Symbol.asyncIterator]: async function* () {
-            yield new Uint8Array([]);
-          },
-        },
-      };
-      mockFetch.mockResolvedValueOnce(manifestResponse).mockResolvedValueOnce(bulkResponse);
-
-      const mockFileHandle = {
-        write: vi.fn().mockResolvedValue({ bytesWritten: 0 }),
-        close: vi.fn().mockResolvedValue(undefined),
-      };
-      mockOpen.mockResolvedValue(mockFileHandle);
-
-      const mockStream = {
-        on: vi.fn().mockReturnThis(),
-        pipe: vi.fn(),
-        destroy: vi.fn(),
-        [Symbol.asyncIterator]: async function* () {
-          yield { key: 0, value: bulkCard };
-        },
-      };
-      vi.mocked(streamArray.withParserAsStream).mockReturnValue(mockStream as never);
-      vi.mocked(createReadStream as ReturnType<typeof vi.fn>).mockReturnValue({
-        on: vi.fn().mockReturnThis(),
-        pipe: vi.fn(),
-      } as never);
+      setupDownloadMocks([bulkCard]);
 
       const { CardDataService } = await import("../services/card-data.service.js");
       const service = new CardDataService();
@@ -158,51 +146,11 @@ describe("CardDataService", () => {
   });
 
   describe("multi-printing accumulation", () => {
-    async function setupDownloadMocks(cards: object[]) {
-      const { createReadStream } = await import("node:fs");
-      const { streamArray } = await import("stream-json/streamers/stream-array.js");
-
-      mockReadFile.mockRejectedValueOnce(new Error("ENOENT: no such file"));
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: vi.fn().mockResolvedValue({
-            data: [
-              { type: "all_cards", updated_at: "2024-01-01", download_uri: "https://x.com/c.json" },
-            ],
-          }),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          body: {
-            [Symbol.asyncIterator]: async function* () {
-              yield new Uint8Array([]);
-            },
-          },
-        });
-      mockOpen.mockResolvedValue({
-        write: vi.fn().mockResolvedValue({ bytesWritten: 0 }),
-        close: vi.fn().mockResolvedValue(undefined),
-      });
-
-      vi.mocked(streamArray.withParserAsStream).mockReturnValue({
-        on: vi.fn().mockReturnThis(),
-        pipe: vi.fn(),
-        destroy: vi.fn(),
-        [Symbol.asyncIterator]: async function* () {
-          for (let i = 0; i < cards.length; i++) yield { key: i, value: cards[i] };
-        },
-      } as never);
-      vi.mocked(createReadStream as ReturnType<typeof vi.fn>).mockReturnValue({
-        on: vi.fn().mockReturnThis(),
-        pipe: vi.fn(),
-      } as never);
-    }
-
     it("merges artists, sets, and rarities from all printings of the same card", async () => {
       const bopBase = {
         name: "Birds of Paradise",
         oracle_id: "bop-oracle-id",
+        lang: "en",
         type_line: "Creature — Bird",
         colors: ["G"],
         cmc: 1,
@@ -211,7 +159,7 @@ describe("CardDataService", () => {
         toughness: "1",
         games: ["paper"],
       };
-      await setupDownloadMocks([
+      setupDownloadMocks([
         {
           ...bopBase,
           rarity: "rare",
@@ -266,6 +214,7 @@ describe("CardDataService", () => {
       // This preserves Secret Lair artist-series credits (e.g. Okubo, Villeneuve series).
       const bopBase = {
         name: "Birds of Paradise",
+        lang: "en",
         type_line: "Creature — Bird",
         colors: ["G"],
         cmc: 1,
@@ -289,7 +238,7 @@ describe("CardDataService", () => {
         set: "sld",
         released_at: "2024-01-01",
       };
-      await setupDownloadMocks([alphaBop, sldBopNewer]);
+      setupDownloadMocks([alphaBop, sldBopNewer]);
 
       const { CardDataService } = await import("../services/card-data.service.js");
       const result = await new CardDataService().getCards();
@@ -313,8 +262,8 @@ describe("CardDataService", () => {
         image_uris: { png: "https://c/bop.png" },
         games: ["paper"],
       };
-      await setupDownloadMocks([
-        { ...bopBase, artist: "Mark Poole", set: "lea", released_at: "1993-08-05" },
+      setupDownloadMocks([
+        { ...bopBase, lang: "en", artist: "Mark Poole", set: "lea", released_at: "1993-08-05" },
         {
           ...bopBase,
           name: "楽園の鳥",
@@ -343,10 +292,11 @@ describe("CardDataService", () => {
     });
 
     it("correctly populates rarities (not undefined)", async () => {
-      await setupDownloadMocks([
+      setupDownloadMocks([
         {
           name: "Lightning Bolt",
           oracle_id: "lb-oracle",
+          lang: "en",
           type_line: "Instant",
           colors: [],
           cmc: 1,

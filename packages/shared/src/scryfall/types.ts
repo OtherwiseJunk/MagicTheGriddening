@@ -38,7 +38,7 @@ export interface ScryfallBulkDataManifest {
 export interface ScryfallBulkDataFile {
   type: string;
   updated_at: string;
-  download_uri: string;
+  jsonl_download_uri: string;
 }
 
 export interface CardAccumulator {

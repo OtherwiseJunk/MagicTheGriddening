@@ -101,10 +101,10 @@ class BulkDataService {
     if (bulkDataFile.updated_at === this.sourceUpdatedAt && this.cards.length > 0) {
       return;
     }
-    const tempBulkFilePath = path.join(DATA_DIRECTORY, `bulk-${randomUUID()}.json`);
+    const tempBulkFilePath = path.join(DATA_DIRECTORY, `bulk-${randomUUID()}.jsonl.gz`);
     const tempIndexFilePath = path.join(DATA_DIRECTORY, `index-${randomUUID()}.json`);
     try {
-      await downloadBulkDataFile(bulkDataFile.download_uri, tempBulkFilePath);
+      await downloadBulkDataFile(bulkDataFile.jsonl_download_uri, tempBulkFilePath);
       const { cards, sets } = await buildCardIndex(tempBulkFilePath);
       const nextIndex: CardIndexFile = {
         generatedAt: new Date().toISOString(),
