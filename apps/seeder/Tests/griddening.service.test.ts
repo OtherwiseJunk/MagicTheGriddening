@@ -486,8 +486,7 @@ describe("Griddening Service", () => {
     test("should return today's date for offset 0", () => {
       const date = griddeningService.getDateStringByOffset(0);
       const today = new Date();
-      const dateString = `${today.getFullYear()}${today
-        .getMonth()
+      const dateString = `${today.getFullYear()}${(today.getMonth() + 1)
         .toString()
         .padStart(2, "0")}${today.getDate().toString().padStart(2, "0")}`;
 

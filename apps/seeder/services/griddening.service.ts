@@ -288,8 +288,7 @@ export class GriddeningService {
   getDateStringByOffset(dayOffset: number = 0): string {
     let now = new Date();
     now = this.addDays(now, dayOffset);
-    return `${now.getFullYear()}${now
-      .getMonth()
+    return `${now.getFullYear()}${(now.getMonth() + 1)
       .toString()
       .padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}`;
   }
