@@ -314,7 +314,10 @@ describe("creature rules text constraint local filters", () => {
   it("enters the battlefield tapped matches cards naming themselves in oracle text", () => {
     expect(
       etbTapped.localFilter!(
-        makeCard({ name: "Goblin Guide", oracle_text: "Goblin Guide enters the battlefield tapped." }),
+        makeCard({
+          name: "Goblin Guide",
+          oracle_text: "Goblin Guide enters the battlefield tapped.",
+        }),
       ),
     ).toBe(true);
     expect(etbTapped.localFilter!(makeCard({ oracle_text: "Flying" }))).toBe(false);

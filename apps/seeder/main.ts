@@ -4,6 +4,7 @@ import { CardDataService } from "./services/card-data.service.js";
 import { Puzzle, PuzzleType } from "./types/Puzzle.js";
 import { ConstraintType, GameConstraint } from "@griddening/shared";
 import { DataService } from "./services/data.service.js";
+import { computePuzzleSignature } from "./services/puzzle-signature.js";
 import { PrismaClient } from "@prisma/client";
 import schedule from "node-schedule";
 
@@ -20,6 +21,10 @@ async function initGriddening() {
 }
 const puzzleBuffer = process.env.PUZZLE_BUFFER ? parseInt(process.env.PUZZLE_BUFFER) : 5;
 const puzzleGenerationTimeoutMs = 600_000;
+// 5 years (including a leap year)
+const puzzleUniquenessWindowDays = process.env.PUZZLE_UNIQUENESS_WINDOW_DAYS
+  ? parseInt(process.env.PUZZLE_UNIQUENESS_WINDOW_DAYS)
+  : 1826;
 
 async function start() {
   await initGriddening();
@@ -50,10 +55,15 @@ async function start() {
 async function generatePuzzles(puzzleCount: number, dayOffset: number) {
   console.log("Starting...");
   const deckMap = griddening.createConstraintDeck();
+  const recentSignatures = await dataService.getRecentPuzzleSignatures(puzzleUniquenessWindowDays);
+  console.log(
+    `Loaded ${recentSignatures.size} puzzle signature(s) from the last ${puzzleUniquenessWindowDays} days.`,
+  );
 
   for (let i = 1; i < puzzleCount + 1; i++) {
     console.log(`Generating ${i + 1} puzzle...`);
-    const puzzle = await generateValidPuzzleWithTimeout(deckMap);
+    const puzzle = await generateValidPuzzleWithTimeout(deckMap, recentSignatures);
+    recentSignatures.add(computePuzzleSignature(puzzle));
     logPuzzle(puzzle);
     const dateStringFromOffset = griddening.getDateStringByOffset(dayOffset + i);
     console.log(`Creating game in DB for ${dateStringFromOffset}`);
@@ -68,6 +78,7 @@ async function generatePuzzles(puzzleCount: number, dayOffset: number) {
 
 async function generateValidPuzzleWithTimeout(
   deckMap: Map<ConstraintType, GameConstraint[]>,
+  recentSignatures: Set<string>,
 ): Promise<Puzzle> {
   let timeoutHandle: NodeJS.Timeout | undefined;
   const timeout = new Promise<never>((_, reject) => {
@@ -77,7 +88,7 @@ async function generateValidPuzzleWithTimeout(
     );
   });
   try {
-    return await Promise.race([generateValidPuzzle(deckMap), timeout]);
+    return await Promise.race([generateValidPuzzle(deckMap, recentSignatures), timeout]);
   } finally {
     if (timeoutHandle) clearTimeout(timeoutHandle);
   }
@@ -85,6 +96,7 @@ async function generateValidPuzzleWithTimeout(
 
 async function generateValidPuzzle(
   deckMap: Map<ConstraintType, GameConstraint[]>,
+  recentSignatures: Set<string>,
 ): Promise<Puzzle> {
   let puzzle = griddening.generateRandomPuzzleBoard(cloneMapOfDecks(deckMap));
   while (puzzle == undefined) {
@@ -98,14 +110,19 @@ async function generateValidPuzzle(
     const topRow = puzzle.topRow as GameConstraint[];
     const sideRow = puzzle.sideRow as GameConstraint[];
     const intersectionsValid = intersectionsAreValid(sideRow, topRow);
+    const outcome = classifyPuzzleAttempt(puzzle, intersectionsValid, recentSignatures);
 
-    if (intersectionsValid) {
+    if (outcome === "valid") {
       isValid = true;
       console.log("Puzzle is valid!");
       const timeTaken = Date.now() - start;
       console.log(`Total time taken to generate valid puzzle: ${timeTaken / 1000} seconds`);
       console.log(`Number of rerolls: ${rerollCount}`);
       rerollCount = 0;
+    } else if (outcome === "duplicate") {
+      rerollCount++;
+      console.log("Puzzle exactly matches one already used — rolling new type.");
+      puzzle = griddening.generateRandomPuzzleBoard(cloneMapOfDecks(deckMap))!;
     } else {
       rerollCount++;
       if (rerollCount % 1000 === 0) {
@@ -140,6 +157,18 @@ function intersectionsAreValid(sideRow: GameConstraint[], topRow: GameConstraint
     }
   }
   return true;
+}
+
+export type PuzzleAttemptOutcome = "valid" | "duplicate" | "invalid";
+
+export function classifyPuzzleAttempt(
+  puzzle: Puzzle,
+  intersectionsValid: boolean,
+  recentSignatures: Set<string>,
+): PuzzleAttemptOutcome {
+  if (!intersectionsValid) return "invalid";
+  if (recentSignatures.has(computePuzzleSignature(puzzle))) return "duplicate";
+  return "valid";
 }
 
 function rerollPuzzle(deckMap: Map<ConstraintType, GameConstraint[]>, puzzle: Puzzle): Puzzle {
