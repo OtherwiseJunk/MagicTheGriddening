@@ -1,4 +1,5 @@
 import { type GameConstraint } from "@griddening/shared/types";
+import { fromDateString } from "@griddening/shared/date-string";
 
 export class Game {
   constructor(
@@ -11,10 +12,7 @@ export class Game {
     return JSON.parse(this.constraintsJSON);
   }
 
-  dateStringToDate(): Date {
-    const year = parseInt(this.dateString.substring(0, 4));
-    const month = parseInt(this.dateString.substring(4, 6));
-    const day = parseInt(this.dateString.substring(6));
-    return new Date(`${month + 1}/${day}/${year}`);
+  dateStringToDate(): Date | undefined {
+    return fromDateString(this.dateString);
   }
 }

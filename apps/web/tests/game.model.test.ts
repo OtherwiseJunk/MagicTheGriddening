@@ -21,13 +21,12 @@ describe("Game model", () => {
 
   describe("dateStringToDate", () => {
     it("converts date string to Date object", () => {
-      // Date strings use 0-indexed months (consistent with JS getMonth() and the seeder app)
-      // So "20260305" means April 5th (month 03 = April in 0-indexed)
+      // Date strings use 1-indexed months, so "20260305" means March 5th
       const game = new Game(1, "20260305", "[]");
-      const date = game.dateStringToDate();
+      const date = game.dateStringToDate()!;
 
       expect(date.getFullYear()).toBe(2026);
-      expect(date.getMonth()).toBe(3); // April (0-indexed)
+      expect(date.getMonth()).toBe(2); // March (Date months are 0-indexed)
       expect(date.getDate()).toBe(5);
     });
   });

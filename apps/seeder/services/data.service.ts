@@ -1,5 +1,5 @@
 import { Game, PrismaClient } from "@prisma/client";
-import { GameConstraint } from "@griddening/shared";
+import { GameConstraint, fromDateString } from "@griddening/shared";
 import { computeSignatureFromStoredConstraints } from "./puzzle-signature.js";
 
 export class DataService {
@@ -54,12 +54,6 @@ export class DataService {
   }
 
   dateStringToDate(dateString: string): Date | undefined {
-    if (dateString == null || dateString.length != 8) return undefined;
-
-    const year = parseInt(dateString.substring(0, 4));
-    const month = parseInt(dateString.substring(4, 6)) - 1; // Date months are 0-indexed
-    const day = parseInt(dateString.substring(6));
-
-    return new Date(year, month, day);
+    return fromDateString(dateString);
   }
 }

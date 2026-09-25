@@ -1,0 +1,10 @@
+{
+  // Integration tests import seeder sources, which need a newer target than the web app's es5.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2020",
+    "incremental": false
+  },
+  "include": ["./**/*.ts", "../../next-env.d.ts"],
+  "exclude": []
+}

@@ -12,6 +12,7 @@
     "fmt": "oxfmt -c ../../.oxfmtrc.json --write src",
     "fmt:check": "oxfmt -c ../../.oxfmtrc.json --check src",
     "test": "npx vitest",
+    "test:integration": "npx vitest run --config vitest.integration.config.ts",
     "e2e:setup": "./e2e/setup.sh",
     "e2e:teardown": "./e2e/teardown.sh",
     "e2e": "npx playwright test",

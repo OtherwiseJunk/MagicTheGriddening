@@ -2,7 +2,7 @@
 -- Covers all 12 ConstraintType variants across 3 puzzles
 
 -- Puzzle 1: Color, Power, Artist (top) x Type, ManaValue, Toughness (side)
--- dateString 20260101 (using 0-indexed months, this represents February 1st)
+-- dateString 20260101 (January 1st)
 -- All e2e test cards are by "Test Artist", so squareIndex 2 = Artist + Goblin = valid for Battle Cry Goblin
 INSERT INTO "Game" ("dateString", "constraintsJSON") VALUES (
   '20260101',

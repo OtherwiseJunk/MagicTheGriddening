@@ -1,6 +1,7 @@
 import { colorPairs } from "@/constants/constraintConstants";
 import type { Color } from "@/constants/constraintConstants";
 import { ConstraintType, type GameConstraint } from "@griddening/shared/types";
+import { toDateString } from "@griddening/shared/date-string";
 
 export default class GriddeningService {
   static getGameConstraintsForIndex(
@@ -38,11 +39,7 @@ export default class GriddeningService {
   static getTodaysDateString(dayOffset: number = 0): string {
     if (process.env.OVERRIDE_DATE != null && process.env.OVERRIDE_DATE !== "")
       return process.env.OVERRIDE_DATE;
-    const now = this.addDays(new Date(), dayOffset);
-    const year = now.getFullYear();
-    const month = now.getMonth().toString().padStart(2, "0");
-    const day = now.getDate().toString().padStart(2, "0");
-    return `${year}${month}${day}`;
+    return toDateString(this.addDays(new Date(), dayOffset));
   }
 
   static getArticle = (word: string): string => {

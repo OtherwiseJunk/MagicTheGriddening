@@ -2,6 +2,7 @@ export type { LocalCard } from "./types/local-card";
 export type { LocalSet } from "./types/local-set";
 export type { CardIndexFile } from "./types/card-index";
 export { ConstraintType, GameConstraint } from "./types/game-constraint";
+export { toDateString, fromDateString } from "./date-string";
 export type { ScryfallBulkCard, ScryfallBulkFace, ScryfallBulkDataFile, ScryfallBulkDataManifest, CardAccumulator } from "./scryfall/types";
 export { BULK_DATA_TYPE, SCRYFALL_API_URL, SCRYFALL_USER_AGENT } from "./scryfall/constants";
 export { streamCards } from "./scryfall/stream-cards";

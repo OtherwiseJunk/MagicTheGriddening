@@ -1,4 +1,10 @@
-import { ConstraintType, GameConstraint, type LocalCard, type LocalSet } from "@griddening/shared";
+import {
+  ConstraintType,
+  GameConstraint,
+  toDateString,
+  type LocalCard,
+  type LocalSet,
+} from "@griddening/shared";
 import { Puzzle, PuzzleType } from "../types/Puzzle.js";
 import { shuffleArray } from "../Utilities/map.helper.js";
 import {
@@ -286,11 +292,7 @@ export class GriddeningService {
   }
 
   getDateStringByOffset(dayOffset: number = 0): string {
-    let now = new Date();
-    now = this.addDays(now, dayOffset);
-    return `${now.getFullYear()}${(now.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}`;
+    return toDateString(this.addDays(new Date(), dayOffset));
   }
 
   private getCreatureRacePool(racePool: "power" | "toughness" | "general"): GameConstraint[] {

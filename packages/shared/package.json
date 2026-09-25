@@ -6,7 +6,8 @@
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./types": "./src/types/index.ts"
+    "./types": "./src/types/index.ts",
+    "./date-string": "./src/date-string.ts"
   },
   "dependencies": {
     "stream-json": "^3.4.0"

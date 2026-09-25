@@ -566,7 +566,7 @@ describe("getTodaysDateString", () => {
   it('should return today\'s date string with no offset', () => {
     const result = GriddeningService.getTodaysDateString();
     const now = new Date();
-    const expected = `${now.getFullYear()}${(now.getMonth()).toString().padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}`;
+    const expected = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}`;
     expect(result).toBe(expected);
   });
 
@@ -574,7 +574,7 @@ describe("getTodaysDateString", () => {
     const result = GriddeningService.getTodaysDateString(1);
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const expected = `${tomorrow.getFullYear()}${(tomorrow.getMonth()).toString().padStart(2, "0")}${tomorrow.getDate().toString().padStart(2, "0")}`;
+    const expected = `${tomorrow.getFullYear()}${(tomorrow.getMonth() + 1).toString().padStart(2, "0")}${tomorrow.getDate().toString().padStart(2, "0")}`;
     expect(result).toBe(expected);
   });
 
@@ -582,7 +582,7 @@ describe("getTodaysDateString", () => {
     const result = GriddeningService.getTodaysDateString(-1);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const expected = `${yesterday.getFullYear()}${(yesterday.getMonth()).toString().padStart(2, "0")}${yesterday.getDate().toString().padStart(2, "0")}`;
+    const expected = `${yesterday.getFullYear()}${(yesterday.getMonth() + 1).toString().padStart(2, "0")}${yesterday.getDate().toString().padStart(2, "0")}`;
     expect(result).toBe(expected);
   });
 });
