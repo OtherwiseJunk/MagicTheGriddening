@@ -30,13 +30,37 @@ export class DataService {
     });
   }
 
-  async getRecentPuzzleSignatures(windowDays: number): Promise<Set<string>> {
+  // Games dated strictly after dateString (YYYYMMDD sorts lexicographically), with how many
+  // player records and guesses reference each so callers can refuse to touch played games.
+  async getGamesAfter(dateString: string) {
+    return await this.prisma.game.findMany({
+      where: { dateString: { gt: dateString } },
+      orderBy: { dateString: "asc" },
+      include: { _count: { select: { playerRecords: true, correctGuesses: true } } },
+    });
+  }
+
+  async replaceGames(
+    idsToDelete: number[],
+    newGames: { dateString: string; constraintsJSON: string }[],
+  ): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.game.deleteMany({ where: { id: { in: idsToDelete } } }),
+      ...newGames.map((data) => this.prisma.game.create({ data })),
+    ]);
+  }
+
+  async getRecentPuzzleSignatures(
+    windowDays: number,
+    excludeDateStrings: Set<string> = new Set(),
+  ): Promise<Set<string>> {
     const games = await this.prisma.game.findMany();
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - windowDays);
 
     const signatures = new Set<string>();
     for (const game of games) {
+      if (excludeDateStrings.has(game.dateString)) continue;
       const date = this.dateStringToDate(game.dateString);
       if (date === undefined || date.getTime() < cutoff.getTime()) continue;
 

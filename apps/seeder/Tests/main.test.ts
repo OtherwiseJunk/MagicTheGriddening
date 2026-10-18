@@ -1,9 +1,6 @@
 import { expect, test, describe } from "vitest";
-import {
-  calculateOffsetFromToday,
-  calculateStartingDayOffset,
-  classifyPuzzleAttempt,
-} from "../main.js";
+import { calculateOffsetFromToday, calculateStartingDayOffset } from "../main.js";
+import { classifyPuzzleAttempt } from "../services/puzzle-generation.js";
 import { GameConstraint, ConstraintType } from "@griddening/shared";
 import { Puzzle, PuzzleType } from "../types/Puzzle.js";
 import { computePuzzleSignature } from "../services/puzzle-signature.js";

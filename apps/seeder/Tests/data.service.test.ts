@@ -124,5 +124,48 @@ describe("Data Service", () => {
 
       await expect(dataService.getRecentPuzzleSignatures(1826)).resolves.toBeInstanceOf(Set);
     });
+
+    test("omits games whose dateString is in the excluded set", async () => {
+      const constraints = [
+        constraint("A"),
+        constraint("B"),
+        constraint("C"),
+        constraint("D"),
+        constraint("E"),
+        constraint("F"),
+      ];
+      const dateString = dateStringDaysAgo(10);
+      prismaMock.game.findMany.mockResolvedValue([gameOn(1, dateString, constraints)]);
+
+      const signatures = await dataService.getRecentPuzzleSignatures(1826, new Set([dateString]));
+
+      expect(signatures.size).toBe(0);
+    });
+  });
+
+  describe("getGamesAfter", () => {
+    test("queries games strictly after the date string, oldest first, with play counts", async () => {
+      prismaMock.game.findMany.mockResolvedValue([]);
+
+      await dataService.getGamesAfter("20261017");
+
+      expect(prismaMock.game.findMany).toHaveBeenCalledWith({
+        where: { dateString: { gt: "20261017" } },
+        orderBy: { dateString: "asc" },
+        include: { _count: { select: { playerRecords: true, correctGuesses: true } } },
+      });
+    });
+  });
+
+  describe("replaceGames", () => {
+    test("deletes the given ids and creates the new games in one transaction", async () => {
+      await dataService.replaceGames([4, 5], [{ dateString: "20261018", constraintsJSON: "[]" }]);
+
+      expect(prismaMock.game.deleteMany).toHaveBeenCalledWith({ where: { id: { in: [4, 5] } } });
+      expect(prismaMock.game.create).toHaveBeenCalledWith({
+        data: { dateString: "20261018", constraintsJSON: "[]" },
+      });
+      expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
+    });
   });
 });
