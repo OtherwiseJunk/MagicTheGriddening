@@ -111,6 +111,23 @@ describe("buildCardIndex behavior matrix", () => {
     expect(cards[0].colors.sort()).toEqual(["B", "R"]);
   });
 
+  it("treats a multi-faced card with colorless faces as colorless, ignoring color_identity (Pathway lands)", async () => {
+    const { cards } = await indexOf([
+      card({
+        oracle_id: "pathway",
+        name: "Needleverge Pathway // Pillarverge Pathway",
+        layout: "modal_dfc",
+        colors: undefined,
+        color_identity: ["R", "W"],
+        card_faces: [
+          { name: "Needleverge Pathway", colors: [] },
+          { name: "Pillarverge Pathway", colors: [] },
+        ],
+      }),
+    ]);
+    expect(cards[0].colors).toEqual([]);
+  });
+
   it("populates faceNames for multi-faced cards and leaves them empty otherwise", async () => {
     const { cards } = await indexOf([
       card({ oracle_id: "single", name: "Single Faced" }),
@@ -147,11 +164,11 @@ describe("buildCardIndex behavior matrix", () => {
     expect(cards[0].imagePng).toBe("/card-not-found.png");
   });
 
-  it("falls back to color_identity when neither card nor faces declare colors", async () => {
+  it("never derives colors from color_identity when neither card nor faces declare colors", async () => {
     const { cards } = await indexOf([
       card({ oracle_id: "devoid", name: "Identity Only", colors: undefined, color_identity: ["G"] }),
     ]);
-    expect(cards[0].colors).toEqual(["G"]);
+    expect(cards[0].colors).toEqual([]);
   });
 
   it("excludes non-gameplay layouts (tokens, art series, emblems, schemes, planes, vanguards, dfts)", async () => {

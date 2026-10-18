@@ -56,12 +56,7 @@ function buildCanonicalCard(card: ScryfallBulkCard): LocalCard {
   const faces = card.card_faces ?? [];
   const faceColors =
     faces.length > 0 ? Array.from(new Set(faces.flatMap((f) => f.colors ?? []))) : undefined;
-  const colors =
-    card.colors !== undefined
-      ? card.colors
-      : faceColors !== undefined && faceColors.length > 0
-        ? faceColors
-        : (card.color_identity ?? []);
+  const colors = card.colors ?? faceColors ?? [];
   const oracle_text =
     card.oracle_text ??
     faces
