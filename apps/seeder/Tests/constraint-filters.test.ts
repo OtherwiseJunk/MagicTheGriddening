@@ -124,7 +124,7 @@ describe("card type constraint local filters", () => {
   const sorcery = cardTypeConstraints.find((c) => c.displayName === "Sorcery")!;
   const instant = cardTypeConstraints.find((c) => c.displayName === "Instant")!;
   const legendary = cardTypeConstraints.find((c) => c.displayName === "Legendary")!;
-  const land = cardTypeConstraints.find((c) => c.displayName === "Land")!;
+  const land = cardTypeConstraints.find((c) => c.displayName === "Non-Basic Land")!;
   const enchantment = cardTypeConstraints.find((c) => c.displayName === "Enchantment")!;
 
   it("all card type constraints have localFilter defined", () => {

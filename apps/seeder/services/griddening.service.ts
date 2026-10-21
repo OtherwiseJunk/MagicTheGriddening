@@ -198,7 +198,9 @@ export class GriddeningService {
       constraintDeckByConstraintType,
     );
     const filteredType = type.filter((constraint) =>
-      ["Land", "Artifact", "Creature", "Instant", "Sorcery"].includes(constraint.displayName),
+      ["Non-Basic Land", "Artifact", "Creature", "Instant", "Sorcery"].includes(
+        constraint.displayName,
+      ),
     );
     const decks = { set, color, type, rarity, manaValue, artist, filteredType };
     const puzzle: Puzzle = {

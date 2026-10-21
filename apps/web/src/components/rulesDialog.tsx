@@ -74,11 +74,6 @@ export default function RulesDialog(): React.JSX.Element {
               creature type&rdquo; effects) are <strong className="text-text-gold">not</strong>{" "}
               treated as every creature type &mdash; only their printed types count.
             </li>
-            <li>
-              <strong className="text-text-gold">Basic lands</strong> (Forest, Island, etc.) are{" "}
-              <strong className="text-text-gold">not</strong> accepted as answers for Land
-              constraints.
-            </li>
           </ul>
           <p className="text-text-parchment/60 font-[family-name:var(--font-body)] text-xs md:text-sm mt-4 italic">
             Every intersection on the grid is guaranteed to have at least 10 valid cards.

@@ -7,7 +7,7 @@ const cardTypes = [
   "Enchantment",
   "Artifact",
   "Planeswalker",
-  "Land",
+  "Non-Basic Land",
   "Equipment",
   "Legendary",
 

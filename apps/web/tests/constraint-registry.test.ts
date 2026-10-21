@@ -75,7 +75,7 @@ describe("constraint registry", () => {
   });
 
   describe("Land constraint excludes basic lands", () => {
-    const land = findConstraintByName("Land");
+    const land = findConstraintByName("Non-Basic Land");
 
     it("uses a query that negates basics so the web validation excludes them", () => {
       expect(land).toBeDefined();

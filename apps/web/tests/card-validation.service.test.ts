@@ -68,21 +68,21 @@ describe("matchesConstraint", () => {
     it("Land constraint accepts a non-basic land", () => {
       const card = makeCard({ type_line: "Land" });
       expect(
-        matchesConstraint(card, new GameConstraint("Land", ConstraintType.Type, "t:Land -t:Basic")),
+        matchesConstraint(card, new GameConstraint("Non-Basic Land", ConstraintType.Type, "t:Land -t:Basic")),
       ).toBe(true);
     });
 
     it("Land constraint rejects a basic land", () => {
       const card = makeCard({ type_line: "Basic Land — Forest" });
       expect(
-        matchesConstraint(card, new GameConstraint("Land", ConstraintType.Type, "t:Land -t:Basic")),
+        matchesConstraint(card, new GameConstraint("Non-Basic Land", ConstraintType.Type, "t:Land -t:Basic")),
       ).toBe(false);
     });
 
     it("Land constraint rejects a snow-covered basic land", () => {
       const card = makeCard({ type_line: "Basic Snow Land — Island" });
       expect(
-        matchesConstraint(card, new GameConstraint("Land", ConstraintType.Type, "t:Land -t:Basic")),
+        matchesConstraint(card, new GameConstraint("Non-Basic Land", ConstraintType.Type, "t:Land -t:Basic")),
       ).toBe(false);
     });
   });
