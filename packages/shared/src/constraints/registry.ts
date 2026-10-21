@@ -162,7 +162,7 @@ function makeAnchoredOracleFilter(scryfallQuery: string): (card: LocalCard) => b
 
 export const cardTypeConstraints: GameConstraint[] = cardTypes.map((cardType) => {
   if (cardType === "Land") {
-    const constraint = new GameConstraint(cardType, ConstraintType.Type, "t:Land -t:Basic");
+    const constraint = new GameConstraint("Non-Basic Land", ConstraintType.Type, "t:Land -t:Basic");
     constraint.localFilter = makeNonBasicLandFilter();
     return constraint;
   }
@@ -374,6 +374,10 @@ const byDisplayName = new Map<string, GameConstraint>(
   allConstraints.map((c) => [c.displayName.toLowerCase(), c]),
 );
 
+// Puzzles generated before the "Land" -> "Non-Basic Land" rename still store the old name.
+const legacyDisplayNames: Record<string, string> = { land: "non-basic land" };
+
 export function findConstraintByName(name: string): GameConstraint | undefined {
-  return byDisplayName.get(name.trim().toLowerCase());
+  const key = name.trim().toLowerCase();
+  return byDisplayName.get(legacyDisplayNames[key] ?? key);
 }
