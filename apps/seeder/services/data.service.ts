@@ -19,6 +19,14 @@ export class DataService {
     return this.dateStringToDate(latestGame.dateString);
   }
 
+  async getDateStringsFrom(fromDateString: string): Promise<Set<string>> {
+    const games = await this.prisma.game.findMany({
+      where: { dateString: { gte: fromDateString } },
+      select: { dateString: true },
+    });
+    return new Set(games.map((game) => game.dateString));
+  }
+
   async createNewGame(dateString: string, validGameConstraints: GameConstraint[]): Promise<Game> {
     const existing = await this.prisma.game.findUnique({ where: { dateString } });
     if (existing) {

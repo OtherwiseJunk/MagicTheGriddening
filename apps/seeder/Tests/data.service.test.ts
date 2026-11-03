@@ -44,6 +44,27 @@ const games: Game[] = [
 const dataService = new DataService(prismaMock);
 
 describe("Data Service", () => {
+  describe("getDateStringsFrom", () => {
+    test("returns the date strings of games on or after the given date", async () => {
+      prismaMock.game.findMany.mockResolvedValue([
+        { dateString: "20261103" },
+        { dateString: "20261104" },
+      ] as Game[]);
+
+      const result = await dataService.getDateStringsFrom("20261103");
+
+      expect(result).toEqual(new Set(["20261103", "20261104"]));
+      expect(prismaMock.game.findMany).toHaveBeenCalledWith({
+        where: { dateString: { gte: "20261103" } },
+        select: { dateString: true },
+      });
+    });
+    test("returns an empty set when there are no upcoming games", async () => {
+      prismaMock.game.findMany.mockResolvedValue([]);
+      expect(await dataService.getDateStringsFrom("20261103")).toEqual(new Set());
+    });
+  });
+
   describe("getDateOfNewestGame", () => {
     test("() -> undefined", async () => {
       const latestDate = await dataService.getDateOfNewestGame();

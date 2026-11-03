@@ -1,5 +1,6 @@
 import { GriddeningService } from "./services/griddening.service.js";
 import { CardDataService } from "./services/card-data.service.js";
+import { toDateString } from "@griddening/shared";
 import { DataService } from "./services/data.service.js";
 import { computePuzzleSignature } from "./services/puzzle-signature.js";
 import {
@@ -27,31 +28,19 @@ const puzzleBuffer = process.env.PUZZLE_BUFFER ? parseInt(process.env.PUZZLE_BUF
 
 async function start() {
   await initGriddening();
-  const date = await dataService.getDateOfNewestGame();
+  const upcoming = await dataService.getDateStringsFrom(griddening.getDateStringByOffset(0));
+  const missing = findMissingOffsets(upcoming, puzzleBuffer);
 
-  if (date == undefined) {
-    console.log("No games found in DB, starting from scratch.");
-    await generatePuzzles(puzzleBuffer, calculateStartingDayOffset(date));
+  if (missing.length === 0) {
+    console.log("No missing puzzles in the buffer window.");
     return;
   }
 
-  const offset = calculateOffsetFromToday(date);
-  console.log(`Offset from today: ${offset}`);
-
-  if (offset < 0) {
-    console.log("No puzzle for today — generating today + buffer.");
-    await generatePuzzles(puzzleBuffer, -1);
-    return;
-  }
-
-  const puzzlesToCreate = puzzleBuffer - offset;
-  if (puzzlesToCreate > 0) {
-    console.log(`Creating ${puzzlesToCreate} puzzles`);
-    await generatePuzzles(puzzlesToCreate, offset);
-  }
+  console.log(`Missing puzzles at day offsets: ${missing.join(", ")}`);
+  await generatePuzzles(missing);
 }
 
-async function generatePuzzles(puzzleCount: number, dayOffset: number) {
+async function generatePuzzles(dayOffsets: number[]) {
   console.log("Starting...");
   const deckMap = griddening.createConstraintDeck();
   const recentSignatures = await dataService.getRecentPuzzleSignatures(puzzleUniquenessWindowDays);
@@ -59,31 +48,39 @@ async function generatePuzzles(puzzleCount: number, dayOffset: number) {
     `Loaded ${recentSignatures.size} puzzle signature(s) from the last ${puzzleUniquenessWindowDays} days.`,
   );
 
-  for (let i = 1; i < puzzleCount + 1; i++) {
-    console.log(`Generating ${i + 1} puzzle...`);
+  for (const dayOffset of dayOffsets) {
+    console.log(`Generating puzzle for day offset ${dayOffset}...`);
     const puzzle = await puzzleGenerator.generateValidPuzzleWithTimeout(deckMap, recentSignatures);
     recentSignatures.add(computePuzzleSignature(puzzle));
     logPuzzle(puzzle);
-    const dateStringFromOffset = griddening.getDateStringByOffset(dayOffset + i);
+    const dateStringFromOffset = griddening.getDateStringByOffset(dayOffset);
     console.log(`Creating game in DB for ${dateStringFromOffset}`);
-    await dataService.createNewGame(griddening.getDateStringByOffset(dayOffset + i), [
-      ...puzzle.topRow,
-      ...puzzle.sideRow,
-    ]);
+    await dataService.createNewGame(dateStringFromOffset, [...puzzle.topRow, ...puzzle.sideRow]);
     console.log("\r\n\r\n");
   }
   console.log("Generation complete. Awaiting next cron trigger.");
 }
 
-export function calculateOffsetFromToday(date: Date) {
-  const now = new Date();
-  const difference = Math.ceil(Math.round(date.getTime() - now.getTime()) / (1000 * 3600 * 24));
-  return difference || 0;
+// Calendar-day difference, so DST changes (23/25-hour days) can't shift the result.
+export function calculateOffsetFromToday(date: Date, now: Date = new Date()) {
+  const msPerDay = 1000 * 3600 * 24;
+  const target = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((target - today) / msPerDay);
 }
 
-export function calculateStartingDayOffset(newestGameDate: Date | undefined): number {
-  if (newestGameDate === undefined) return -1;
-  return calculateOffsetFromToday(newestGameDate);
+// Day offsets in [0, buffer] (today through today + buffer) that have no game yet.
+export function findMissingOffsets(
+  existingDateStrings: Set<string>,
+  buffer: number,
+  now: Date = new Date(),
+): number[] {
+  const missing: number[] = [];
+  for (let offset = 0; offset <= buffer; offset++) {
+    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+    if (!existingDateStrings.has(toDateString(day))) missing.push(offset);
+  }
+  return missing;
 }
 
 if (!process.env.VITEST) {
